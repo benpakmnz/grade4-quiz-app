@@ -1,0 +1,89 @@
+.word-problems-game {
+  max-width: 900px;
+  width: 100%;
+  padding: 20px;
+}
+
+.problem-badge {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #4ecdc4, #44a08d);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  box-shadow: 0 8px 20px rgba(78, 205, 196, 0.4);
+}
+
+.problem-type-badge {
+  background: linear-gradient(135deg, #ffe66d, #ffb347);
+  color: #333;
+  padding: 8px 20px;
+  border-radius: 20px;
+  font-size: 1rem;
+  font-weight: bold;
+  display: inline-block;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 10px rgba(255, 230, 109, 0.3);
+}
+
+.problem-text {
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  padding: 30px;
+  border-radius: 20px;
+  font-size: 1.4rem;
+  line-height: 1.8;
+  color: #1e293b;
+  margin: 30px 0;
+  border: 3px solid #4ecdc4;
+  box-shadow: 0 4px 15px rgba(78, 205, 196, 0.2);
+  text-align: right;
+  font-weight: 500;
+}
+
+.solution-steps {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 20px;
+  border-radius: 15px;
+  margin: 20px 0;
+  text-align: right;
+}
+
+.solution-steps h4 {
+  font-size: 1.3rem;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.solution-steps pre {
+  font-family: inherit;
+  font-size: 1.1rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  color: white;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .problem-text {
+    font-size: 1.2rem;
+    padding: 20px;
+  }
+
+  .solution-steps {
+    padding: 15px;
+  }
+
+  .solution-steps h4 {
+    font-size: 1.1rem;
+  }
+
+  .solution-steps pre {
+    font-size: 1rem;
+  }
+}

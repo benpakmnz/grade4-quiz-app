@@ -1,0 +1,62 @@
+.shapes-game {
+  max-width: 800px;
+  width: 100%;
+  padding: 20px;
+}
+
+.shape-display {
+  margin: 40px auto;
+  max-width: 300px;
+  background: white;
+  padding: 20px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.shape-svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));
+}
+
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.option-button {
+  background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+  color: white;
+  border: none;
+  padding: 20px;
+  border-radius: 15px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(167, 139, 250, 0.3);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.option-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
+}
+
+@media (max-width: 768px) {
+  .shape-display {
+    max-width: 250px;
+  }
+
+  .options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .option-button {
+    padding: 15px;
+    font-size: 1rem;
+  }
+}
