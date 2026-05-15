@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateShapesQuestion } from '../services/geminiService';
+import { getGenderText } from '../utils/genderText';
 import './ShapesGame.css';
 
-const ShapesGame = ({ onBack, score, setScore }) => {
+const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [question, setQuestion] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const MAX_ATTEMPTS = 3;
 
   const shapes = [
     {
@@ -34,18 +37,25 @@ const ShapesGame = ({ onBack, score, setScore }) => {
     },
     {
       name: 'מלבן',
-      properties: 'יש לו 4 צלעות ו-4 זוויות ישרות, 2 צלעות ארוכות ו-2 קצרות',
+      properties: 'יש לו 4 צלעות ו-4 זוויות ישרות, 2 צלעות ארוכות ו-2 קצרות, הצלעות המקבילות שוות',
       svg: '<rect x="50" y="80" width="200" height="140" fill="#a78bfa" stroke="#fff" stroke-width="4"/>',
       sides: 4,
       angles: 4
     },
     {
       name: 'ריבוע',
-      properties: 'יש לו 4 צלעות שוות ו-4 זוויות ישרות',
+      properties: 'יש לו 4 צלעות שוות ו-4 זוויות ישרות, כל הצלעות באותו אורך',
       svg: '<rect x="75" y="75" width="150" height="150" fill="#f472b6" stroke="#fff" stroke-width="4"/>',
       sides: 4,
       angles: 4,
       equal: true
+    },
+    {
+      name: 'מקבילית',
+      properties: 'יש לה 4 צלעות ו-4 זוויות, הצלעות המקבילות שוות באורך, אבל הזוויות אינן ישרות',
+      svg: '<polygon points="80,100 220,100 250,200 50,200" fill="#10b981" stroke="#fff" stroke-width="4"/>',
+      sides: 4,
+      angles: 4
     },
     {
       name: 'מחומש',
@@ -130,6 +140,7 @@ const ShapesGame = ({ onBack, score, setScore }) => {
     }
     setLoading(false);
     setFeedback(null);
+    setAttempts(0);
   };
 
   const generateStaticQuestion = () => {
@@ -139,6 +150,7 @@ const ShapesGame = ({ onBack, score, setScore }) => {
     
     setQuestion(q);
     setFeedback(null);
+    setAttempts(0);
   };
 
   const generateQuestion = () => {
@@ -151,26 +163,54 @@ const ShapesGame = ({ onBack, score, setScore }) => {
 
   const checkAnswer = (selectedAnswer) => {
     const isCorrect = selectedAnswer === question.correctAnswer;
+    const newAttempts = attempts + 1;
     
     if (isCorrect) {
+      // Notify parent component
+      if (onAnswer) {
+        onAnswer(true);
+      }
+      
       const points = 15 + (streak * 5);
       setScore(score + points);
       setStreak(streak + 1);
       setFeedback({ 
         correct: true, 
-        message: ['מצוין! זיהית נכון! 🎉', 'נכון! ⭐', 'כל הכבוד! 🌟', 'מעולה! 🚀'][Math.floor(Math.random() * 4)],
+        message: [
+          getGenderText('מצוין! זיהית נכון! 🎉', userData?.gender),
+          'נכון! ⭐',
+          'כל הכבוד! 🌟',
+          getGenderText('מעולה! 🚀', userData?.gender)
+        ][Math.floor(Math.random() * 4)],
         points
       });
+      setQuestionCount(questionCount + 1);
+    } else if (newAttempts < MAX_ATTEMPTS) {
+      // עוד יש ניסיונות
+      setAttempts(newAttempts);
+      const attemptsLeft = MAX_ATTEMPTS - newAttempts;
+      setFeedback({
+        correct: false,
+        isRetry: true,
+        attemptsLeft: attemptsLeft,
+        message: getGenderText(`לא נכון, נסי שוב! יש לך עוד ${attemptsLeft} ${attemptsLeft === 1 ? 'ניסיון' : 'ניסיונות'} 💪`, userData?.gender),
+        wrongAnswer: selectedAnswer
+      });
     } else {
+      // נגמרו הניסיונות
+      if (onAnswer) {
+        onAnswer(false);
+      }
+      
       setStreak(0);
       setFeedback({ 
-        correct: false, 
-        message: 'לא נורא, ננסה שוב! 💪',
+        correct: false,
+        isRetry: false,
+        message: 'נגמרו הניסיונות 😔',
         correctAnswer: question.correctAnswer
       });
+      setQuestionCount(questionCount + 1);
     }
-
-    setQuestionCount(questionCount + 1);
   };
 
   const nextQuestion = () => {
@@ -254,6 +294,38 @@ const ShapesGame = ({ onBack, score, setScore }) => {
                   </motion.button>
                 ))}
               </motion.div>
+            ) : feedback.isRetry ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                style={{
+                  background: '#fff3cd',
+                  padding: '20px',
+                  borderRadius: '15px',
+                  marginBottom: '20px'
+                }}
+              >
+                <div style={{ fontSize: '2rem', marginBottom: '10px' }}>⚠️</div>
+                <h3 style={{ color: '#856404', marginBottom: '15px' }}>{feedback.message}</h3>
+                <div className="options-grid">
+                  {question.options.map((option, index) => (
+                    <motion.button
+                      key={index}
+                      className="option-button"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => checkAnswer(option)}
+                      style={{
+                        opacity: option === feedback.wrongAnswer ? 0.5 : 1,
+                        pointerEvents: option === feedback.wrongAnswer ? 'none' : 'auto'
+                      }}
+                    >
+                      {option}
+                    </motion.button>
+                  ))}
+                </div>
+              </motion.div>
             ) : (
               <motion.div
                 className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
@@ -268,7 +340,7 @@ const ShapesGame = ({ onBack, score, setScore }) => {
                 {feedback.correct && (
                   <p className="points-earned">+{feedback.points} נקודות!</p>
                 )}
-                {!feedback.correct && (
+                {!feedback.correct && feedback.correctAnswer && (
                   <p className="correct-answer">
                     התשובה הנכונה: {feedback.correctAnswer}
                   </p>

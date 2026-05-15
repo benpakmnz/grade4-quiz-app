@@ -4,20 +4,34 @@ import './WelcomeScreen.css';
 
 const WelcomeScreen = ({ onStart }) => {
   const [name, setName] = useState('');
+  const [gender, setGender] = useState('female');
   const [selectedCharacter, setSelectedCharacter] = useState(null);
 
-  const characters = [
+  const allCharacters = [
+    // דמויות "נשיות"
     { id: 'unicorn', emoji: '🦄', name: 'חד-קרן', color: '#ff6b9d' },
-    { id: 'cat', emoji: '🐱', name: 'חתולה', color: '#fbbf24' },
+    { id: 'cat', emoji: '🐱', name: 'חתול/ה', color: '#fbbf24' },
     { id: 'panda', emoji: '🐼', name: 'פנדה', color: '#4ecdc4' },
-    { id: 'fox', emoji: '🦊', name: 'שועלה', color: '#f97316' },
+    { id: 'fox', emoji: '🦊', name: 'שועל/ה', color: '#f97316' },
     { id: 'koala', emoji: '🐨', name: 'קואלה', color: '#a78bfa' },
-    { id: 'bunny', emoji: '🐰', name: 'ארנבת', color: '#ec4899' }
+    { id: 'bunny', emoji: '🐰', name: 'ארנב/ת', color: '#ec4899' },
+    // דמויות "גבריות"
+    { id: 'lion', emoji: '🦁', name: 'אריה', color: '#f59e0b' },
+    { id: 'tiger', emoji: '🐯', name: 'נמר', color: '#ff6b35' },
+    { id: 'bear', emoji: '🐻', name: 'דוב', color: '#8b5a3c' },
+    { id: 'robot', emoji: '🤖', name: 'רובוט', color: '#3b82f6' },
+    { id: 'dinosaur', emoji: '🦖', name: 'דינוזאור', color: '#10b981' },
+    { id: 'rocket', emoji: '🚀', name: 'חללית', color: '#8b5cf6' }
   ];
 
   const handleStart = () => {
     if (name.trim() && selectedCharacter) {
-      onStart({ name: name.trim(), character: selectedCharacter });
+      onStart({ 
+        name: name.trim(), 
+        gender,
+        character: selectedCharacter,
+        themeColor: selectedCharacter.color
+      });
     }
   };
 
@@ -34,10 +48,10 @@ const WelcomeScreen = ({ onStart }) => {
           animate={{ y: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          🎮 ברוכה הבאה!
+          🎮 ברוך/ה הבא/ה
         </motion.h1>
         
-        <p className="welcome-subtitle">בואי נכיר! 😊</p>
+        <p className="welcome-subtitle">בוא/י נכיר! 😊</p>
 
         <div className="name-section">
           <label className="input-label">מה השם שלך?</label>
@@ -46,16 +60,36 @@ const WelcomeScreen = ({ onStart }) => {
             className="name-input"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="הכניסי את השם שלך..."
+            placeholder='הכנס/י את השם שלך'
             maxLength={20}
             autoFocus
           />
         </div>
 
+        <div className="gender-section">
+          <label className="input-label">אני:</label>
+          <div className="gender-toggle">
+            <button
+              className={`gender-btn ${gender === 'female' ? 'active' : ''}`}
+              onClick={() => setGender('female')}
+            >
+              👧 בת
+            </button>
+            <button
+              className={`gender-btn ${gender === 'male' ? 'active' : ''}`}
+              onClick={() => setGender('male')}
+            >
+              👦 בן
+            </button>
+          </div>
+        </div>
+
         <div className="character-section">
-          <label className="input-label">בחרי חברה שתלווה אותך! 🌟</label>
+          <label className="input-label">
+            '🌟 בחר/י חבר/ה שילווה אותך'
+          </label>
           <div className="characters-grid">
-            {characters.map((char) => (
+            {allCharacters.map((char) => (
               <motion.div
                 key={char.id}
                 className={`character-card ${selectedCharacter?.id === char.id ? 'selected' : ''}`}
@@ -78,7 +112,7 @@ const WelcomeScreen = ({ onStart }) => {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          בואי נתחיל! 🚀
+          {gender === 'female' ? 'בואי נתחיל! 🚀' : 'בוא נתחיל! 🚀'}
         </motion.button>
       </motion.div>
     </div>

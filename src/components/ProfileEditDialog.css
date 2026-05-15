@@ -1,0 +1,291 @@
+.profile-dialog-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99999;
+  padding: 20px;
+}
+
+.profile-dialog {
+  background: white;
+  border-radius: 30px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 30px;
+  border-bottom: 2px solid #f0f0f0;
+  background: white;
+  border-radius: 30px 30px 0 0;
+  flex-shrink: 0;
+}
+
+.profile-dialog-header h2 {
+  font-size: 1.8rem;
+  color: #667eea;
+  margin: 0;
+}
+
+.close-btn {
+  background: #f0f0f0;
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s;
+  color: #666;
+}
+
+.close-btn:hover {
+  background: #ff6b9d;
+  color: white;
+  transform: rotate(90deg);
+}
+
+.profile-dialog-content {
+  padding: 30px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.profile-section {
+  margin-bottom: 30px;
+}
+
+.profile-label {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #667eea;
+  margin-bottom: 15px;
+  text-align: right;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 15px 20px;
+  font-size: 1.2rem;
+  border: 3px solid #667eea;
+  border-radius: 15px;
+  outline: none;
+  transition: all 0.3s;
+  text-align: right;
+  direction: rtl;
+}
+
+.profile-input:focus {
+  border-color: #ff6b9d;
+  box-shadow: 0 0 20px rgba(255, 107, 157, 0.3);
+}
+
+.gender-toggle {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.gender-btn {
+  flex: 1;
+  padding: 20px;
+  font-size: 1.3rem;
+  font-weight: bold;
+  border: 3px solid #e0e0e0;
+  border-radius: 20px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gender-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.gender-btn.active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border-color: #667eea;
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.characters-grid-dialog {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.character-card-dialog {
+  background: white;
+  border: 3px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+}
+
+.character-card-dialog:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.character-card-dialog.selected {
+  border-color: var(--char-color);
+  background: linear-gradient(135deg, var(--char-color), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.character-emoji-dialog {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.character-name-dialog {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.colors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.color-option {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 4px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  margin: 0 auto;
+}
+
+.color-option:hover {
+  transform: scale(1.2);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.color-option.selected {
+  border-color: white;
+  box-shadow: 0 0 0 4px currentColor, 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.check-mark {
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-dialog-footer {
+  display: flex;
+  gap: 15px;
+  padding: 20px 30px;
+  border-top: 2px solid #f0f0f0;
+  background: white;
+  border-radius: 0 0 30px 30px;
+  flex-shrink: 0;
+}
+
+.cancel-btn,
+.save-btn {
+  flex: 1;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.cancel-btn {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.cancel-btn:hover {
+  background: #e0e0e0;
+  transform: translateY(-2px);
+}
+
+.save-btn {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.save-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.save-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .profile-dialog {
+    max-width: 95%;
+    border-radius: 20px;
+  }
+
+  .profile-dialog-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .characters-grid-dialog {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .character-emoji-dialog {
+    font-size: 2.5rem;
+  }
+
+  .colors-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .color-option {
+    width: 50px;
+    height: 50px;
+  }
+
+  .gender-btn {
+    font-size: 1.1rem;
+    padding: 15px;
+  }
+}

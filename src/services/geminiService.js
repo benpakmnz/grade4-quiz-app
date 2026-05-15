@@ -16,7 +16,7 @@ const questionCache = {
 
 // Rate limiting - track last API call time
 let lastApiCall = 0;
-const MIN_API_INTERVAL = 2000; // 2 seconds between API calls
+const MIN_API_INTERVAL = 4000; // 4 seconds between API calls (15 requests per minute limit)
 
 /**
  * Helper function to check if we should use AI or fallback
@@ -25,14 +25,14 @@ const shouldUseAI = () => {
   const now = Date.now();
   const timeSinceLastCall = now - lastApiCall;
   
-  // If less than 2 seconds since last call, use cache/fallback
+  // If less than 4 seconds since last call, use cache/fallback
   if (timeSinceLastCall < MIN_API_INTERVAL) {
     console.log('Rate limiting: using cache/fallback');
     return false;
   }
   
-  // Random chance to use AI (70% AI, 30% static for variety)
-  return Math.random() > 0.3;
+  // 50% chance to use AI, 50% static for variety and API conservation
+  return Math.random() > 0.5;
 };
 
 /**

@@ -1,5 +1,4 @@
 .word-problems-game {
-  max-width: 900px;
   width: 100%;
   padding: 20px;
 }
@@ -48,22 +47,31 @@
 
 .solution-steps {
   background: rgba(255, 255, 255, 0.2);
-  padding: 20px;
-  border-radius: 15px;
-  margin: 20px 0;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 12px 0;
   text-align: right;
 }
 
 .solution-steps h4 {
-  font-size: 1.3rem;
-  margin-bottom: 10px;
+  font-size: 1rem;
+  margin-bottom: 6px;
   color: white;
+}
+
+.solution-steps p {
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  color: white;
+  margin: 0;
 }
 
 .solution-steps pre {
   font-family: inherit;
-  font-size: 1.1rem;
-  line-height: 1.8;
+  font-size: 0.95rem;
+  line-height: 1.5;
   white-space: pre-wrap;
   color: white;
   margin: 0;
@@ -76,14 +84,15 @@
   }
 
   .solution-steps {
-    padding: 15px;
+    padding: 10px;
   }
 
   .solution-steps h4 {
-    font-size: 1.1rem;
+    font-size: 0.95rem;
   }
 
+  .solution-steps p,
   .solution-steps pre {
-    font-size: 1rem;
+    font-size: 0.9rem;
   }
 }

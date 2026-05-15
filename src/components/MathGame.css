@@ -1,14 +1,14 @@
 .math-game {
-  max-width: 800px;
   width: 100%;
   padding: 20px;
+  margin-top: 80px; /* Space for fixed main header */
 }
 
 .game-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: 50px;
   flex-wrap: wrap;
   gap: 15px;
 }
@@ -16,18 +16,19 @@
 .back-button {
   background: white;
   border: none;
-  padding: 12px 25px;
+  padding: 10px 20px;
   border-radius: 50px;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: bold;
   color: #667eea;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .back-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
 .game-stats {
@@ -38,23 +39,24 @@
 
 .stat {
   background: white;
-  padding: 10px 20px;
-  border-radius: 20px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  padding: 8px 15px;
+  border-radius: 15px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .stat-label {
   color: #667eea;
   font-weight: bold;
+  font-size: 0.85rem;
 }
 
 .stat-value {
   color: #ff6b9d;
   font-weight: bold;
-  font-size: 1.2rem;
+  font-size: 1rem;
 }
 
 .question-card {
@@ -248,8 +250,8 @@
 }
 
 .feedback {
-  padding: 30px;
-  border-radius: 20px;
+  padding: 20px;
+  border-radius: 15px;
   animation: slideIn 0.5s ease;
 }
 
@@ -275,34 +277,34 @@
 }
 
 .feedback-emoji {
-  font-size: 5rem;
-  margin-bottom: 15px;
+  font-size: 3rem;
+  margin-bottom: 10px;
   animation: bounce 0.6s ease;
 }
 
 .feedback-message {
-  font-size: 2rem;
-  margin-bottom: 15px;
+  font-size: 1.3rem;
+  margin-bottom: 10px;
 }
 
 .points-earned {
-  font-size: 1.5rem;
+  font-size: 1.1rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .correct-answer {
-  font-size: 1.3rem;
-  margin-bottom: 20px;
+  font-size: 1.1rem;
+  margin-bottom: 12px;
 }
 
 .next-button {
   background: white;
   color: #667eea;
   border: none;
-  padding: 15px 40px;
+  padding: 10px 30px;
   border-radius: 50px;
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
   transition: all 0.3s ease;
@@ -434,5 +436,23 @@
   .character-message {
     font-size: 0.9rem;
     padding: 8px 15px;
+  }
+
+  .feedback-emoji {
+    font-size: 2.5rem;
+  }
+
+  .feedback-message {
+    font-size: 1.1rem;
+  }
+
+  .points-earned,
+  .correct-answer {
+    font-size: 1rem;
+  }
+
+  .next-button {
+    padding: 8px 25px;
+    font-size: 0.95rem;
   }
 }

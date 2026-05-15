@@ -226,7 +226,7 @@ const MathGame = ({ onBack, score, setScore, userData }) => {
             {userData.character.emoji}
           </div>
           <div className="character-message">
-            {feedback?.correct ? 'כל הכבוד!' : 'את יכולה!'}
+            {feedback?.correct ? 'כל הכבוד!' : getGenderText('את יכולה!', userData?.gender)}
           </div>
         </motion.div>
       )}

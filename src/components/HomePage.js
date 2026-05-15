@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import {
   Box,
   Container,
@@ -8,16 +8,12 @@ import {
   SimpleGrid,
   Button,
   VStack,
-  useDisclosure,
 } from '@chakra-ui/react';
 import './HomePage.css';
-import Achievements from './Achievements';
 
 const MotionBox = motion(Box);
 
-const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
-  const { isOpen: showAchievements, onOpen: openAchievements, onClose: closeAchievements } = useDisclosure();
-
+const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText }) => {
   // חישוב ימים עד למבחן
   const games = [
     {
@@ -89,10 +85,10 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
             textShadow="3px 3px 6px rgba(0, 0, 0, 0.3)"
             mb={2}
           >
-            בחרי נושא לתרגול
+            {getGenderText('בחרי נושא לתרגול', userData?.gender)}
           </Heading>
           <Text fontSize="lg" color="yellow.500" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)" mb={4}>
-            כל תרגול מקרב אותך להצלחה! 💪
+            {getGenderText('כל תרגול מקרב אותך להצלחה! 💪', userData?.gender)}
           </Text>
         </MotionBox>
 
@@ -135,6 +131,27 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
                   flexDirection="column"
                   justifyContent="space-between"
                 >
+                  {/* Success Rate Badge */}
+                  <Box
+                    position="absolute"
+                    top="-10px"
+                    right="-10px"
+                    bg={calculateSuccessRate(game.id) >= 80 ? 'green.500' : calculateSuccessRate(game.id) >= 60 ? 'yellow.500' : 'red.500'}
+                    color="white"
+                    borderRadius="full"
+                    w="60px"
+                    h="60px"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    fontWeight="bold"
+                    fontSize="lg"
+                    boxShadow="xl"
+                    border="3px solid white"
+                  >
+                    {calculateSuccessRate(game.id)}%
+                  </Box>
+
                   <VStack spacing={2}>
                     <Text fontSize="5xl" className="game-emoji">
                       {game.emoji}
@@ -159,7 +176,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
                     mt={3}
                     _hover={{ transform: 'translateY(-3px)', boxShadow: 'xl' }}
                   >
-                    בואי נתחיל! 🚀
+                    {getGenderText('בואי נתחיל! 🚀', userData?.gender)}
                   </Button>
                 </Box>
               </MotionBox>
@@ -176,36 +193,16 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
           backdropFilter="blur(10px)"
           px={5}
           py={3}
+          mt={8}
           borderRadius="20px"
           textAlign="center"
           maxW="600px"
         >
           <Text color="white" fontSize="md" fontWeight="bold" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)">
-            💪 את יכולה! כל תרגול מקרב אותך להצלחה!
+            {getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה!', userData?.gender)}
           </Text>
         </MotionBox>
       </VStack>
-
-      {/* Achievements Modal */}
-      <AnimatePresence>
-        {showAchievements && (
-          <>
-            <motion.div
-              className="achievements-overlay"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={closeAchievements}
-            />
-            <Achievements
-              score={score}
-              streak={streak}
-              questionCount={questionCount}
-              onClose={closeAchievements}
-            />
-          </>
-        )}
-      </AnimatePresence>
       </Container>
       
   );

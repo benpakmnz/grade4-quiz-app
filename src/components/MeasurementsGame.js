@@ -1,133 +1,111 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateMeasurementsQuestion } from '../services/geminiService';
+import { getGenderText } from '../utils/genderText';
 import './MeasurementsGame.css';
 
-const MeasurementsGame = ({ onBack, score, setScore }) => {
+const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [question, setQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  const measurementTypes = {
-    length: {
-      name: 'אורך',
-      emoji: '📏',
-      units: [
-        { name: 'מילימטר', abbr: 'מ"מ', toBase: 1 },
-        { name: 'סנטימטר', abbr: 'ס"מ', toBase: 10 },
-        { name: 'מטר', abbr: 'מ\'', toBase: 1000 },
-        { name: 'קילומטר', abbr: 'ק"מ', toBase: 1000000 }
-      ]
-    },
-    weight: {
-      name: 'משקל',
-      emoji: '⚖️',
-      units: [
-        { name: 'גרם', abbr: 'גר\'', toBase: 1 },
-        { name: 'קילוגרם', abbr: 'ק"ג', toBase: 1000 },
-        { name: 'טון', abbr: 'טון', toBase: 1000000 }
-      ]
-    },
-    volume: {
-      name: 'נפח',
-      emoji: '🥤',
-      units: [
-        { name: 'מיליליטר', abbr: 'מ"ל', toBase: 1 },
-        { name: 'ליטר', abbr: 'ליטר', toBase: 1000 }
-      ]
-    }
-  };
+  const [attempts, setAttempts] = useState(0);
+  const MAX_ATTEMPTS = 3;
 
   const questionTypes = [
     {
-      type: 'convert',
-      generate: (measureType) => {
-        const units = measurementTypes[measureType].units;
-        const fromUnit = units[Math.floor(Math.random() * units.length)];
-        const toUnit = units[Math.floor(Math.random() * units.length)];
+      type: 'area',
+      name: 'שטח',
+      emoji: '📐',
+      generate: () => {
+        const shapes = [
+          {
+            name: 'מלבן',
+            generate: () => {
+              const length = Math.floor(Math.random() * 10) + 3;
+              const width = Math.floor(Math.random() * 8) + 2;
+              const area = length * width;
+              return {
+                text: `חשבו את השטח של מלבן שאורכו ${length} ס"מ ורוחבו ${width} ס"מ`,
+                answer: area,
+                unit: 'ס"מ²',
+                explanation: `שטח = אורך × רוחב = ${length} × ${width} = ${area} ס"מ²`
+              };
+            }
+          },
+          {
+            name: 'ריבוע',
+            generate: () => {
+              const side = Math.floor(Math.random() * 10) + 3;
+              const area = side * side;
+              return {
+                text: `חשבו את השטח של ריבוע שאורך צלעו ${side} ס"מ`,
+                answer: area,
+                unit: 'ס"מ²',
+                explanation: `שטח = צלע × צלע = ${side} × ${side} = ${area} ס"מ²`
+              };
+            }
+          }
+        ];
         
-        if (fromUnit === toUnit) {
-          return questionTypes[0].generate(measureType);
-        }
-
-        const value = Math.floor(Math.random() * 100) + 1;
-        const answer = Math.round((value * fromUnit.toBase) / toUnit.toBase * 100) / 100;
-
-        return {
-          text: `המר ${value} ${fromUnit.name} ל${toUnit.name}`,
-          emoji: measurementTypes[measureType].emoji,
-          answer: answer,
-          unit: toUnit.abbr,
-          type: measurementTypes[measureType].name
-        };
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        return shape.generate();
       }
     },
     {
-      type: 'compare',
-      generate: (measureType) => {
-        const units = measurementTypes[measureType].units;
-        const unit1 = units[Math.floor(Math.random() * units.length)];
-        const unit2 = units[Math.floor(Math.random() * units.length)];
+      type: 'perimeter',
+      name: 'היקף',
+      emoji: '📏',
+      generate: () => {
+        const shapes = [
+          {
+            name: 'מלבן',
+            generate: () => {
+              const length = Math.floor(Math.random() * 10) + 3;
+              const width = Math.floor(Math.random() * 8) + 2;
+              const perimeter = 2 * (length + width);
+              return {
+                text: `חשבו את ההיקף של מלבן שאורך צלעותיו הן ${length} ס"מ ו-${width} ס"מ`,
+                answer: perimeter,
+                unit: 'ס"מ',
+                explanation: `היקף = ${length} + ${width} + ${length} + ${width} = ${perimeter} ס"מ`
+              };
+            }
+          },
+          {
+            name: 'ריבוע',
+            generate: () => {
+              const side = Math.floor(Math.random() * 10) + 3;
+              const perimeter = 4 * side;
+              return {
+                text: `חשבו את ההיקף של ריבוע שאורך צלעו ${side} ס"מ`,
+                answer: perimeter,
+                unit: 'ס"מ',
+                explanation: `היקף = ${side} + ${side} + ${side} + ${side} = ${perimeter} ס"מ`
+              };
+            }
+          },
+          {
+            name: 'משולש',
+            generate: () => {
+              const side1 = Math.floor(Math.random() * 8) + 3;
+              const side2 = Math.floor(Math.random() * 8) + 3;
+              const side3 = Math.floor(Math.random() * 8) + 3;
+              const perimeter = side1 + side2 + side3;
+              return {
+                text: `חשבו את ההיקף של משולש שאורך צלעותיו הן ${side1} ס"מ, ${side2} ס"מ ו-${side3} ס"מ`,
+                answer: perimeter,
+                unit: 'ס"מ',
+                explanation: `היקף = ${side1} + ${side2} + ${side3} = ${perimeter} ס"מ`
+              };
+            }
+          }
+        ];
         
-        const value1 = Math.floor(Math.random() * 50) + 10;
-        const value2 = Math.floor(Math.random() * 50) + 10;
-        
-        const base1 = value1 * unit1.toBase;
-        const base2 = value2 * unit2.toBase;
-        
-        const answer = base1 + base2;
-        const resultUnit = units[0]; // תמיד מחזיר ביחידה הקטנה ביותר
-        const finalAnswer = Math.round(answer / resultUnit.toBase);
-
-        return {
-          text: `${value1} ${unit1.name} + ${value2} ${unit2.name} = ? ${resultUnit.name}`,
-          emoji: measurementTypes[measureType].emoji,
-          answer: finalAnswer,
-          unit: resultUnit.abbr,
-          type: measurementTypes[measureType].name
-        };
-      }
-    },
-    {
-      type: 'wordProblem',
-      generate: (measureType) => {
-        if (measureType === 'length') {
-          const distance1 = Math.floor(Math.random() * 500) + 100;
-          const distance2 = Math.floor(Math.random() * 500) + 100;
-          const total = distance1 + distance2;
-          return {
-            text: `יוסי הלך ${distance1} מטר בבוקר ו-${distance2} מטר אחר הצהריים. כמה מטר הלך בסך הכל?`,
-            emoji: '🚶',
-            answer: total,
-            unit: 'מ\'',
-            type: 'אורך'
-          };
-        } else if (measureType === 'weight') {
-          const weight1 = Math.floor(Math.random() * 5) + 1;
-          const weight2 = Math.floor(Math.random() * 5) + 1;
-          const total = weight1 + weight2;
-          return {
-            text: `תמר קנתה ${weight1} ק"ג תפוחים ו-${weight2} ק"ג תפוזים. כמה ק"ג פירות קנתה בסך הכל?`,
-            emoji: '🍎',
-            answer: total,
-            unit: 'ק"ג',
-            type: 'משקל'
-          };
-        } else {
-          const volume1 = Math.floor(Math.random() * 2000) + 500;
-          const volume2 = Math.floor(Math.random() * 2000) + 500;
-          const total = volume1 + volume2;
-          return {
-            text: `בבקבוק אחד יש ${volume1} מ"ל מים ובבקבוק שני יש ${volume2} מ"ל. כמה מ"ל מים יש בסך הכל?`,
-            emoji: '💧',
-            answer: total,
-            unit: 'מ"ל',
-            type: 'נפח'
-          };
-        }
+        const shape = shapes[Math.floor(Math.random() * shapes.length)];
+        return shape.generate();
       }
     }
   ];
@@ -154,18 +132,21 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
   };
 
   const generateStaticQuestion = () => {
-    const measureTypes = Object.keys(measurementTypes);
-    const measureType = measureTypes[Math.floor(Math.random() * measureTypes.length)];
     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+    const q = questionType.generate();
     
-    const q = questionType.generate(measureType);
-    setQuestion(q);
+    setQuestion({
+      ...q,
+      emoji: questionType.emoji,
+      type: questionType.name
+    });
     setUserAnswer('');
     setFeedback(null);
+    setAttempts(0);
   };
 
   const generateQuestion = () => {
-    generateQuestionWithAI(); // Use AI by default
+    generateStaticQuestion(); // Use static questions for area and perimeter
   };
 
   useEffect(() => {
@@ -175,26 +156,54 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
   const checkAnswer = () => {
     const userNum = parseFloat(userAnswer);
     const isCorrect = Math.abs(userNum - question.answer) < 0.01;
+    const newAttempts = attempts + 1;
     
     if (isCorrect) {
+      // Notify parent component
+      if (onAnswer) {
+        onAnswer(true);
+      }
+      
       const points = 15 + (streak * 5);
       setScore(score + points);
       setStreak(streak + 1);
       setFeedback({ 
         correct: true, 
-        message: ['מעולה! חישבת נכון! 🎉', 'נכון מאוד! ⭐', 'כל הכבוד! 🌟', 'מדהים! 🚀'][Math.floor(Math.random() * 4)],
+        message: [
+          getGenderText('מעולה! חישבת נכון! 🎉', userData?.gender),
+          'נכון מאוד! ⭐',
+          'כל הכבוד! 🌟',
+          getGenderText('מדהים! 🚀', userData?.gender)
+        ][Math.floor(Math.random() * 4)],
         points
       });
+      setQuestionCount(questionCount + 1);
+    } else if (newAttempts < MAX_ATTEMPTS) {
+      // עוד יש ניסיונות
+      setAttempts(newAttempts);
+      const attemptsLeft = MAX_ATTEMPTS - newAttempts;
+      setFeedback({
+        correct: false,
+        isRetry: true,
+        attemptsLeft: attemptsLeft,
+        message: getGenderText(`לא נכון, נסי שוב! יש לך עוד ${attemptsLeft} ${attemptsLeft === 1 ? 'ניסיון' : 'ניסיונות'} 💪`, userData?.gender)
+      });
+      setUserAnswer('');
     } else {
+      // נגמרו הניסיונות
+      if (onAnswer) {
+        onAnswer(false);
+      }
+      
       setStreak(0);
       setFeedback({ 
-        correct: false, 
-        message: 'לא נורא, ננסה שוב! 💪',
+        correct: false,
+        isRetry: false,
+        message: 'נגמרו הניסיונות 😔',
         correctAnswer: question.answer
       });
+      setQuestionCount(questionCount + 1);
     }
-
-    setQuestionCount(questionCount + 1);
   };
 
   const nextQuestion = () => {
@@ -284,6 +293,42 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
                 בדוק תשובה ✓
               </button>
             </motion.div>
+          ) : feedback.isRetry ? (
+            <motion.div
+              className="answer-section"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              style={{
+                background: '#fff3cd',
+                padding: '20px',
+                borderRadius: '15px',
+                marginBottom: '20px'
+              }}
+            >
+              <div style={{ fontSize: '2rem', marginBottom: '10px' }}>⚠️</div>
+              <h3 style={{ color: '#856404', marginBottom: '15px' }}>{feedback.message}</h3>
+              <div className="answer-input-group">
+                <input
+                  type="number"
+                  step="0.01"
+                  className="answer-input"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                  placeholder={getGenderText("נסי שוב...", userData?.gender)}
+                  autoFocus
+                />
+                <span className="unit-label">{question.unit}</span>
+              </div>
+              <button
+                className="submit-button"
+                onClick={checkAnswer}
+                disabled={!userAnswer}
+              >
+                בדוק תשובה ✓
+              </button>
+            </motion.div>
           ) : (
             <motion.div
               className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
@@ -298,7 +343,7 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
               {feedback.correct && (
                 <p className="points-earned">+{feedback.points} נקודות!</p>
               )}
-              {!feedback.correct && (
+              {!feedback.correct && feedback.correctAnswer && (
                 <p className="correct-answer">
                   התשובה הנכונה: {feedback.correctAnswer} {question.unit}
                 </p>

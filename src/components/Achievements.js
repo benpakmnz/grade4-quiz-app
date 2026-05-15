@@ -1,10 +1,74 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Achievements.css';
+import { getGenderText } from '../utils/genderText';
 
-const Achievements = ({ score, streak, questionCount, onClose }) => {
+const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData }) => {
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [showNotification, setShowNotification] = useState(null);
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'achievements', 'categories'
+
+  // Calculate overall statistics
+  const calculateOverallStats = () => {
+    let totalCorrect = 0;
+    let totalQuestions = 0;
+    
+    Object.values(categoryStats).forEach(stat => {
+      totalCorrect += stat.correct;
+      totalQuestions += stat.total;
+    });
+    
+    const successRate = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+    const failedQuestions = totalQuestions - totalCorrect;
+    
+    return {
+      totalCorrect,
+      totalQuestions,
+      failedQuestions,
+      successRate
+    };
+  };
+
+  // Find strongest and weakest categories
+  const getCategoryInsights = () => {
+    const categories = [
+      { id: 'addSubtract', name: 'חיבור וחיסור', emoji: '🧮' },
+      { id: 'multiplyDivide', name: 'כפל וחילוק', emoji: '🔢' },
+      { id: 'decimalStructure', name: 'מבנה עשרוני', emoji: '💯' },
+      { id: 'wordProblems', name: 'בעיות מילוליות', emoji: '🤔' },
+      { id: 'dataAnalysis', name: 'חקר נתונים', emoji: '📈' },
+      { id: 'shapes', name: 'צורות הנדסיות', emoji: '📐' },
+      { id: 'measurements', name: 'מדידות', emoji: '⚖️' }
+    ];
+
+    const categoryRates = categories.map(cat => {
+      const stats = categoryStats[cat.id];
+      const rate = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
+      return { ...cat, ...stats, rate };
+    }).filter(cat => cat.total > 0);
+
+    categoryRates.sort((a, b) => b.rate - a.rate);
+
+    return {
+      strongest: categoryRates[0] || null,
+      weakest: categoryRates[categoryRates.length - 1] || null,
+      allCategories: categoryRates
+    };
+  };
+
+  // Calculate days until exam and progress
+  const examDate = new Date('2026-05-27');
+  const today = new Date();
+  const daysUntilExam = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
+  
+  const TARGET_PER_CATEGORY = 30;
+  const totalTarget = TARGET_PER_CATEGORY * 7; // 7 categories
+  const stats = calculateOverallStats();
+  const insights = getCategoryInsights();
+  
+  // Calculate recommended daily practice
+  const remainingToTarget = totalTarget - stats.totalCorrect;
+  const recommendedDaily = daysUntilExam > 0 ? Math.ceil(remainingToTarget / daysUntilExam) : 0;
 
   const achievements = [
     {
@@ -17,7 +81,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'quick_learner',
-      title: 'לומדת מהירה',
+      title: getGenderText('לומדת מהירה', userData?.gender),
       description: 'פתרת 5 שאלות!',
       emoji: '🚀',
       condition: (s, st, q) => q >= 5,
@@ -25,7 +89,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'dedicated',
-      title: 'מסורה',
+      title: getGenderText('מסורה', userData?.gender),
       description: 'פתרת 10 שאלות!',
       emoji: '💪',
       condition: (s, st, q) => q >= 10,
@@ -33,7 +97,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'math_master',
-      title: 'מלכת החשבון',
+      title: getGenderText('מלכת החשבון', userData?.gender),
       description: 'פתרת 20 שאלות!',
       emoji: '👑',
       condition: (s, st, q) => q >= 20,
@@ -57,7 +121,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'streak_10',
-      title: 'בלתי ניתנת לעצירה',
+      title: getGenderText('בלתי ניתנת לעצירה', userData?.gender),
       description: 'רצף של 10 תשובות נכונות!',
       emoji: '🌟',
       condition: (s, st, q) => st >= 10,
@@ -65,7 +129,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'score_50',
-      title: 'אספנית נקודות',
+      title: getGenderText('אספנית נקודות', userData?.gender),
       description: 'צברת 50 נקודות!',
       emoji: '💎',
       condition: (s, st, q) => s >= 50,
@@ -81,7 +145,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'score_200',
-      title: 'אלופה',
+      title: getGenderText('אלופה', userData?.gender),
       description: 'צברת 200 נקודות!',
       emoji: '🥇',
       condition: (s, st, q) => s >= 200,
@@ -89,7 +153,7 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
     },
     {
       id: 'score_500',
-      title: 'גאונית מתמטיקה',
+      title: getGenderText('גאונית מתמטיקה', userData?.gender),
       description: 'צברת 500 נקודות!',
       emoji: '🌈',
       condition: (s, st, q) => s >= 500,
@@ -167,26 +231,246 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
       >
         <div className="achievements-header">
           <h2 className="achievements-title">🏆 ההישגים שלי</h2>
-          <button className="close-button" onClick={onClose}>✕</button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button 
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                padding: '8px 15px',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+              onClick={() => {
+                if (window.confirm(getGenderText('האם את בטוחה שברצונך לאפס את כל הנתונים?', userData?.gender))) {
+                  localStorage.removeItem('quiz_categoryStats');
+                  window.location.reload();
+                }
+              }}
+            >
+              🔄 איפוס נתונים
+            </button>
+            <button className="close-button" onClick={onClose}>✕</button>
+          </div>
         </div>
 
-        <div className="achievements-progress">
-          <div className="progress-text">
-            <span className="progress-label">התקדמות:</span>
-            <span className="progress-value">{progress.unlocked} / {progress.total}</span>
-          </div>
-          <div className="progress-bar">
-            <motion.div
-              className="progress-fill"
-              initial={{ width: 0 }}
-              animate={{ width: `${progress.percentage}%` }}
-              transition={{ duration: 1, ease: 'easeOut' }}
-            />
-          </div>
-          <div className="progress-percentage">{progress.percentage}%</div>
+        {/* Tabs */}
+        <div className="achievements-tabs">
+          <button 
+            className={`tab ${activeTab === 'overview' ? 'active' : ''}`}
+            onClick={() => setActiveTab('overview')}
+          >
+            📊 סקירה כללית
+          </button>
+          <button 
+            className={`tab ${activeTab === 'categories' ? 'active' : ''}`}
+            onClick={() => setActiveTab('categories')}
+          >
+            📈 פירוט נושאים
+          </button>
+          <button 
+            className={`tab ${activeTab === 'achievements' ? 'active' : ''}`}
+            onClick={() => setActiveTab('achievements')}
+          >
+            🏆 תגי הצטיינות
+          </button>
         </div>
 
-        <div className="achievements-grid">
+        {/* Overview Tab */}
+        {activeTab === 'overview' && (
+          <motion.div 
+            className="tab-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            {/* Main Stats Cards */}
+            <div className="stats-grid">
+              <div className="stat-card">
+                <div className="stat-emoji">📝</div>
+                <div className="stat-value">{stats.totalQuestions}</div>
+                <div className="stat-label">סה"כ תרגילים</div>
+              </div>
+              
+              <div className="stat-card success">
+                <div className="stat-emoji">✅</div>
+                <div className="stat-value">{stats.totalCorrect}</div>
+                <div className="stat-label">תשובות נכונות</div>
+              </div>
+              
+              <div className="stat-card error">
+                <div className="stat-emoji">❌</div>
+                <div className="stat-value">{stats.failedQuestions}</div>
+                <div className="stat-label">טעויות</div>
+              </div>
+              
+              <div className="stat-card percentage">
+                <div className="stat-emoji">📊</div>
+                <div className="stat-value">{stats.successRate}%</div>
+                <div className="stat-label">אחוז הצלחה</div>
+              </div>
+              
+              <div className="stat-card streak">
+                <div className="stat-emoji">🔥</div>
+                <div className="stat-value">{streak}</div>
+                <div className="stat-label">רצף נוכחי</div>
+              </div>
+              
+              <div className="stat-card points">
+                <div className="stat-emoji">⭐</div>
+                <div className="stat-value">{score}</div>
+                <div className="stat-label">נקודות</div>
+              </div>
+            </div>
+
+            {/* Progress to Goal */}
+            <div className="goal-section">
+              <h3 className="section-title">🎯 התקדמות ליעד</h3>
+              <div className="goal-card">
+                <div className="goal-info">
+                  <span className="goal-label">יעד: 210 תרגילים נכונים (30 בכל נושא)</span>
+                  <span className="goal-value">{stats.totalCorrect} / 210</span>
+                </div>
+                <div className="goal-progress-bar">
+                  <motion.div
+                    className="goal-progress-fill"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${Math.min(100, (stats.totalCorrect / totalTarget) * 100)}%` }}
+                    transition={{ duration: 1 }}
+                  />
+                </div>
+                <div className="goal-percentage">
+                  {Math.round((stats.totalCorrect / totalTarget) * 100)}% מהיעד
+                </div>
+              </div>
+            </div>
+
+            {/* Exam Countdown & Recommendation */}
+            <div className="exam-section">
+              <div className="exam-card">
+                <div className="exam-icon">⏰</div>
+                <div className="exam-content">
+                  <h4>זמן עד המבחן</h4>
+                  <div className="exam-days">{daysUntilExam} ימים</div>
+                </div>
+              </div>
+              
+              {remainingToTarget > 0 && (
+                <div className="recommendation-card">
+                  <div className="recommendation-icon">💡</div>
+                  <div className="recommendation-content">
+                    <h4>המלצה יומית</h4>
+                    <p>{getGenderText('כדי להגיע ליעד, תרגלי', userData?.gender)} <strong>{recommendedDaily}</strong> תרגילים ביום</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Insights */}
+            {insights.strongest && insights.weakest && (
+              <div className="insights-section">
+                <h3 className="section-title">💪 נקודות חוזק וחולשה</h3>
+                <div className="insights-grid">
+                  <div className="insight-card strong">
+                    <div className="insight-emoji">{insights.strongest.emoji}</div>
+                    <h4>{getGenderText('הכי חזקה ב:', userData?.gender)}</h4>
+                    <p className="insight-category">{insights.strongest.name}</p>
+                    <p className="insight-rate">{Math.round(insights.strongest.rate)}% הצלחה</p>
+                  </div>
+                  
+                  <div className="insight-card weak">
+                    <div className="insight-emoji">{insights.weakest.emoji}</div>
+                    <h4>כדאי להתמקד ב:</h4>
+                    <p className="insight-category">{insights.weakest.name}</p>
+                    <p className="insight-rate">{Math.round(insights.weakest.rate)}% הצלחה</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Categories Tab */}
+        {activeTab === 'categories' && (
+          <motion.div 
+            className="tab-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h3 className="section-title">📚 פירוט לפי נושאים</h3>
+            <div className="categories-list">
+              {insights.allCategories.map((cat, index) => (
+                <motion.div
+                  key={cat.id}
+                  className="category-item"
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <div className="category-header">
+                    <span className="category-emoji">{cat.emoji}</span>
+                    <span className="category-name">{cat.name}</span>
+                  </div>
+                  
+                  <div className="category-stats">
+                    <div className="category-numbers">
+                      <span className="correct-count">✅ {cat.correct}</span>
+                      <span className="total-count">📝 {cat.total}</span>
+                      <span className="rate-badge" style={{
+                        background: cat.rate >= 80 ? '#10b981' : cat.rate >= 60 ? '#f59e0b' : '#ef4444'
+                      }}>
+                        {Math.round(cat.rate)}%
+                      </span>
+                    </div>
+                    
+                    <div className="category-progress-bar">
+                      <motion.div
+                        className="category-progress-fill"
+                        style={{
+                          background: cat.rate >= 80 ? '#10b981' : cat.rate >= 60 ? '#f59e0b' : '#ef4444'
+                        }}
+                        initial={{ width: 0 }}
+                        animate={{ width: `${cat.rate}%` }}
+                        transition={{ duration: 0.8, delay: index * 0.1 }}
+                      />
+                    </div>
+                    
+                    <div className="category-goal">
+                      <span>יעד: {cat.correct} / {TARGET_PER_CATEGORY}</span>
+                      <span>{Math.round((cat.correct / TARGET_PER_CATEGORY) * 100)}%</span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Achievements Tab */}
+        {activeTab === 'achievements' && (
+          <motion.div 
+            className="tab-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <div className="achievements-progress">
+              <div className="progress-text">
+                <span className="progress-label">התקדמות:</span>
+                <span className="progress-value">{progress.unlocked} / {progress.total}</span>
+              </div>
+              <div className="progress-bar">
+                <motion.div
+                  className="progress-fill"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress.percentage}%` }}
+                  transition={{ duration: 1, ease: 'easeOut' }}
+                />
+              </div>
+              <div className="progress-percentage">{progress.percentage}%</div>
+            </div>
+
+            <div className="achievements-grid">
           {achievements.map((achievement, index) => {
             const isUnlocked = unlockedAchievements.find(u => u.id === achievement.id);
             return (
@@ -226,6 +510,8 @@ const Achievements = ({ score, streak, questionCount, onClose }) => {
             );
           })}
         </div>
+          </motion.div>
+        )}
       </motion.div>
     </>
   );
