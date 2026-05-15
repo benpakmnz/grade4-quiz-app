@@ -287,19 +287,6 @@ const ShapesGame = ({ onBack, score, setScore }) => {
           </AnimatePresence>
         </motion.div>
       )}
-              )}
-              {!feedback.correct && (
-                <p className="correct-answer">
-                  התשובה הנכונה: {feedback.correctAnswer}
-                </p>
-              )}
-              <button className="next-button" onClick={nextQuestion}>
-                שאלה הבאה →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
 
       {streak >= 3 && (
         <motion.div

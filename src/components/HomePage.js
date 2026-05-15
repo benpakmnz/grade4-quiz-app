@@ -207,6 +207,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
         )}
       </AnimatePresence>
       </Container>
+      
   );
 };
 

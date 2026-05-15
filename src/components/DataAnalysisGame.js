@@ -8,16 +8,32 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [useAI, setUseAI] = useState(true); // Toggle between AI and static questions
+  const [useAI, setUseAI] = useState(true); // Use AI with improved prompts
 
   const generateQuestionWithAI = async () => {
     setLoading(true);
     try {
       const aiQuestion = await generateDataAnalysisQuestion();
-      setQuestion({
+      console.log('AI Question received:', aiQuestion);
+      
+      // Process the AI response to ensure it has the right structure
+      const processedQuestion = {
         ...aiQuestion,
-        type: aiQuestion.type || 'table'
-      });
+        type: aiQuestion.type || 'bar'
+      };
+      
+      // For pictograph, ensure scale exists
+      if (processedQuestion.type === 'pictograph' && !processedQuestion.scale) {
+        processedQuestion.scale = 5;
+      }
+      
+      // For pie chart, calculate total if missing
+      if (processedQuestion.type === 'pie' && !processedQuestion.total) {
+        processedQuestion.total = Object.values(processedQuestion.data).reduce((a, b) => a + b, 0);
+      }
+      
+      console.log('Processed question:', processedQuestion);
+      setQuestion(processedQuestion);
     } catch (error) {
       console.error('Error generating AI question:', error);
       // Fallback to static question
@@ -48,17 +64,6 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
       generateQuestionWithAI();
     } else {
       generateStaticQuestion();
-    }
-  };
-
-    if (selectedType === 'table') {
-      generateTableQuestion();
-    } else if (selectedType === 'barChart') {
-      generateBarChartQuestion();
-    } else if (selectedType === 'pictograph') {
-      generatePictographQuestion();
-    } else {
-      generatePieChartQuestion();
     }
   };
 
@@ -312,14 +317,16 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
       setFeedback({ 
         correct: true, 
         message: ['מעולה! 🎉', 'נכון מאוד! ⭐', 'כל הכבוד! 🌟', 'מדהים! 🚀'][Math.floor(Math.random() * 4)],
-        points
+        points,
+        explanation: question.explanation
       });
     } else {
       setStreak(0);
       setFeedback({ 
         correct: false, 
         message: 'לא נורא, ננסה שוב! 💪',
-        correctAnswer: question.answer
+        correctAnswer: question.answer,
+        explanation: question.explanation
       });
     }
 
@@ -331,7 +338,14 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
   };
 
   const renderVisualization = () => {
+    if (!question || !question.type) return null;
+    
     if (question.type === 'table') {
+      // Check if we have the required data structure
+      if (!question.subjects || !question.students || !question.data) {
+        return null;
+      }
+      
       return (
         <div style={{ 
           overflowX: 'auto',
@@ -369,7 +383,9 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
           </table>
         </div>
       );
-    } else if (question.type === 'barChart') {
+    } else if (question.type === 'barChart' || question.type === 'bar') {
+      if (!question.data) return null;
+      
       const maxValue = Math.max(...Object.values(question.data));
       return (
         <div style={{
@@ -426,6 +442,8 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
         </div>
       );
     } else if (question.type === 'pictograph') {
+      if (!question.data || !question.scale) return null;
+      
       return (
         <div style={{
           background: '#f8f9fa',
@@ -482,6 +500,8 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
         </div>
       );
     } else if (question.type === 'pieChart') {
+      if (!question.data || !question.total) return null;
+      
       const colors = ['#ff6b9d', '#4ecdc4', '#a78bfa', '#fbbf24', '#ff8fab'];
       return (
         <div style={{
@@ -540,6 +560,9 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
         </div>
       );
     }
+    
+    // If no matching type, return null
+    return null;
   };
 
   if (!question) return null;
@@ -589,6 +612,11 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
           <>
             <div className="operation-badge">📊</div>
             <h2 className="question-title">חקר נתונים</h2>
+            {question.title && (
+              <h3 style={{ color: '#667eea', marginBottom: '20px', fontSize: '1.3rem' }}>
+                {question.title}
+              </h3>
+            )}
             
             <div className="question-display">
               {renderVisualization()}
@@ -602,7 +630,7 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
                 marginBottom: '20px',
                 border: '3px solid #ffc107'
               }}>
-                {question.text}
+                {question.question || question.text}
               </div>
             </div>
 
