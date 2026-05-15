@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateMeasurementsQuestion } from '../services/geminiService';
 import './MeasurementsGame.css';
 
 const MeasurementsGame = ({ onBack, score, setScore }) => {
@@ -8,6 +9,7 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const measurementTypes = {
     length: {
@@ -130,7 +132,28 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
     }
   ];
 
-  const generateQuestion = () => {
+  const generateQuestionWithAI = async () => {
+    setLoading(true);
+    try {
+      const aiQuestion = await generateMeasurementsQuestion();
+      setQuestion({
+        text: aiQuestion.question,
+        answer: aiQuestion.answer,
+        unit: aiQuestion.unit,
+        explanation: aiQuestion.explanation,
+        emoji: '📏'
+      });
+    } catch (error) {
+      console.error('Error generating AI question:', error);
+      // Fallback to static question
+      generateStaticQuestion();
+    }
+    setLoading(false);
+    setUserAnswer('');
+    setFeedback(null);
+  };
+
+  const generateStaticQuestion = () => {
     const measureTypes = Object.keys(measurementTypes);
     const measureType = measureTypes[Math.floor(Math.random() * measureTypes.length)];
     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
@@ -139,6 +162,10 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
     setQuestion(q);
     setUserAnswer('');
     setFeedback(null);
+  };
+
+  const generateQuestion = () => {
+    generateQuestionWithAI(); // Use AI by default
   };
 
   useEffect(() => {
@@ -174,7 +201,7 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
     generateQuestion();
   };
 
-  if (!question) return null;
+  if (!question && !loading) return null;
 
   return (
     <div className="measurements-game">
@@ -198,29 +225,46 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
         </div>
       </div>
 
-      <motion.div
-        className="question-card"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        key={question.text}
-      >
-        <div className="measurement-badge">{question.emoji}</div>
-        <div className="measurement-type">{question.type}</div>
-        
-        <div className="question-text">
-          {question.text}
-        </div>
+      {loading ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+            fontSize: '2rem'
+          }}
+        >
+          <div style={{ fontSize: '4rem', animation: 'spin 2s linear infinite' }}>🤖</div>
+          <p style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem' }}>יוצר שאלה חדשה...</p>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="question-card"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          key={question.text}
+        >
+          <div className="measurement-badge">{question.emoji}</div>
+          {question.type && <div className="measurement-type">{question.type}</div>}
+          
+          <div className="question-text">
+            {question.text}
+          </div>
 
-        <AnimatePresence mode="wait">
-          {!feedback ? (
-            <motion.div
-              className="answer-section"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="answer-input-group">
-                <input
+          <AnimatePresence mode="wait">
+            {!feedback ? (
+              <motion.div
+                className="answer-section"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="answer-input-group">
+                  <input
                   type="number"
                   step="0.01"
                   className="answer-input"
@@ -259,6 +303,12 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
                   התשובה הנכונה: {feedback.correctAnswer} {question.unit}
                 </p>
               )}
+              {question.explanation && (
+                <div className="solution-steps">
+                  <h4>💡 הסבר:</h4>
+                  <p>{question.explanation}</p>
+                </div>
+              )}
               <button className="next-button" onClick={nextQuestion}>
                 שאלה הבאה →
               </button>
@@ -266,6 +316,7 @@ const MeasurementsGame = ({ onBack, score, setScore }) => {
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       {streak >= 3 && (
         <motion.div

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateShapesQuestion } from '../services/geminiService';
 import './ShapesGame.css';
 
 const ShapesGame = ({ onBack, score, setScore }) => {
@@ -7,6 +8,7 @@ const ShapesGame = ({ onBack, score, setScore }) => {
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
   const shapes = [
     {
@@ -111,13 +113,36 @@ const ShapesGame = ({ onBack, score, setScore }) => {
     return props.sort(() => 0.5 - Math.random()).slice(0, 3);
   }
 
-  const generateQuestion = () => {
+  const generateQuestionWithAI = async () => {
+    setLoading(true);
+    try {
+      const aiQuestion = await generateShapesQuestion();
+      setQuestion({
+        text: aiQuestion.question,
+        options: aiQuestion.options,
+        correctAnswer: aiQuestion.options[aiQuestion.correctIndex],
+        explanation: aiQuestion.explanation
+      });
+    } catch (error) {
+      console.error('Error generating AI question:', error);
+      // Fallback to static question
+      generateStaticQuestion();
+    }
+    setLoading(false);
+    setFeedback(null);
+  };
+
+  const generateStaticQuestion = () => {
     const shape = shapes[Math.floor(Math.random() * shapes.length)];
     const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
     const q = questionType.generate(shape);
     
     setQuestion(q);
     setFeedback(null);
+  };
+
+  const generateQuestion = () => {
+    generateQuestionWithAI(); // Use AI by default
   };
 
   useEffect(() => {
@@ -152,7 +177,7 @@ const ShapesGame = ({ onBack, score, setScore }) => {
     generateQuestion();
   };
 
-  if (!question) return null;
+  if (!question && !loading) return null;
 
   return (
     <div className="shapes-game">
@@ -176,53 +201,92 @@ const ShapesGame = ({ onBack, score, setScore }) => {
         </div>
       </div>
 
-      <motion.div
-        className="question-card"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        key={question.question}
-      >
-        <h2 className="question-title">{question.question}</h2>
-        
-        <div className="shape-display">
-          <svg viewBox="0 0 300 300" className="shape-svg">
-            <g dangerouslySetInnerHTML={{ __html: question.shape.svg }} />
-          </svg>
-        </div>
+      {loading ? (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+            fontSize: '2rem'
+          }}
+        >
+          <div style={{ fontSize: '4rem', animation: 'spin 2s linear infinite' }}>🤖</div>
+          <p style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem' }}>יוצר שאלה חדשה...</p>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="question-card"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          key={question?.text || question?.question}
+        >
+          <h2 className="question-title">{question.text || question.question}</h2>
+          
+          {question.shape && (
+            <div className="shape-display">
+              <svg viewBox="0 0 300 300" className="shape-svg">
+                <g dangerouslySetInnerHTML={{ __html: question.shape.svg }} />
+              </svg>
+            </div>
+          )}
 
-        <AnimatePresence mode="wait">
-          {!feedback ? (
-            <motion.div
-              className="options-grid"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              {question.options.map((option, index) => (
-                <motion.button
-                  key={index}
-                  className="option-button"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => checkAnswer(option)}
-                >
-                  {option}
-                </motion.button>
-              ))}
-            </motion.div>
-          ) : (
-            <motion.div
-              className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-            >
-              <div className="feedback-emoji">
-                {feedback.correct ? '🎉' : '💪'}
-              </div>
-              <h3 className="feedback-message">{feedback.message}</h3>
-              {feedback.correct && (
-                <p className="points-earned">+{feedback.points} נקודות!</p>
+          <AnimatePresence mode="wait">
+            {!feedback ? (
+              <motion.div
+                className="options-grid"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {question.options.map((option, index) => (
+                  <motion.button
+                    key={index}
+                    className="option-button"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => checkAnswer(option)}
+                  >
+                    {option}
+                  </motion.button>
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <div className="feedback-emoji">
+                  {feedback.correct ? '🎉' : '💪'}
+                </div>
+                <h3 className="feedback-message">{feedback.message}</h3>
+                {feedback.correct && (
+                  <p className="points-earned">+{feedback.points} נקודות!</p>
+                )}
+                {!feedback.correct && (
+                  <p className="correct-answer">
+                    התשובה הנכונה: {feedback.correctAnswer}
+                  </p>
+                )}
+                {question.explanation && (
+                  <div className="solution-steps">
+                    <h4>💡 הסבר:</h4>
+                    <p>{question.explanation}</p>
+                  </div>
+                )}
+                <button className="next-button" onClick={nextQuestion}>
+                  שאלה הבאה →
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
               )}
               {!feedback.correct && (
                 <p className="correct-answer">

@@ -1,15 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateDataAnalysisQuestion } from '../services/geminiService';
 import './MathGame.css';
 
 const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, questionCount, setQuestionCount, userData }) => {
   const [question, setQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [useAI, setUseAI] = useState(true); // Toggle between AI and static questions
 
-  const generateQuestion = () => {
+  const generateQuestionWithAI = async () => {
+    setLoading(true);
+    try {
+      const aiQuestion = await generateDataAnalysisQuestion();
+      setQuestion({
+        ...aiQuestion,
+        type: aiQuestion.type || 'table'
+      });
+    } catch (error) {
+      console.error('Error generating AI question:', error);
+      // Fallback to static question
+      generateStaticQuestion();
+    }
+    setLoading(false);
+    setUserAnswer('');
+    setFeedback(null);
+  };
+
+  const generateStaticQuestion = () => {
     const visualTypes = ['table', 'barChart', 'pictograph', 'pieChart'];
     const selectedType = visualTypes[Math.floor(Math.random() * visualTypes.length)];
+
+    if (selectedType === 'table') {
+      generateTableQuestion();
+    } else if (selectedType === 'barChart') {
+      generateBarChartQuestion();
+    } else if (selectedType === 'pictograph') {
+      generatePictographQuestion();
+    } else {
+      generatePieChartQuestion();
+    }
+  };
+
+  const generateQuestion = () => {
+    if (useAI) {
+      generateQuestionWithAI();
+    } else {
+      generateStaticQuestion();
+    }
+  };
 
     if (selectedType === 'table') {
       generateTableQuestion();
@@ -530,78 +570,100 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
         className="question-card"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        key={question.text}
+        key={question?.text || 'loading'}
         style={{ maxWidth: '900px' }}
       >
-        <div className="operation-badge">📊</div>
-        <h2 className="question-title">חקר נתונים</h2>
-        
-        <div className="question-display">
-          {renderVisualization()}
-
-          <div className="question-text" style={{ 
-            fontSize: '1.5rem', 
-            lineHeight: '2',
-            padding: '25px',
-            background: '#fff3cd',
-            borderRadius: '15px',
-            marginBottom: '20px',
-            border: '3px solid #ffc107'
+        {loading ? (
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+            fontSize: '2rem'
           }}>
-            {question.text}
+            <div style={{ fontSize: '4rem', animation: 'spin 2s linear infinite' }}>🤖</div>
+            <p style={{ marginTop: '20px', color: '#667eea', fontSize: '1.5rem' }}>יוצר שאלה חדשה...</p>
           </div>
-        </div>
+        ) : (
+          <>
+            <div className="operation-badge">📊</div>
+            <h2 className="question-title">חקר נתונים</h2>
+            
+            <div className="question-display">
+              {renderVisualization()}
 
-        <AnimatePresence mode="wait">
-          {!feedback ? (
-            <motion.div
-              className="answer-section"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <input
-                type="number"
-                className="answer-input"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
-                placeholder="התשובה שלך..."
-                autoFocus
-              />
-              <button
-                className="submit-button"
-                onClick={checkAnswer}
-                disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-            >
-              <div className="feedback-emoji">
-                {feedback.correct ? '🎉' : '💪'}
+              <div className="question-text" style={{ 
+                fontSize: '1.5rem', 
+                lineHeight: '2',
+                padding: '25px',
+                background: '#fff3cd',
+                borderRadius: '15px',
+                marginBottom: '20px',
+                border: '3px solid #ffc107'
+              }}>
+                {question.text}
               </div>
-              <h3 className="feedback-message">{feedback.message}</h3>
-              {feedback.correct && (
-                <p className="points-earned">+{feedback.points} נקודות!</p>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {!feedback ? (
+                <motion.div
+                  className="answer-section"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <input
+                    type="number"
+                    className="answer-input"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                    placeholder="התשובה שלך..."
+                    autoFocus
+                  />
+                  <button
+                    className="submit-button"
+                    onClick={checkAnswer}
+                    disabled={!userAnswer}
+                  >
+                    בדוק תשובה ✓
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.div
+                  className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                >
+                  <div className="feedback-emoji">
+                    {feedback.correct ? '🎉' : '💪'}
+                  </div>
+                  <h3 className="feedback-message">{feedback.message}</h3>
+                  {feedback.correct && (
+                    <p className="points-earned">+{feedback.points} נקודות!</p>
+                  )}
+                  {!feedback.correct && (
+                    <p className="correct-answer">
+                      התשובה הנכונה: {feedback.correctAnswer}
+                    </p>
+                  )}
+                  {feedback.explanation && (
+                    <div className="solution-steps">
+                      <h4>💡 הסבר:</h4>
+                      <p>{feedback.explanation}</p>
+                    </div>
+                  )}
+                  <button className="next-button" onClick={nextQuestion}>
+                    שאלה הבאה →
+                  </button>
+                </motion.div>
               )}
-              {!feedback.correct && (
-                <p className="correct-answer">
-                  התשובה הנכונה: {feedback.correctAnswer}
-                </p>
-              )}
-              <button className="next-button" onClick={nextQuestion}>
-                שאלה הבאה →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </AnimatePresence>
+          </>
+        )}
       </motion.div>
 
       {streak >= 3 && (

@@ -7,9 +7,7 @@ import {
   Text,
   SimpleGrid,
   Button,
-  HStack,
   VStack,
-  Badge,
   useDisclosure,
 } from '@chakra-ui/react';
 import './HomePage.css';
@@ -21,11 +19,6 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
   const { isOpen: showAchievements, onOpen: openAchievements, onClose: closeAchievements } = useDisclosure();
 
   // חישוב ימים עד למבחן
-  const examDate = new Date('2026-05-27');
-  const today = new Date();
-  const diffTime = examDate - today;
-  const daysUntilExam = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
   const games = [
     {
       id: 'addSubtract',
@@ -79,106 +72,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
   ];
 
   return (
-    <>
-      {/* Fixed Header */}
-      <Box
-        position="fixed"
-        top={0}
-        left={0}
-        right={0}
-        bg="white"
-        boxShadow="lg"
-        zIndex={1000}
-        borderBottom="3px solid"
-        borderColor="purple.500"
-        w="100vw"
-      >
-        <Box maxW="100%" px={8}>
-          <HStack justify="space-between" py={3} spacing={4}>
-            {/* Right Side - Greeting with Character */}
-            {userData && (
-              <HStack spacing={2}>
-                <Text fontSize="3xl" className="character-buddy">
-                  {userData.character.emoji}
-                </Text>
-                <Text fontSize="lg" fontWeight="bold" color="purple.600">
-                  שלום {userData.name}! 👋
-                </Text>
-              </HStack>
-            )}
-
-            {/* Center - Title with Icon */}
-            <HStack spacing={2}>
-              <Text fontSize="2xl">🎮</Text>
-              <Text fontSize="lg" fontWeight="bold" color="purple.600">
-                תרגול למבחן בחשבון כיתה ד'
-              </Text>
-            </HStack>
-
-            {/* Left Side - Stats & Achievements */}
-            <HStack spacing={3}>
-              <Badge
-                fontSize="md"
-                px={4}
-                py={2}
-                borderRadius="full"
-                bg="gradient"
-                bgGradient="linear(to-r, pink.400, purple.500)"
-                color="white"
-                boxShadow="md"
-                display="flex"
-                alignItems="center"
-                gap={2}
-              >
-                <Text fontWeight="bold">נקודות:</Text>
-                <Text fontWeight="bold" fontSize="lg">{score}</Text>
-                <Text fontSize="lg">⭐</Text>
-              </Badge>
-
-              <Button
-                size="sm"
-                colorScheme="yellow"
-                borderRadius="full"
-                boxShadow="md"
-                onClick={openAchievements}
-                leftIcon={<span>🏆</span>}
-                px={4}
-                py={2}
-                _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-                transition="all 0.3s"
-              >
-                ההישגים שלי
-              </Button>
-            </HStack>
-          </HStack>
-        </Box>
-      </Box>
-
-      {/* Exam Countdown - Fixed Position */}
-      <Box
-        position="fixed"
-        bottom={4}
-        left={4}
-        bg="red.500"
-        color="white"
-        px={5}
-        py={3}
-        borderRadius="20px"
-        boxShadow="2xl"
-        zIndex={100}
-      >
-        <VStack spacing={1} align="start">
-          <HStack spacing={2}>
-            <Text fontSize="2xl">⏰</Text>
-            <Text fontSize="sm" fontWeight="bold">המבחן בעוד:</Text>
-          </HStack>
-          <Text fontSize="2xl" fontWeight="bold" textAlign="center" w="full">
-            {daysUntilExam > 0 ? `${daysUntilExam} ימים` : 'היום!'}
-          </Text>
-        </VStack>
-      </Box>
-
-      <Container maxW="container.xl" pt="120px" pb={20}>
+         <Container maxW="container.xl" pt="120px" pb={20}>
       <VStack spacing={6}>
         {/* Header */}
         <MotionBox
@@ -313,7 +207,6 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData }) => {
         )}
       </AnimatePresence>
       </Container>
-    </>
   );
 };
 

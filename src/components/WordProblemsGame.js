@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { generateWordProblem } from '../services/geminiService';
 import './WordProblemsGame.css';
 
 const WordProblemsGame = ({ onBack, score, setScore }) => {
@@ -8,128 +9,31 @@ const WordProblemsGame = ({ onBack, score, setScore }) => {
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
+  const [loading, setLoading] = useState(false);
 
-  // בעיות מילוליות חד-שלביות
-  const singleStepProblems = [
-    {
-      type: 'addition',
-      generate: () => {
-        const num1 = Math.floor(Math.random() * 500) + 100;
-        const num2 = Math.floor(Math.random() * 500) + 100;
-        return {
-          text: `לדנה יש ${num1} מדבקות. חברה שלה נתנה לה עוד ${num2} מדבקות. כמה מדבקות יש לדנה עכשיו?`,
-          answer: num1 + num2,
-          emoji: '🎨'
-        };
-      }
-    },
-    {
-      type: 'subtraction',
-      generate: () => {
-        const total = Math.floor(Math.random() * 800) + 200;
-        const used = Math.floor(Math.random() * (total - 50)) + 50;
-        return {
-          text: `בחנות היו ${total} ספרים. נמכרו ${used} ספרים. כמה ספרים נשארו בחנות?`,
-          answer: total - used,
-          emoji: '📚'
-        };
-      }
-    },
-    {
-      type: 'multiplication',
-      generate: () => {
-        const boxes = Math.floor(Math.random() * 10) + 2;
-        const perBox = Math.floor(Math.random() * 10) + 2;
-        return {
-          text: `בכל קופסה יש ${perBox} עוגיות. יש ${boxes} קופסאות. כמה עוגיות יש בסך הכל?`,
-          answer: boxes * perBox,
-          emoji: '🍪'
-        };
-      }
-    },
-    {
-      type: 'division',
-      generate: () => {
-        const groups = Math.floor(Math.random() * 10) + 2;
-        const perGroup = Math.floor(Math.random() * 10) + 2;
-        const total = groups * perGroup;
-        return {
-          text: `יש ${total} תפוחים. רוצים לחלק אותם שווה ל-${groups} ילדים. כמה תפוחים יקבל כל ילד?`,
-          answer: perGroup,
-          emoji: '🍎'
-        };
-      }
-    }
-  ];
-
-  // בעיות מילוליות דו-שלביות
-  const twoStepProblems = [
-    {
-      generate: () => {
-        const price = Math.floor(Math.random() * 20) + 10;
-        const quantity1 = Math.floor(Math.random() * 5) + 2;
-        const quantity2 = Math.floor(Math.random() * 5) + 2;
-        const total = (quantity1 + quantity2) * price;
-        return {
-          text: `נועה קנתה ${quantity1} עטים וגם ${quantity2} עטים נוספים. כל עט עולה ${price} ש"ח. כמה כסף הוציאה נועה בסך הכל?`,
-          answer: total,
-          emoji: '✏️',
-          steps: `שלב 1: ${quantity1} + ${quantity2} = ${quantity1 + quantity2} עטים\nשלב 2: ${quantity1 + quantity2} × ${price} = ${total} ש"ח`
-        };
-      }
-    },
-    {
-      generate: () => {
-        const total = Math.floor(Math.random() * 100) + 50;
-        const boys = Math.floor(Math.random() * (total - 20)) + 10;
-        const girls = total - boys;
-        const leftClass = Math.floor(Math.random() * girls) + 1;
-        const remaining = girls - leftClass;
-        return {
-          text: `בכיתה יש ${total} ילדים. ${boys} מהם בנים. ${leftClass} בנות יצאו להפסקה. כמה בנות נשארו בכיתה?`,
-          answer: remaining,
-          emoji: '👧',
-          steps: `שלב 1: ${total} - ${boys} = ${girls} בנות\nשלב 2: ${girls} - ${leftClass} = ${remaining} בנות נשארו`
-        };
-      }
-    },
-    {
-      generate: () => {
-        const boxes = Math.floor(Math.random() * 5) + 3;
-        const perBox = Math.floor(Math.random() * 8) + 4;
-        const ate = Math.floor(Math.random() * 10) + 5;
-        const total = (boxes * perBox) - ate;
-        return {
-          text: `אמא קנתה ${boxes} קופסאות שוקולד. בכל קופסה ${perBox} חטיפים. המשפחה אכלה ${ate} חטיפים. כמה חטיפים נשארו?`,
-          answer: total,
-          emoji: '🍫',
-          steps: `שלב 1: ${boxes} × ${perBox} = ${boxes * perBox} חטיפים\nשלב 2: ${boxes * perBox} - ${ate} = ${total} חטיפים נשארו`
-        };
-      }
-    }
-  ];
-
-  const generateQuestion = () => {
-    const isTwoStep = Math.random() > 0.4; // 60% סיכוי לדו-שלבית
-    
-    if (isTwoStep) {
-      const problemGenerator = twoStepProblems[Math.floor(Math.random() * twoStepProblems.length)];
-      const problem = problemGenerator.generate();
+  const generateQuestion = async () => {
+    setLoading(true);
+    try {
+      const problem = await generateWordProblem();
       setQuestion({
-        ...problem,
-        type: 'two-step',
-        title: 'בעיה דו-שלבית'
+        text: problem.question,
+        answer: problem.answer,
+        explanation: problem.explanation,
+        emoji: ['🎨', '📚', '🍪', '🍎', '✏️', '🍫', '⚽', '🎈'][Math.floor(Math.random() * 8)],
+        title: 'בעיה מילולית'
       });
-    } else {
-      const problemGenerator = singleStepProblems[Math.floor(Math.random() * singleStepProblems.length)];
-      const problem = problemGenerator.generate();
+    } catch (error) {
+      console.error('Error generating question:', error);
+      // Fallback to static question
       setQuestion({
-        ...problem,
-        type: 'single-step',
-        title: 'בעיה חד-שלבית'
+        text: 'לשרה היו 45 מדבקות. היא קיבלה עוד 23 מדבקות מחברה. כמה מדבקות יש לה עכשיו?',
+        answer: 68,
+        explanation: '45 + 23 = 68',
+        emoji: '🎨',
+        title: 'בעיה מילולית'
       });
     }
-    
+    setLoading(false);
     setUserAnswer('');
     setFeedback(null);
   };
@@ -142,7 +46,7 @@ const WordProblemsGame = ({ onBack, score, setScore }) => {
     const isCorrect = parseInt(userAnswer) === question.answer;
     
     if (isCorrect) {
-      const points = question.type === 'two-step' ? 20 : 15;
+      const points = 20;
       const bonusPoints = streak * 5;
       const totalPoints = points + bonusPoints;
       
@@ -152,7 +56,7 @@ const WordProblemsGame = ({ onBack, score, setScore }) => {
         correct: true, 
         message: ['מצוין! חשבת נכון! 🎉', 'פתרת את זה! ⭐', 'מעולה! 🌟', 'גאונות! 🚀'][Math.floor(Math.random() * 4)],
         points: totalPoints,
-        steps: question.steps
+        explanation: question.explanation
       });
     } else {
       setStreak(0);
@@ -160,7 +64,7 @@ const WordProblemsGame = ({ onBack, score, setScore }) => {
         correct: false, 
         message: 'כמעט! בואי ננסה שוב 💪',
         correctAnswer: question.answer,
-        steps: question.steps
+        explanation: question.explanation
       });
     }
 
@@ -195,76 +99,95 @@ const WordProblemsGame = ({ onBack, score, setScore }) => {
         </div>
       </div>
 
-      <motion.div
-        className="question-card"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        key={question.text}
-      >
-        <div className="problem-badge">{question.emoji}</div>
-        <div className="problem-type-badge">{question.title}</div>
-        
-        <div className="problem-text">
-          {question.text}
-        </div>
+      {loading ? (
+        <motion.div
+          className="loading-spinner"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: '400px',
+            fontSize: '2rem'
+          }}
+        >
+          <div className="spinner" style={{ fontSize: '4rem', animation: 'spin 2s linear infinite' }}>🤖</div>
+          <p style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem' }}>יוצר שאלה חדשה...</p>
+        </motion.div>
+      ) : (
+        <motion.div
+          className="question-card"
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          key={question.text}
+        >
+          <div className="problem-badge">{question.emoji}</div>
+          <div className="problem-type-badge">{question.title}</div>
+          
+          <div className="problem-text">
+            {question.text}
+          </div>
 
-        <AnimatePresence mode="wait">
-          {!feedback ? (
-            <motion.div
-              className="answer-section"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <input
-                type="number"
-                className="answer-input"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
-                placeholder="התשובה שלך..."
-                autoFocus
-              />
-              <button
-                className="submit-button"
-                onClick={checkAnswer}
-                disabled={!userAnswer}
+          <AnimatePresence mode="wait">
+            {!feedback ? (
+              <motion.div
+                className="answer-section"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
-                בדוק תשובה ✓
-              </button>
-            </motion.div>
-          ) : (
-            <motion.div
-              className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0 }}
-            >
-              <div className="feedback-emoji">
-                {feedback.correct ? '🎉' : '💪'}
-              </div>
-              <h3 className="feedback-message">{feedback.message}</h3>
-              {feedback.correct && (
-                <p className="points-earned">+{feedback.points} נקודות!</p>
-              )}
-              {!feedback.correct && (
-                <p className="correct-answer">
-                  התשובה הנכונה: {feedback.correctAnswer}
-                </p>
-              )}
-              {feedback.steps && (
-                <div className="solution-steps">
-                  <h4>💡 פתרון:</h4>
-                  <pre>{feedback.steps}</pre>
+                <input
+                  type="number"
+                  className="answer-input"
+                  value={userAnswer}
+                  onChange={(e) => setUserAnswer(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                  placeholder="התשובה שלך..."
+                  autoFocus
+                />
+                <button
+                  className="submit-button"
+                  onClick={checkAnswer}
+                  disabled={!userAnswer}
+                >
+                  בדוק תשובה ✓
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                className={`feedback ${feedback.correct ? 'correct' : 'incorrect'}`}
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                exit={{ scale: 0 }}
+              >
+                <div className="feedback-emoji">
+                  {feedback.correct ? '🎉' : '💪'}
                 </div>
-              )}
-              <button className="next-button" onClick={nextQuestion}>
-                בעיה הבאה →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
+                <h3 className="feedback-message">{feedback.message}</h3>
+                {feedback.correct && (
+                  <p className="points-earned">+{feedback.points} נקודות!</p>
+                )}
+                {!feedback.correct && (
+                  <p className="correct-answer">
+                    התשובה הנכונה: {feedback.correctAnswer}
+                  </p>
+                )}
+                {feedback.explanation && (
+                  <div className="solution-steps">
+                    <h4>💡 הסבר:</h4>
+                    <p>{feedback.explanation}</p>
+                  </div>
+                )}
+                <button className="next-button" onClick={nextQuestion}>
+                  בעיה הבאה →
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      )}
 
       {streak >= 3 && (
         <motion.div
