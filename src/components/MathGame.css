@@ -66,6 +66,8 @@
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
   text-align: center;
   position: relative;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .operation-badge {

@@ -1,9 +1,7 @@
 // Helper function to convert text based on gender
 export const getGenderText = (text, gender) => {
-  console.log('getGenderText called with:', { text, gender });
   
   if (!gender || gender === 'female') {
-    console.log('Returning original text (female or no gender)');
     return text;
   }
   

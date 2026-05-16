@@ -14,17 +14,20 @@
   font-size: 3rem;
   opacity: 0.3;
   filter: blur(1px);
+  z-index: 1;
 }
 
 .star {
   position: absolute;
   font-size: 1.5rem;
   opacity: 0.4;
+  z-index: 1;
 }
 
 .bubble {
   position: absolute;
   bottom: -10vh;
+  z-index: 1;
 }
 
 .bubble-inner {
@@ -43,6 +46,7 @@
   position: absolute;
   opacity: 0.15;
   filter: blur(0.5px);
+  z-index: 1;
 }
 
 .shape-circle {
@@ -75,6 +79,7 @@
   background: white;
   border-radius: 50%;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+  z-index: 1;
 }
 
 /* Confetti particles */
@@ -83,6 +88,7 @@
   width: 10px;
   height: 10px;
   opacity: 0;
+  z-index: 1;
 }
 
 .confetti-rect {

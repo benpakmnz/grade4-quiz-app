@@ -31,6 +31,13 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
       emoji: '🔢'
     },
     {
+      id: 'orderOfOperations',
+      title: '🧮 סדר פעולות',
+      description: 'תרגילי חישוב ארוכים',
+      color: 'blue.500',
+      emoji: '🔢'
+    },
+    {
       id: 'decimalStructure',
       title: '🔟 מבנה עשרוני',
       description: 'ערך ספרות במספרים עד 10,000',

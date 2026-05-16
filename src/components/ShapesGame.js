@@ -11,150 +11,21 @@ const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [questionKey, setQuestionKey] = useState(0);
   const MAX_ATTEMPTS = 3;
 
-  const shapes = [
-    {
-      name: 'מרובע',
-      properties: 'יש לו 4 צלעות ו-4 זוויות',
-      svg: '<rect x="50" y="50" width="200" height="200" fill="#ff6b9d" stroke="#fff" stroke-width="4"/>',
-      sides: 4,
-      angles: 4
-    },
-    {
-      name: 'משולש',
-      properties: 'יש לו 3 צלעות ו-3 זוויות',
-      svg: '<polygon points="150,50 50,250 250,250" fill="#4ecdc4" stroke="#fff" stroke-width="4"/>',
-      sides: 3,
-      angles: 3
-    },
-    {
-      name: 'עיגול',
-      properties: 'אין לו צלעות וזוויות, הוא עגול לחלוטין',
-      svg: '<circle cx="150" cy="150" r="100" fill="#ffe66d" stroke="#fff" stroke-width="4"/>',
-      sides: 0,
-      angles: 0
-    },
-    {
-      name: 'מלבן',
-      properties: 'יש לו 4 צלעות ו-4 זוויות ישרות, 2 צלעות ארוכות ו-2 קצרות, הצלעות המקבילות שוות',
-      svg: '<rect x="50" y="80" width="200" height="140" fill="#a78bfa" stroke="#fff" stroke-width="4"/>',
-      sides: 4,
-      angles: 4
-    },
-    {
-      name: 'ריבוע',
-      properties: 'יש לו 4 צלעות שוות ו-4 זוויות ישרות, כל הצלעות באותו אורך',
-      svg: '<rect x="75" y="75" width="150" height="150" fill="#f472b6" stroke="#fff" stroke-width="4"/>',
-      sides: 4,
-      angles: 4,
-      equal: true
-    },
-    {
-      name: 'מקבילית',
-      properties: 'יש לה 4 צלעות ו-4 זוויות, הצלעות המקבילות שוות באורך, אבל הזוויות אינן ישרות',
-      svg: '<polygon points="80,100 220,100 250,200 50,200" fill="#10b981" stroke="#fff" stroke-width="4"/>',
-      sides: 4,
-      angles: 4
-    },
-    {
-      name: 'מחומש',
-      properties: 'יש לו 5 צלעות ו-5 זוויות',
-      svg: '<polygon points="150,50 250,120 210,230 90,230 50,120" fill="#fb923c" stroke="#fff" stroke-width="4"/>',
-      sides: 5,
-      angles: 5
-    },
-    {
-      name: 'משושה',
-      properties: 'יש לו 6 צלעות ו-6 זוויות',
-      svg: '<polygon points="150,50 230,95 230,185 150,230 70,185 70,95" fill="#34d399" stroke="#fff" stroke-width="4"/>',
-      sides: 6,
-      angles: 6
-    }
-  ];
-
-  const questionTypes = [
-    {
-      type: 'identify',
-      generate: (shape) => ({
-        question: 'איזו צורה זו?',
-        shape: shape,
-        correctAnswer: shape.name,
-        options: getRandomShapeNames(shape.name)
-      })
-    },
-    {
-      type: 'countSides',
-      generate: (shape) => ({
-        question: `כמה צלעות יש ל${shape.name}?`,
-        shape: shape,
-        correctAnswer: shape.sides.toString(),
-        options: [shape.sides - 1, shape.sides, shape.sides + 1, shape.sides + 2].map(n => n.toString()).filter(n => parseInt(n) >= 0)
-      })
-    },
-    {
-      type: 'countAngles',
-      generate: (shape) => ({
-        question: `כמה זוויות יש ל${shape.name}?`,
-        shape: shape,
-        correctAnswer: shape.angles.toString(),
-        options: [shape.angles - 1, shape.angles, shape.angles + 1, shape.angles + 2].map(n => n.toString()).filter(n => parseInt(n) >= 0)
-      })
-    },
-    {
-      type: 'properties',
-      generate: (shape) => ({
-        question: `מה נכון לגבי ${shape.name}?`,
-        shape: shape,
-        correctAnswer: shape.properties,
-        options: [shape.properties, ...getRandomProperties(shape.properties)]
-      })
-    }
-  ];
-
-  function getRandomShapeNames(correctName) {
-    const names = shapes.map(s => s.name).filter(n => n !== correctName);
-    const shuffled = names.sort(() => 0.5 - Math.random());
-    return [correctName, ...shuffled.slice(0, 3)].sort(() => 0.5 - Math.random());
-  }
-
-  function getRandomProperties(correctProp) {
-    const props = shapes.map(s => s.properties).filter(p => p !== correctProp);
-    return props.sort(() => 0.5 - Math.random()).slice(0, 3);
-  }
-
-  const generateQuestionWithAI = async () => {
+  const generateQuestion = async () => {
     setLoading(true);
+    setQuestionKey(prev => prev + 1);
     try {
-      const aiQuestion = await generateShapesQuestion();
-      setQuestion({
-        text: aiQuestion.question,
-        options: aiQuestion.options,
-        correctAnswer: aiQuestion.options[aiQuestion.correctIndex],
-        explanation: aiQuestion.explanation
-      });
+      const newQuestion = await generateShapesQuestion();
+      setQuestion(newQuestion);
     } catch (error) {
-      console.error('Error generating AI question:', error);
-      // Fallback to static question
-      generateStaticQuestion();
+      console.error('Error generating question:', error);
     }
     setLoading(false);
     setFeedback(null);
     setAttempts(0);
-  };
-
-  const generateStaticQuestion = () => {
-    const shape = shapes[Math.floor(Math.random() * shapes.length)];
-    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-    const q = questionType.generate(shape);
-    
-    setQuestion(q);
-    setFeedback(null);
-    setAttempts(0);
-  };
-
-  const generateQuestion = () => {
-    generateQuestionWithAI(); // Use AI by default
   };
 
   useEffect(() => {
@@ -162,7 +33,17 @@ const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   }, []);
 
   const checkAnswer = (selectedAnswer) => {
-    const isCorrect = selectedAnswer === question.correctAnswer;
+    // Support both correctAnswer (string) and correctIndex (number)
+    let isCorrect;
+    if (question.correctIndex !== undefined) {
+      // If correctIndex is provided, compare by index
+      const selectedIndex = question.options.indexOf(selectedAnswer);
+      isCorrect = selectedIndex === question.correctIndex;
+    } else {
+      // Otherwise, compare by value
+      isCorrect = selectedAnswer === question.correctAnswer;
+    }
+    
     const newAttempts = attempts + 1;
     
     if (isCorrect) {
@@ -262,7 +143,7 @@ const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
           className="question-card"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          key={question?.text || question?.question}
+          key={questionKey}
         >
           <h2 className="question-title">{question.text || question.question}</h2>
           
@@ -340,9 +221,9 @@ const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                 {feedback.correct && (
                   <p className="points-earned">+{feedback.points} נקודות!</p>
                 )}
-                {!feedback.correct && feedback.correctAnswer && (
+                {!feedback.correct && (question.correctAnswer || question.correctIndex !== undefined) && (
                   <p className="correct-answer">
-                    התשובה הנכונה: {feedback.correctAnswer}
+                    התשובה הנכונה: {question.correctAnswer || question.options[question.correctIndex]}
                   </p>
                 )}
                 {question.explanation && (

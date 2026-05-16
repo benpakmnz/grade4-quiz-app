@@ -12,10 +12,12 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [questionKey, setQuestionKey] = useState(0); // Add unique key for each question
   const MAX_ATTEMPTS = 3;
 
   const generateQuestion = async () => {
     setLoading(true);
+    setQuestionKey(prev => prev + 1); // Increment key for new question
     try {
       const problem = await generateWordProblem();
       setQuestion({
@@ -153,7 +155,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
           className="question-card"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          key={question.text}
+          key={questionKey}
         >
           <div className="problem-badge">{question.emoji}</div>
           <div className="problem-type-badge">{question.title}</div>
@@ -172,6 +174,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
               >
                 <input
                   type="number"
+                  min="0"
                   className="answer-input"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}
@@ -204,6 +207,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                 <h3 style={{ color: '#856404', marginBottom: '15px' }}>{feedback.message}</h3>
                 <input
                   type="number"
+                  min="0"
                   className="answer-input"
                   value={userAnswer}
                   onChange={(e) => setUserAnswer(e.target.value)}

@@ -10,6 +10,7 @@ import DataAnalysisGame from './components/DataAnalysisGame';
 import WordProblemsGame from './components/WordProblemsGame';
 import ShapesGame from './components/ShapesGame';
 import MeasurementsGame from './components/MeasurementsGame';
+import OrderOfOperationsGame from './components/OrderOfOperationsGame';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
 import ProfileEditDialog from './components/ProfileEditDialog';
@@ -35,6 +36,7 @@ function App() {
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Track success per category
   const [categoryStats, setCategoryStats] = useState({
@@ -44,7 +46,8 @@ function App() {
     dataAnalysis: { correct: 0, total: 0 },
     wordProblems: { correct: 0, total: 0 },
     shapes: { correct: 0, total: 0 },
-    measurements: { correct: 0, total: 0 }
+    measurements: { correct: 0, total: 0 },
+    orderOfOperations: { correct: 0, total: 0 }
   });
   
   const openAchievements = () => setShowAchievements(true);
@@ -77,6 +80,9 @@ function App() {
 
   // Load data from localStorage on mount
   useEffect(() => {
+    console.log('🔍 Loading from localStorage...');
+    console.log('All localStorage keys:', Object.keys(localStorage));
+    
     const savedScore = localStorage.getItem('quiz_score');
     const savedStreak = localStorage.getItem('quiz_streak');
     const savedQuestionCount = localStorage.getItem('quiz_questionCount');
@@ -84,6 +90,16 @@ function App() {
     const savedHistory = localStorage.getItem('quiz_history');
     const savedCategoryStats = localStorage.getItem('quiz_categoryStats');
     const hasSeenWelcome = localStorage.getItem('quiz_hasSeenWelcome');
+
+    console.log('📊 Loaded values:', {
+      score: savedScore,
+      streak: savedStreak,
+      questionCount: savedQuestionCount,
+      userData: savedUserData ? 'exists' : 'null',
+      history: savedHistory ? 'exists' : 'null',
+      categoryStats: savedCategoryStats ? 'exists' : 'null',
+      hasSeenWelcome
+    });
 
     if (savedScore) setScore(parseInt(savedScore));
     if (savedStreak) setStreak(parseInt(savedStreak));
@@ -103,34 +119,49 @@ function App() {
     }
     if (savedHistory) setGameHistory(JSON.parse(savedHistory));
     if (savedCategoryStats) setCategoryStats(JSON.parse(savedCategoryStats));
+    
+    // Mark initial load as complete
+    setIsInitialLoad(false);
   }, []);
 
-  // Save data to localStorage whenever it changes
+  // Save data to localStorage whenever it changes (but not on initial load)
   useEffect(() => {
+    if (isInitialLoad) return;
+    console.log('💾 Saving score to localStorage:', score);
     localStorage.setItem('quiz_score', score.toString());
-  }, [score]);
+  }, [score, isInitialLoad]);
 
   useEffect(() => {
+    if (isInitialLoad) return;
+    console.log('💾 Saving streak to localStorage:', streak);
     localStorage.setItem('quiz_streak', streak.toString());
-  }, [streak]);
+  }, [streak, isInitialLoad]);
 
   useEffect(() => {
+    if (isInitialLoad) return;
+    console.log('💾 Saving questionCount to localStorage:', questionCount);
     localStorage.setItem('quiz_questionCount', questionCount.toString());
-  }, [questionCount]);
+  }, [questionCount, isInitialLoad]);
 
   useEffect(() => {
+    if (isInitialLoad) return;
     if (userData) {
+      console.log('💾 Saving userData to localStorage:', userData);
       localStorage.setItem('quiz_userData', JSON.stringify(userData));
     }
-  }, [userData]);
+  }, [userData, isInitialLoad]);
 
   useEffect(() => {
+    if (isInitialLoad) return;
+    console.log('💾 Saving gameHistory to localStorage, length:', gameHistory.length);
     localStorage.setItem('quiz_history', JSON.stringify(gameHistory));
-  }, [gameHistory]);
+  }, [gameHistory, isInitialLoad]);
 
   useEffect(() => {
+    if (isInitialLoad) return;
+    console.log('💾 Saving categoryStats to localStorage');
     localStorage.setItem('quiz_categoryStats', JSON.stringify(categoryStats));
-  }, [categoryStats]);
+  }, [categoryStats, isInitialLoad]);
 
   const handleWelcomeComplete = (data) => {
     console.log('handleWelcomeComplete - received data:', data);
@@ -165,18 +196,31 @@ function App() {
   };
 
   const updateCategoryStats = (category, isCorrect) => {
-    setCategoryStats(prev => ({
-      ...prev,
-      [category]: {
-        correct: prev[category].correct + (isCorrect ? 1 : 0),
-        total: prev[category].total + 1
+    setCategoryStats(prev => {
+      // Ensure the category exists, if not initialize it
+      if (!prev[category]) {
+        return {
+          ...prev,
+          [category]: {
+            correct: isCorrect ? 1 : 0,
+            total: 1
+          }
+        };
       }
-    }));
+      
+      return {
+        ...prev,
+        [category]: {
+          correct: prev[category].correct + (isCorrect ? 1 : 0),
+          total: prev[category].total + 1
+        }
+      };
+    });
   };
 
   const calculateSuccessRate = (category) => {
     const stats = categoryStats[category];
-    if (stats.total === 0) return 0;
+    if (!stats || stats.total === 0) return 0;
     
     // 30 correct answers = 100%
     const TARGET_FOR_100 = 30;
@@ -299,6 +343,18 @@ function App() {
           onAddHistory={(result) => addToHistory('measurements', result)}
           userData={userData}
           onAnswer={(isCorrect) => updateCategoryStats('measurements', isCorrect)}
+        />;
+      case 'orderOfOperations':
+        return <OrderOfOperationsGame 
+          onBack={() => setCurrentGame('home')} 
+          score={score} 
+          setScore={setScore}
+          streak={streak}
+          setStreak={setStreak}
+          questionCount={questionCount}
+          setQuestionCount={setQuestionCount}
+          userData={userData}
+          onAnswer={(isCorrect) => updateCategoryStats('orderOfOperations', isCorrect)}
         />;
       default:
         return null;

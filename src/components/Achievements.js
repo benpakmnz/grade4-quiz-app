@@ -38,11 +38,12 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
       { id: 'wordProblems', name: 'בעיות מילוליות', emoji: '🤔' },
       { id: 'dataAnalysis', name: 'חקר נתונים', emoji: '📈' },
       { id: 'shapes', name: 'צורות הנדסיות', emoji: '📐' },
-      { id: 'measurements', name: 'מדידות', emoji: '⚖️' }
+      { id: 'measurements', name: 'מדידות', emoji: '⚖️' },
+      { id: 'orderOfOperations', name: 'סדר פעולות', emoji: '🔢' }
     ];
 
     const categoryRates = categories.map(cat => {
-      const stats = categoryStats[cat.id];
+      const stats = categoryStats[cat.id] || { correct: 0, total: 0 };
       const rate = stats.total > 0 ? (stats.correct / stats.total) * 100 : 0;
       return { ...cat, ...stats, rate };
     }).filter(cat => cat.total > 0);
@@ -62,7 +63,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
   const daysUntilExam = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
   
   const TARGET_PER_CATEGORY = 30;
-  const totalTarget = TARGET_PER_CATEGORY * 7; // 7 categories
+  const totalTarget = TARGET_PER_CATEGORY * 8; // 8 categories
   const stats = calculateOverallStats();
   const insights = getCategoryInsights();
   
@@ -415,11 +416,18 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
                   
                   <div className="category-stats">
                     <div className="category-numbers">
-                      <span className="correct-count">✅ {cat.correct}</span>
-                      <span className="total-count">📝 {cat.total}</span>
+                      <span className="correct-count" title="תשובות נכונות">
+                        <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>נכונות: </span>
+                        ✅ {cat.correct}
+                      </span>
+                      <span className="total-count" title="סה״כ שאלות">
+                        <span style={{ fontSize: '0.85rem', opacity: 0.8 }}>סה״כ: </span>
+                        📝 {cat.total}
+                      </span>
                       <span className="rate-badge" style={{
                         background: cat.rate >= 80 ? '#10b981' : cat.rate >= 60 ? '#f59e0b' : '#ef4444'
-                      }}>
+                      }} title="אחוז הצלחה">
+                        <span style={{ fontSize: '0.75rem', opacity: 0.9, marginLeft: '4px' }}>הצלחה:</span>
                         {Math.round(cat.rate)}%
                       </span>
                     </div>
@@ -431,14 +439,16 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
                           background: cat.rate >= 80 ? '#10b981' : cat.rate >= 60 ? '#f59e0b' : '#ef4444'
                         }}
                         initial={{ width: 0 }}
-                        animate={{ width: `${cat.rate}%` }}
+                        animate={{ width: `${Math.min(100, (cat.correct / TARGET_PER_CATEGORY) * 100)}%` }}
                         transition={{ duration: 0.8, delay: index * 0.1 }}
                       />
                     </div>
                     
                     <div className="category-goal">
                       <span>יעד: {cat.correct} / {TARGET_PER_CATEGORY}</span>
-                      <span>{Math.round((cat.correct / TARGET_PER_CATEGORY) * 100)}%</span>
+                      <span style={{ fontWeight: 'bold', color: cat.correct >= TARGET_PER_CATEGORY ? '#10b981' : '#667eea' }}>
+                        {Math.round((cat.correct / TARGET_PER_CATEGORY) * 100)}% מהיעד
+                      </span>
                     </div>
                   </div>
                 </motion.div>

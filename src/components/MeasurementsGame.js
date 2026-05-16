@@ -12,141 +12,22 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [questionCount, setQuestionCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
+  const [questionKey, setQuestionKey] = useState(0);
   const MAX_ATTEMPTS = 3;
 
-  const questionTypes = [
-    {
-      type: 'area',
-      name: 'שטח',
-      emoji: '📐',
-      generate: () => {
-        const shapes = [
-          {
-            name: 'מלבן',
-            generate: () => {
-              const length = Math.floor(Math.random() * 10) + 3;
-              const width = Math.floor(Math.random() * 8) + 2;
-              const area = length * width;
-              return {
-                text: `חשבו את השטח של מלבן שאורכו ${length} ס"מ ורוחבו ${width} ס"מ`,
-                answer: area,
-                unit: 'ס"מ²',
-                explanation: `שטח = אורך × רוחב = ${length} × ${width} = ${area} ס"מ²`
-              };
-            }
-          },
-          {
-            name: 'ריבוע',
-            generate: () => {
-              const side = Math.floor(Math.random() * 10) + 3;
-              const area = side * side;
-              return {
-                text: `חשבו את השטח של ריבוע שאורך צלעו ${side} ס"מ`,
-                answer: area,
-                unit: 'ס"מ²',
-                explanation: `שטח = צלע × צלע = ${side} × ${side} = ${area} ס"מ²`
-              };
-            }
-          }
-        ];
-        
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        return shape.generate();
-      }
-    },
-    {
-      type: 'perimeter',
-      name: 'היקף',
-      emoji: '📏',
-      generate: () => {
-        const shapes = [
-          {
-            name: 'מלבן',
-            generate: () => {
-              const length = Math.floor(Math.random() * 10) + 3;
-              const width = Math.floor(Math.random() * 8) + 2;
-              const perimeter = 2 * (length + width);
-              return {
-                text: `חשבו את ההיקף של מלבן שאורך צלעותיו הן ${length} ס"מ ו-${width} ס"מ`,
-                answer: perimeter,
-                unit: 'ס"מ',
-                explanation: `היקף = ${length} + ${width} + ${length} + ${width} = ${perimeter} ס"מ`
-              };
-            }
-          },
-          {
-            name: 'ריבוע',
-            generate: () => {
-              const side = Math.floor(Math.random() * 10) + 3;
-              const perimeter = 4 * side;
-              return {
-                text: `חשבו את ההיקף של ריבוע שאורך צלעו ${side} ס"מ`,
-                answer: perimeter,
-                unit: 'ס"מ',
-                explanation: `היקף = ${side} + ${side} + ${side} + ${side} = ${perimeter} ס"מ`
-              };
-            }
-          },
-          {
-            name: 'משולש',
-            generate: () => {
-              const side1 = Math.floor(Math.random() * 8) + 3;
-              const side2 = Math.floor(Math.random() * 8) + 3;
-              const side3 = Math.floor(Math.random() * 8) + 3;
-              const perimeter = side1 + side2 + side3;
-              return {
-                text: `חשבו את ההיקף של משולש שאורך צלעותיו הן ${side1} ס"מ, ${side2} ס"מ ו-${side3} ס"מ`,
-                answer: perimeter,
-                unit: 'ס"מ',
-                explanation: `היקף = ${side1} + ${side2} + ${side3} = ${perimeter} ס"מ`
-              };
-            }
-          }
-        ];
-        
-        const shape = shapes[Math.floor(Math.random() * shapes.length)];
-        return shape.generate();
-      }
-    }
-  ];
-
-  const generateQuestionWithAI = async () => {
+  const generateQuestion = async () => {
     setLoading(true);
+    setQuestionKey(prev => prev + 1);
     try {
-      const aiQuestion = await generateMeasurementsQuestion();
-      setQuestion({
-        text: aiQuestion.question,
-        answer: aiQuestion.answer,
-        unit: aiQuestion.unit,
-        explanation: aiQuestion.explanation,
-        emoji: '📏'
-      });
+      const newQuestion = await generateMeasurementsQuestion();
+      setQuestion(newQuestion);
     } catch (error) {
-      console.error('Error generating AI question:', error);
-      // Fallback to static question
-      generateStaticQuestion();
+      console.error('Error generating question:', error);
     }
     setLoading(false);
     setUserAnswer('');
     setFeedback(null);
-  };
-
-  const generateStaticQuestion = () => {
-    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-    const q = questionType.generate();
-    
-    setQuestion({
-      ...q,
-      emoji: questionType.emoji,
-      type: questionType.name
-    });
-    setUserAnswer('');
-    setFeedback(null);
     setAttempts(0);
-  };
-
-  const generateQuestion = () => {
-    generateStaticQuestion(); // Use static questions for area and perimeter
   };
 
   useEffect(() => {
@@ -255,7 +136,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
           className="question-card"
           initial={{ scale: 0.8, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          key={question.text}
+          key={questionKey}
         >
           <div className="measurement-badge">{question.emoji}</div>
           {question.type && <div className="measurement-type">{question.type}</div>}
@@ -275,6 +156,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                 <div className="answer-input-group">
                   <input
                   type="number"
+                  min="0"
                   step="0.01"
                   className="answer-input"
                   value={userAnswer}
@@ -311,6 +193,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
               <div className="answer-input-group">
                 <input
                   type="number"
+                  min="0"
                   step="0.01"
                   className="answer-input"
                   value={userAnswer}

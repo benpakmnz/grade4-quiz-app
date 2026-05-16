@@ -3,108 +3,132 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getGenderText } from '../utils/genderText';
 import './MathGame.css';
 
-const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, questionCount, setQuestionCount, userData, onAnswer }) => {
+const OrderOfOperationsGame = ({ onBack, score, setScore, streak, setStreak, questionCount, setQuestionCount, userData, onAnswer }) => {
   const [question, setQuestion] = useState(null);
   const [userAnswer, setUserAnswer] = useState('');
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const MAX_ATTEMPTS = 3;
 
-  const questionTypes = [
-    { type: 'digitValue', name: 'ערך ספרה', emoji: '🔟' },
-    { type: 'digitChange', name: 'שינוי ספרה', emoji: '🔄' },
-    { type: 'placeValue', name: 'מקום ספרה', emoji: '📍' },
-    { type: 'comparison', name: 'השוואת מספרים', emoji: '⚖️' },
-    { type: 'rounding', name: 'עיגול', emoji: '🎯' }
-  ];
-
   const generateQuestion = () => {
-    const questionType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
-    let number, digit, position, answer, questionText, numberStr;
+    const questionTypes = [
+      'multiplyFirst',      // כפל לפני חיבור/חיסור
+      'divideFirst',        // חילוק לפני חיבור/חיסור
+      'parentheses',        // סוגריים
+      'mixed',              // מעורב
+      'leftToRight'         // שתי פעולות באותה עדיפות
+    ];
 
-    if (questionType.type === 'digitValue') {
-      // שאלה: מה ערך הספרה X במספר Y?
-      number = Math.floor(Math.random() * 9000) + 1000; // מספר בין 1000-9999
-      const numberStr = number.toString();
-      position = Math.floor(Math.random() * numberStr.length);
-      digit = numberStr[position];
-      
-      // חישוב ערך הספרה
-      const placeValue = Math.pow(10, numberStr.length - position - 1);
-      answer = parseInt(digit) * placeValue;
-      
-      questionText = `מה ערך הספרה ${digit} במספר ${number.toLocaleString('he-IL')}?`;
-      
-    } else if (questionType.type === 'digitChange') {
-      // שאלה: במספר X החליפו את הספרה Y בספרה Z, בכמה קטן/גדול המספר?
-      let validNumber = false;
-      let oldDigit;
-      
-      // חפש מספר שבו הספרה שנבחרה מופיעה רק פעם אחת
-      while (!validNumber) {
-        number = Math.floor(Math.random() * 9000) + 1000;
-        numberStr = number.toString();
-        position = Math.floor(Math.random() * numberStr.length);
-        oldDigit = parseInt(numberStr[position]);
+    const type = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+    let expression, answer, explanation;
+
+    switch (type) {
+      case 'multiplyFirst':
+        // דוגמה: 5 + 3 × 2 = 5 + 6 = 11
+        const a1 = Math.floor(Math.random() * 10) + 1;
+        const b1 = Math.floor(Math.random() * 9) + 2;
+        const c1 = Math.floor(Math.random() * 9) + 2;
+        const operation1 = Math.random() < 0.5 ? '+' : '-';
         
-        // בדוק שהספרה מופיעה רק פעם אחת במספר
-        const digitCount = numberStr.split('').filter(d => parseInt(d) === oldDigit).length;
-        if (digitCount === 1) {
-          validNumber = true;
+        if (operation1 === '+') {
+          expression = `${a1} + ${b1} × ${c1}`;
+          answer = a1 + (b1 * c1);
+          explanation = `קודם כפל: ${b1} × ${c1} = ${b1 * c1}, אחר כך חיבור: ${a1} + ${b1 * c1} = ${answer}`;
+        } else {
+          const a1_adjusted = Math.floor(Math.random() * 20) + (b1 * c1); // וודא שהתוצאה חיובית
+          expression = `${a1_adjusted} - ${b1} × ${c1}`;
+          answer = a1_adjusted - (b1 * c1);
+          explanation = `קודם כפל: ${b1} × ${c1} = ${b1 * c1}, אחר כך חיסור: ${a1_adjusted} - ${b1 * c1} = ${answer}`;
         }
-      }
-      
-      let newDigit;
-      
-      // בחר ספרה חדשה שונה
-      do {
-        newDigit = Math.floor(Math.random() * 10);
-      } while (newDigit === oldDigit);
-      
-      const placeValue = Math.pow(10, numberStr.length - position - 1);
-      const difference = (newDigit - oldDigit) * placeValue;
-      answer = Math.abs(difference);
-      
-      const changeType = difference > 0 ? 'גדול' : 'קטן';
-      questionText = `במספר ${number.toLocaleString('he-IL')} החליפו את הספרה ${oldDigit} בספרה ${newDigit}. בכמה ${changeType} המספר החדש שהתקבל?`;
-    
-    } else if (questionType.type === 'placeValue') {
-      // שאלה: באיזה מקום נמצאת הספרה X במספר Y?
-      number = Math.floor(Math.random() * 9000) + 1000;
-      const numberStr = number.toString();
-      position = Math.floor(Math.random() * numberStr.length);
-      digit = numberStr[position];
-      
-      const placeNames = ['אלפים', 'מאות', 'עשרות', 'יחידות'];
-      const placeValues = [1000, 100, 10, 1];
-      answer = placeValues[position];
-      
-      questionText = `במספר ${number.toLocaleString('he-IL')}, הספרה ${digit} נמצאת במקום ה___. מה ערך המקום?`;
-    
-    } else if (questionType.type === 'comparison') {
-      // שאלה: מה ההפרש בין שני מספרים?
-      const num1 = Math.floor(Math.random() * 5000) + 1000;
-      const num2 = Math.floor(Math.random() * 5000) + 1000;
-      answer = Math.abs(num1 - num2);
-      
-      questionText = `מה ההפרש בין ${Math.max(num1, num2).toLocaleString('he-IL')} ל-${Math.min(num1, num2).toLocaleString('he-IL')}?`;
-    
-    } else if (questionType.type === 'rounding') {
-      // שאלה: עיגול למאות/עשרות הקרובות
-      number = Math.floor(Math.random() * 9000) + 1000;
-      const roundTo = Math.random() < 0.5 ? 100 : 10; // עיגול למאות או לעשרות
-      answer = Math.round(number / roundTo) * roundTo;
-      
-      const roundName = roundTo === 100 ? 'מאות' : 'עשרות';
-      questionText = `עגלו את המספר ${number.toLocaleString('he-IL')} ל${roundName} הקרובות`;
+        break;
+
+      case 'divideFirst':
+        // דוגמה: 20 ÷ 4 + 3 = 5 + 3 = 8
+        const divisor = Math.floor(Math.random() * 4) + 2; // 2-5
+        const quotient = Math.floor(Math.random() * 8) + 2; // 2-9
+        const dividend = divisor * quotient;
+        const addend = Math.floor(Math.random() * 10) + 1;
+        const operation2 = Math.random() < 0.5 ? '+' : '-';
+        
+        if (operation2 === '+') {
+          expression = `${dividend} ÷ ${divisor} + ${addend}`;
+          answer = quotient + addend;
+          explanation = `קודם חילוק: ${dividend} ÷ ${divisor} = ${quotient}, אחר כך חיבור: ${quotient} + ${addend} = ${answer}`;
+        } else {
+          expression = `${dividend} ÷ ${divisor} - ${addend}`;
+          answer = quotient - addend;
+          explanation = `קודם חילוק: ${dividend} ÷ ${divisor} = ${quotient}, אחר כך חיסור: ${quotient} - ${addend} = ${answer}`;
+        }
+        break;
+
+      case 'parentheses':
+        // דוגמה: (8 - 2) × 3 = 6 × 3 = 18
+        const num1 = Math.floor(Math.random() * 15) + 5;
+        const num2 = Math.floor(Math.random() * (num1 - 1)) + 1;
+        const num3 = Math.floor(Math.random() * 8) + 2;
+        const innerOp = Math.random() < 0.5 ? '+' : '-';
+        const outerOp = Math.random() < 0.5 ? '×' : '÷';
+        
+        if (innerOp === '+' && outerOp === '×') {
+          expression = `(${num1} + ${num2}) × ${num3}`;
+          const innerResult = num1 + num2;
+          answer = innerResult * num3;
+          explanation = `קודם סוגריים: ${num1} + ${num2} = ${innerResult}, אחר כך כפל: ${innerResult} × ${num3} = ${answer}`;
+        } else if (innerOp === '-' && outerOp === '×') {
+          expression = `(${num1} - ${num2}) × ${num3}`;
+          const innerResult = num1 - num2;
+          answer = innerResult * num3;
+          explanation = `קודם סוגריים: ${num1} - ${num2} = ${innerResult}, אחר כך כפל: ${innerResult} × ${num3} = ${answer}`;
+        } else if (innerOp === '+' && outerOp === '÷') {
+          const sum = num1 + num2;
+          const divisor2 = [2, 3, 4, 5].find(d => sum % d === 0) || 1;
+          expression = `(${num1} + ${num2}) ÷ ${divisor2}`;
+          answer = sum / divisor2;
+          explanation = `קודם סוגריים: ${num1} + ${num2} = ${sum}, אחר כך חילוק: ${sum} ÷ ${divisor2} = ${answer}`;
+        } else {
+          const diff = num1 - num2;
+          const divisor3 = [2, 3, 4, 5].find(d => diff % d === 0) || 1;
+          expression = `(${num1} - ${num2}) ÷ ${divisor3}`;
+          answer = diff / divisor3;
+          explanation = `קודם סוגריים: ${num1} - ${num2} = ${diff}, אחר כך חילוק: ${diff} ÷ ${divisor3} = ${answer}`;
+        }
+        break;
+
+      case 'mixed':
+        // דוגמה: 10 + 6 ÷ 2 - 1 = 10 + 3 - 1 = 12
+        const n1 = Math.floor(Math.random() * 15) + 5;
+        const div = Math.floor(Math.random() * 3) + 2;
+        const n2 = div * (Math.floor(Math.random() * 5) + 2);
+        const n3 = Math.floor(Math.random() * 5) + 1;
+        
+        expression = `${n1} + ${n2} ÷ ${div} - ${n3}`;
+        const divResult = n2 / div;
+        answer = n1 + divResult - n3;
+        explanation = `קודם חילוק: ${n2} ÷ ${div} = ${divResult}, אחר כך משמאל לימין: ${n1} + ${divResult} - ${n3} = ${answer}`;
+        break;
+
+      case 'leftToRight':
+        // דוגמה: 20 - 5 + 3 = 15 + 3 = 18
+        const start = Math.floor(Math.random() * 20) + 10;
+        const sub = Math.floor(Math.random() * (start - 5)) + 1;
+        const add = Math.floor(Math.random() * 10) + 1;
+        
+        expression = `${start} - ${sub} + ${add}`;
+        answer = start - sub + add;
+        explanation = `משמאל לימין: ${start} - ${sub} = ${start - sub}, אחר כך: ${start - sub} + ${add} = ${answer}`;
+        break;
+
+      default:
+        expression = '2 + 2';
+        answer = 4;
+        explanation = '2 + 2 = 4';
     }
 
-    setQuestion({ 
-      type: questionType.type,
-      text: questionText,
+    setQuestion({
+      expression,
       answer,
-      emoji: questionType.emoji,
-      name: questionType.name
+      explanation,
+      type
     });
     setUserAnswer('');
     setFeedback(null);
@@ -120,12 +144,11 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
     const newAttempts = attempts + 1;
     
     if (isCorrect) {
-      // Notify parent component
       if (onAnswer) {
         onAnswer(true);
       }
       
-      const points = 15 + (streak * 5); // נקודות גבוהות יותר לשאלות מבנה עשרוני
+      const points = 20 + (streak * 5);
       setScore(score + points);
       setStreak(streak + 1);
       setFeedback({ 
@@ -136,11 +159,11 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
           'כל הכבוד! 🌟',
           getGenderText('מדהים! 🚀', userData?.gender)
         ][Math.floor(Math.random() * 4)],
-        points
+        points,
+        explanation: question.explanation
       });
       setQuestionCount(questionCount + 1);
     } else if (newAttempts < MAX_ATTEMPTS) {
-      // עוד יש ניסיונות
       setAttempts(newAttempts);
       const attemptsLeft = MAX_ATTEMPTS - newAttempts;
       setFeedback({
@@ -151,7 +174,6 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
       });
       setUserAnswer('');
     } else {
-      // נגמרו הניסיונות
       if (onAnswer) {
         onAnswer(false);
       }
@@ -161,7 +183,8 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
         correct: false,
         isRetry: false,
         message: 'נגמרו הניסיונות 😔',
-        correctAnswer: question.answer
+        correctAnswer: question.answer,
+        explanation: question.explanation
       });
       setQuestionCount(questionCount + 1);
     }
@@ -199,21 +222,22 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
         className="question-card"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        key={question.text}
+        key={question.expression}
       >
-        <div className="operation-badge">{question.emoji}</div>
-        <h2 className="question-title">{question.name}</h2>
+        <div className="operation-badge">🧮</div>
+        <h2 className="question-title">סדר פעולות חשבון</h2>
         
         <div className="question-display">
-          <div className="question-text" style={{ 
-            fontSize: '1.5rem', 
-            lineHeight: '2',
-            padding: '30px',
-            background: '#f8f9fa',
-            borderRadius: '20px',
-            marginBottom: '30px'
+          <div className="horizontal-display" style={{
+            fontSize: '3rem',
+            fontWeight: 'bold',
+            color: '#667eea',
+            margin: '40px 0',
+            fontFamily: 'monospace',
+            letterSpacing: '8px',
+            direction: 'ltr'
           }}>
-            {question.text}
+            {question.expression} = ?
           </div>
         </div>
 
@@ -288,10 +312,16 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
               {feedback.correct && (
                 <p className="points-earned">+{feedback.points} נקודות!</p>
               )}
-              {!feedback.correct && feedback.correctAnswer && (
+              {!feedback.correct && feedback.correctAnswer !== undefined && (
                 <p className="correct-answer">
-                  התשובה הנכונה: {feedback.correctAnswer.toLocaleString('he-IL')}
+                  התשובה הנכונה: {feedback.correctAnswer}
                 </p>
+              )}
+              {feedback.explanation && (
+                <div className="solution-steps">
+                  <h4>💡 פתרון:</h4>
+                  <p>{feedback.explanation}</p>
+                </div>
               )}
               <button className="next-button" onClick={nextQuestion}>
                 שאלה הבאה →
@@ -330,4 +360,4 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
   );
 };
 
-export default DecimalStructureGame;
+export default OrderOfOperationsGame;

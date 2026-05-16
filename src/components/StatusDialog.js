@@ -36,11 +36,12 @@ const StatusDialog = ({ onClose, userData, categoryStats }) => {
       { id: 'wordProblems', name: 'בעיות מילוליות', emoji: '🤔' },
       { id: 'dataAnalysis', name: 'חקר נתונים', emoji: '📈' },
       { id: 'shapes', name: 'צורות הנדסיות', emoji: '📐' },
-      { id: 'measurements', name: 'מדידות', emoji: '⚖️' }
+      { id: 'measurements', name: 'מדידות', emoji: '⚖️' },
+      { id: 'orderOfOperations', name: 'סדר פעולות', emoji: '🔢' }
     ];
 
     const categoryProgress = categories.map(cat => {
-      const stats = categoryStats[cat.id];
+      const stats = categoryStats[cat.id] || { correct: 0, total: 0 };
       const progress = Math.round((stats.correct / TARGET_PER_CATEGORY) * 100);
       const rate = stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
       return { ...cat, ...stats, progress, rate };
@@ -65,7 +66,7 @@ const StatusDialog = ({ onClose, userData, categoryStats }) => {
   const daysUntilExam = Math.ceil((examDate - today) / (1000 * 60 * 60 * 24));
   
   // Calculate recommended daily practice
-  const remainingToTarget = (TARGET_PER_CATEGORY * 7) - stats.totalCorrect;
+  const remainingToTarget = (TARGET_PER_CATEGORY * 8) - stats.totalCorrect;
   const recommendedDaily = daysUntilExam > 0 ? Math.ceil(remainingToTarget / daysUntilExam) : 0;
 
   return (
@@ -85,6 +86,7 @@ const StatusDialog = ({ onClose, userData, categoryStats }) => {
       >
         <div className="status-dialog-header">
           <h2>👋 {getGenderText('שלום שוב', userData?.gender)} {userData?.name}!</h2>
+          <p className="status-subtitle">כל ההתקדמות שלך נשמרה ✅</p>
           <div className="status-character">{userData?.character?.emoji}</div>
         </div>
 
