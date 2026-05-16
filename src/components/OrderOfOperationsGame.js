@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGenderText } from '../utils/genderText';
 import './MathGame.css';
@@ -202,20 +202,7 @@ const OrderOfOperationsGame = ({ onBack, score, setScore, streak, setStreak, que
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">סדר פעולות חשבון</h2>
       </div>
 
       <motion.div
@@ -228,15 +215,7 @@ const OrderOfOperationsGame = ({ onBack, score, setScore, streak, setStreak, que
         <h2 className="question-title">סדר פעולות חשבון</h2>
         
         <div className="question-display">
-          <div className="horizontal-display" style={{
-            fontSize: '3rem',
-            fontWeight: 'bold',
-            color: '#667eea',
-            margin: '40px 0',
-            fontFamily: 'monospace',
-            letterSpacing: '8px',
-            direction: 'ltr'
-          }}>
+          <div className="horizontal-display order-of-operations-expression">
             {question.expression} = ?
           </div>
         </div>
@@ -262,9 +241,7 @@ const OrderOfOperationsGame = ({ onBack, score, setScore, streak, setStreak, que
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : feedback.isRetry ? (
             <motion.div
@@ -294,9 +271,7 @@ const OrderOfOperationsGame = ({ onBack, score, setScore, streak, setStreak, que
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : (
             <motion.div

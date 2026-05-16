@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateMeasurementsQuestion } from '../services/geminiService';
 import { getGenderText } from '../utils/genderText';
@@ -10,21 +10,14 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
   const [feedback, setFeedback] = useState(null);
   const [streak, setStreak] = useState(0);
   const [questionCount, setQuestionCount] = useState(0);
-  const [loading, setLoading] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const [questionKey, setQuestionKey] = useState(0);
   const MAX_ATTEMPTS = 3;
 
   const generateQuestion = async () => {
-    setLoading(true);
     setQuestionKey(prev => prev + 1);
-    try {
-      const newQuestion = await generateMeasurementsQuestion();
-      setQuestion(newQuestion);
-    } catch (error) {
-      console.error('Error generating question:', error);
-    }
-    setLoading(false);
+    const newQuestion = await generateMeasurementsQuestion();
+    setQuestion(newQuestion);
     setUserAnswer('');
     setFeedback(null);
     setAttempts(0);
@@ -91,7 +84,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
     generateQuestion();
   };
 
-  if (!question && !loading) return null;
+  if (!question) return null;
 
   return (
     <div className="measurements-game">
@@ -99,51 +92,21 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">מדידות - היקף ושטח</h2>
       </div>
 
-      {loading ? (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '400px',
-            fontSize: '2rem'
-          }}
-        >
-          <div style={{ fontSize: '4rem', animation: 'spin 2s linear infinite' }}>🤖</div>
-          <p style={{ marginTop: '20px', color: 'white', fontSize: '1.5rem' }}>יוצר שאלה חדשה...</p>
-        </motion.div>
-      ) : (
-        <motion.div
-          className="question-card"
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          key={questionKey}
-        >
-          <div className="measurement-badge">{question.emoji}</div>
-          {question.type && <div className="measurement-type">{question.type}</div>}
-          
-          <div className="question-text">
-            {question.text}
-          </div>
+      <motion.div
+        className="question-card"
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        key={questionKey}
+      >
+        <div className="measurement-badge">{question.emoji}</div>
+        {question.type && <div className="measurement-type">{question.type}</div>}
+        
+        <div className="question-text">
+          {question.question}
+        </div>
 
           <AnimatePresence mode="wait">
             {!feedback ? (
@@ -171,9 +134,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : feedback.isRetry ? (
             <motion.div
@@ -208,9 +169,7 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : (
             <motion.div
@@ -244,7 +203,6 @@ const MeasurementsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
           )}
         </AnimatePresence>
       </motion.div>
-      )}
 
       {streak >= 3 && (
         <motion.div

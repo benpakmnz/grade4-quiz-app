@@ -132,11 +132,14 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
                     boxShadow: '2xl',
                   }}
                   transition="all 0.3s"
-                  aspectRatio="1"
+                  aspectRatio={{ base: "auto", md: "1" }}
+                  minH={{ base: "auto", md: "auto" }}
                   w="100%"
                   display="flex"
                   flexDirection="column"
                   justifyContent="space-between"
+                  py={{ base: 4, md: 6 }}
+                  px={{ base: 4, md: 6 }}
                 >
                   {/* Success Rate Badge */}
                   <Box

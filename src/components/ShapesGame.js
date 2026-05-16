@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateShapesQuestion } from '../services/geminiService';
 import { getGenderText } from '../utils/genderText';
@@ -106,20 +106,7 @@ const ShapesGame = ({ onBack, score, setScore, onAnswer, userData }) => {
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">גיאומטריה וצורות</h2>
       </div>
 
       {loading ? (

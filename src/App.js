@@ -22,6 +22,7 @@ import {
   Text,
   Button,
   HStack,
+  VStack,
   Badge,
 } from '@chakra-ui/react';
 
@@ -384,7 +385,13 @@ function App() {
           w="100vw"
         >
           <Box maxW="100%" px={8}>
-            <HStack justify="space-between" py={3} spacing={4}>
+            {/* Desktop: Single row with name on right, stats on left */}
+            <HStack 
+              justify="space-between" 
+              py={3} 
+              spacing={4}
+              display={{ base: 'none', md: 'flex' }}
+            >
               {/* Right Side - Greeting with Character */}
               {userData && (
                 <HStack spacing={2}>
@@ -406,19 +413,7 @@ function App() {
                 </HStack>
               )}
   
-              {/* Center - Title with Icon */}
-              <HStack spacing={2}>
-                <Text fontSize="2xl">🎮</Text>
-                <Text 
-                  fontSize="lg" 
-                  fontWeight="bold" 
-                  color={userData?.themeColor || 'purple.600'}
-                >
-                  תרגול למבחן בחשבון כיתה ד'
-                </Text>
-              </HStack>
-  
-              {/* Left Side - Stats & Achievements */}
+              {/* Left Side - Stats & Achievements with Labels */}
               <HStack spacing={3}>
                 <Badge
                   fontSize="md"
@@ -456,7 +451,7 @@ function App() {
                   ההישגים שלי
                 </Button>
 
-                {/* Exam Countdown - Compact */}
+                {/* Exam Countdown */}
                 <Badge
                   fontSize="sm"
                   px={3}
@@ -477,6 +472,93 @@ function App() {
                 </Badge>
               </HStack>
             </HStack>
+
+            {/* Mobile: Two rows - name on top, compact stats on bottom */}
+            <VStack 
+              spacing={2} 
+              py={3}
+              display={{ base: 'flex', md: 'none' }}
+            >
+              {/* Top Row - Greeting with Character */}
+              {userData && (
+                <HStack spacing={2} w="full" justify="center">
+                  <Text fontSize="3xl" className="character-buddy">
+                    {userData.character.emoji}
+                  </Text>
+                  <Text 
+                    fontSize="lg" 
+                    fontWeight="bold" 
+                    color={userData.themeColor || 'purple.600'}
+                    cursor="pointer"
+                    onClick={openProfileEdit}
+                    _hover={{ textDecoration: 'underline', transform: 'scale(1.05)' }}
+                    transition="all 0.3s"
+                    title="לחץ לעריכת פרופיל"
+                  >
+                    שלום {userData.name}! 👋
+                  </Text>
+                </HStack>
+              )}
+  
+              {/* Bottom Row - Compact Stats (icons only) */}
+              <HStack spacing={3} w="full" justify="center">
+                <Badge
+                  fontSize="lg"
+                  px={3}
+                  py={2}
+                  borderRadius="full"
+                  bg={userData?.themeColor || "purple.500"}
+                  bgGradient={`linear(to-r, ${userData?.themeColor || "pink.400"}, ${adjustColor(userData?.themeColor || "#667eea", -20)})`}
+                  color="white"
+                  boxShadow="md"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <Text fontWeight="bold" fontSize="xl">{score}</Text>
+                  <Text fontSize="xl">⭐</Text>
+                </Badge>
+  
+                <Button
+                  size="sm"
+                  colorScheme="yellow"
+                  borderRadius="full"
+                  boxShadow="md"
+                  onClick={() => {
+                    console.log('Opening achievements, current state:', showAchievements);
+                    openAchievements();
+                  }}
+                  px={3}
+                  py={2}
+                  minW="auto"
+                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
+                  transition="all 0.3s"
+                  title="ההישגים שלי"
+                >
+                  <Text fontSize="xl">🏆</Text>
+                </Button>
+
+                {/* Exam Countdown - Compact */}
+                <Badge
+                  fontSize="sm"
+                  px={3}
+                  py={2}
+                  borderRadius="full"
+                  bg="red.500"
+                  color="white"
+                  boxShadow="md"
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                >
+                  <Text fontSize="md">⏰</Text>
+                  <Text fontWeight="bold">המבחן בעוד:</Text>
+                  <Text fontWeight="bold" fontSize="md">
+                    {daysUntilExam > 0 ? `${daysUntilExam} ימים` : 'היום!'}
+                  </Text>
+                </Badge>
+              </HStack>
+            </VStack>
           </Box>
         </Box>
       )}

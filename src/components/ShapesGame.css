@@ -4,6 +4,15 @@
   margin-top: 80px; /* Space for fixed main header */
 }
 
+.shapes-game .game-header {
+  flex-direction: row-reverse; /* Reverse order: title on right, button on left */
+  margin-bottom: 80px; /* Increased spacing between header and question card */
+}
+
+.shapes-game .game-title {
+  text-align: right; /* Align text to the right */
+}
+
 .shape-display {
   margin: 40px auto;
   max-width: 300px;
@@ -46,6 +55,14 @@
   box-shadow: 0 6px 20px rgba(167, 139, 250, 0.4);
 }
 
+.submit-button .button-text {
+  display: inline;
+}
+
+.submit-button .button-icon {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .shape-display {
     max-width: 250px;
@@ -58,6 +75,39 @@
   .option-button {
     padding: 15px;
     font-size: 1rem;
+  }
+
+  .answer-section {
+    flex-direction: row;
+    gap: 10px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .answer-input {
+    flex: 1;
+    max-width: none;
+  }
+
+  .submit-button {
+    padding: 15px;
+    min-width: 50px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .submit-button .button-text {
+    display: none;
+  }
+
+  .submit-button .button-icon {
+    display: inline;
   }
 
   .feedback-emoji {

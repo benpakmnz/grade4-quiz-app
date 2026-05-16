@@ -27,3 +27,26 @@
   backdrop-filter: blur(5px);
   z-index: 9998;
 }
+
+/* Mobile Portrait - Fix card heights */
+@media (max-width: 768px) and (orientation: portrait) {
+  /* Override Chakra UI inline styles for cards */
+  .css-0 [role="group"] > div {
+    aspect-ratio: auto !important;
+    min-height: auto !important;
+    padding: 1rem !important;
+  }
+  
+  /* Make cards more compact on mobile */
+  .chakra-box {
+    padding: 1rem !important;
+  }
+}
+
+/* Mobile - General adjustments */
+@media (max-width: 768px) {
+  /* Reduce spacing in grid */
+  .chakra-stack {
+    gap: 10px !important;
+  }
+}

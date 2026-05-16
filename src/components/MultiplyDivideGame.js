@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGenderText } from '../utils/genderText';
 import './MathGame.css';
@@ -110,20 +110,7 @@ const MultiplyDivideGame = ({ onBack, score, setScore, streak, setStreak, questi
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">כפל וחילוק</h2>
       </div>
 
       <motion.div
@@ -166,9 +153,7 @@ const MultiplyDivideGame = ({ onBack, score, setScore, streak, setStreak, questi
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : feedback.isRetry ? (
             <motion.div
@@ -198,9 +183,7 @@ const MultiplyDivideGame = ({ onBack, score, setScore, streak, setStreak, questi
                 className="submit-button"
                 onClick={checkAnswer}
                 disabled={!userAnswer}
-              >
-                בדוק תשובה ✓
-              </button>
+              ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
             </motion.div>
           ) : (
             <motion.div

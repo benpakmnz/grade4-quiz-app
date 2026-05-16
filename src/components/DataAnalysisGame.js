@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateDataAnalysisQuestion } from '../services/geminiService';
 import { getGenderText } from '../utils/genderText';
 import './MathGame.css';
+import './DataAnalysisGame.css';
 
 const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, questionCount, setQuestionCount, userData, onAnswer }) => {
   const [question, setQuestion] = useState(null);
@@ -387,20 +388,7 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">חקר נתונים</h2>
       </div>
 
       <motion.div
@@ -426,40 +414,16 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
           <>
             <div className="operation-badge">📊</div>
             <h2 className="question-title">חקר נתונים</h2>
-            {question.title && (
-              <h3 style={{ color: '#667eea', marginBottom: '20px', fontSize: '1.3rem' }}>
-                {question.title}
-              </h3>
-            )}
             
             {/* Horizontal Layout: Graph on right, Question on left */}
-            <div style={{
-              display: 'flex',
-              gap: '30px',
-              alignItems: 'flex-start',
-              width: '100%',
-              minHeight: '500px'
-            }}>
+            <div className="data-analysis-layout">
               {/* Right Side - Visualization */}
-              <div style={{ 
-                flex: '1.5', 
-                minWidth: '0',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center'
-              }}>
+              <div className="visualization-container">
                 {renderVisualization()}
               </div>
 
               {/* Left Side - Question and Answer */}
-              <div style={{ 
-                flex: '1',
-                minWidth: '350px',
-                maxWidth: '450px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '20px'
-              }}>
+              <div className="question-container">
                 <div className="question-text" style={{ 
                   fontSize: '1.5rem', 
                   lineHeight: '2',
@@ -515,13 +479,11 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
                         className="submit-button"
                         onClick={checkAnswer}
                         disabled={!userAnswer}
-                      >
-                        בדוק תשובה ✓
-                      </button>
+                      ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
                     </motion.div>
                   ) : feedback.isRetry ? (
                     <motion.div
-                      className="answer-section"
+                      className="answer-section retry-feedback"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -570,9 +532,7 @@ const DataAnalysisGame = ({ onBack, score, setScore, streak, setStreak, question
                         className="submit-button"
                         onClick={checkAnswer}
                         disabled={!userAnswer}
-                      >
-                        בדוק תשובה ✓
-                      </button>
+                      ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
                     </motion.div>
                   ) : (
                     <motion.div

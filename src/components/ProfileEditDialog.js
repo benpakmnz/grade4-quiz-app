@@ -51,6 +51,15 @@ const ProfileEditDialog = ({ userData, onSave, onClose }) => {
     }
   };
 
+  const handleDeleteProfile = () => {
+    if (window.confirm('האם אתה בטוח שברצונך למחוק את הפרופיל? כל הנתונים יימחקו לצמיתות!')) {
+      // Clear all localStorage
+      localStorage.clear();
+      // Reload the page to start fresh
+      window.location.reload();
+    }
+  };
+
   return (
     <AnimatePresence>
       <motion.div
@@ -170,6 +179,26 @@ const ProfileEditDialog = ({ userData, onSave, onClose }) => {
           </div>
 
           <div className="profile-dialog-footer">
+            <button 
+              className="delete-profile-btn" 
+              onClick={handleDeleteProfile}
+              style={{
+                background: '#ef4444',
+                color: 'white',
+                border: 'none',
+                padding: '12px 24px',
+                borderRadius: '25px',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                cursor: 'pointer',
+                transition: 'all 0.3s',
+                marginLeft: 'auto'
+              }}
+              onMouseOver={(e) => e.target.style.background = '#dc2626'}
+              onMouseOut={(e) => e.target.style.background = '#ef4444'}
+            >
+              🗑️ מחק פרופיל
+            </button>
             <button className="cancel-btn" onClick={onClose}>
               ביטול
             </button>

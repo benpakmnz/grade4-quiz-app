@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGenderText } from '../utils/genderText';
+import { scrollToInput } from '../utils/scrollToInput';
 import './MathGame.css';
 
 const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionCount, setQuestionCount, userData, onAnswer }) => {
@@ -9,6 +10,7 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const MAX_ATTEMPTS = 3;
+  const inputRef = useRef(null);
 
   const operations = [
     { symbol: '+', name: 'חיבור', emoji: '➕' },
@@ -112,20 +114,7 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">חיבור וחיסור</h2>
       </div>
 
       <motion.div
@@ -156,11 +145,13 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
               exit={{ opacity: 0 }}
             >
               <input
+                ref={inputRef}
                 type="number"
                 className="answer-input"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                onFocus={() => scrollToInput(inputRef.current)}
                 placeholder="התשובה שלך..."
                 autoFocus
               />
@@ -169,7 +160,8 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
                 onClick={checkAnswer}
                 disabled={!userAnswer}
               >
-                בדוק תשובה ✓
+                <span className="button-text">בדוק תשובה ✓</span>
+                <span className="button-icon">✓</span>
               </button>
             </motion.div>
           ) : feedback.isRetry ? (
@@ -188,11 +180,13 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
               <div style={{ fontSize: '2rem', marginBottom: '10px' }}>⚠️</div>
               <h3 style={{ color: '#856404', marginBottom: '15px' }}>{feedback.message}</h3>
               <input
+                ref={inputRef}
                 type="number"
                 className="answer-input"
                 value={userAnswer}
                 onChange={(e) => setUserAnswer(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && userAnswer && checkAnswer()}
+                onFocus={() => scrollToInput(inputRef.current)}
                 placeholder={getGenderText("נסי שוב...", userData?.gender)}
                 autoFocus
               />
@@ -201,7 +195,8 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
                 onClick={checkAnswer}
                 disabled={!userAnswer}
               >
-                בדוק תשובה ✓
+                <span className="button-text">בדוק תשובה ✓</span>
+                <span className="button-icon">✓</span>
               </button>
             </motion.div>
           ) : (

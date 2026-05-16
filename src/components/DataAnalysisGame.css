@@ -1,0 +1,190 @@
+/* Data Analysis Game Specific Styles */
+
+.data-analysis-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 500px;
+}
+
+.visualization-container {
+  flex: 1.5;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Changed from center to flex-start to prevent title overlap */
+}
+
+.question-container {
+  flex: 1;
+  min-width: 350px;
+  max-width: 450px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .data-analysis-layout {
+    flex-direction: column;
+    gap: 20px;
+    min-height: auto;
+  }
+
+  .visualization-container {
+    width: 100%;
+    order: 1; /* Graph/table appears first */
+    align-items: flex-start; /* Align to top */
+  }
+
+  .question-container {
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    order: 2; /* Question appears below */
+  }
+
+  /* Make tables scrollable and smaller on mobile */
+  .visualization-container > div {
+    max-width: 100%;
+    padding: 15px !important;
+    overflow-x: auto;
+    overflow-y: visible !important; /* Allow content to show vertically */
+    margin-bottom: 0 !important;
+  }
+
+  .visualization-container table {
+    font-size: 0.75rem !important;
+    min-width: 100%;
+  }
+
+  .visualization-container th,
+  .visualization-container td {
+    padding: 8px !important;
+    font-size: 0.75rem !important;
+  }
+
+  /* Bar charts - smaller on mobile */
+  .visualization-container > div > div[style*="alignItems: flex-end"] > div {
+    max-width: 60px !important;
+  }
+
+  .visualization-container > div > div > div > div[style*="width: 80px"] {
+    width: 50px !important;
+    font-size: 1rem !important;
+    padding-top: 8px !important;
+  }
+
+  .visualization-container h3 {
+    font-size: 1rem !important;
+    margin-bottom: 15px !important;
+    margin-top: 0 !important;
+  }
+
+  /* Pictographs - smaller on mobile */
+  .visualization-container > div > div[style*="flexDirection: column"] > div {
+    padding: 12px !important;
+    gap: 12px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .visualization-container > div > div[style*="flexDirection: column"] > div > div:first-child {
+    min-width: 80px !important;
+    font-size: 0.8rem !important;
+    flex-shrink: 0 !important;
+  }
+
+  .visualization-container > div > div[style*="flexDirection: column"] > div > div:last-child {
+    font-size: 1.3rem !important;
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    flex: 1 !important;
+  }
+
+  .visualization-container p[style*="textAlign: center"] {
+    font-size: 0.8rem !important;
+    margin-bottom: 15px !important;
+  }
+
+  /* Pie charts - smaller on mobile */
+  .visualization-container > div > div[style*="flexWrap: wrap"] {
+    gap: 15px !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+
+  .visualization-container > div > div[style*="flexWrap: wrap"] > div[style*="width: 250px"] {
+    width: 140px !important;
+    height: 140px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .visualization-container > div > div[style*="flexWrap: wrap"] > div[style*="flexDirection: column"] {
+    gap: 8px !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+
+  .visualization-container > div > div[style*="flexWrap: wrap"] > div[style*="flexDirection: column"] > div {
+    padding: 6px 10px !important;
+    min-width: auto !important;
+    width: 100% !important;
+    gap: 6px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .visualization-container > div > div[style*="flexWrap: wrap"] > div[style*="flexDirection: column"] > div > div[style*="width: 25px"] {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .visualization-container > div > div[style*="flexWrap: wrap"] > div[style*="flexDirection: column"] > div > span {
+    font-size: 0.75rem !important;
+  }
+
+  /* Hide floating character on mobile */
+  .floating-character {
+    display: none !important;
+  }
+}
+
+/* Landscape mode (tablet lying down) */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .data-analysis-layout {
+    gap: 20px;
+    min-height: auto;
+  }
+
+  .visualization-container {
+    flex: 1.2;
+  }
+
+  .question-container {
+    flex: 1;
+    min-width: 280px;
+    max-width: 380px;
+  }
+
+  .visualization-container > div {
+    padding: 20px !important;
+  }
+
+  .visualization-container h3 {
+    font-size: 1.1rem !important;
+    margin-bottom: 20px !important;
+  }
+
+  .visualization-container table {
+    font-size: 0.9rem !important;
+  }
+
+  .visualization-container th,
+  .visualization-container td {
+    padding: 10px !important;
+    font-size: 0.9rem !important;
+  }
+}

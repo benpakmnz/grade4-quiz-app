@@ -2,6 +2,26 @@
   width: 100%;
   padding: 20px;
   margin-top: 80px; /* Space for fixed main header */
+  min-height: 100dvh; /* Dynamic viewport height - adjusts when keyboard opens */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Fallback for browsers that don't support dvh */
+@supports not (height: 100dvh) {
+  .measurements-game {
+    min-height: calc(100vh - 80px);
+  }
+}
+
+.measurements-game .game-header {
+  flex-direction: row-reverse; /* Reverse order: title on right, button on left */
+  margin-bottom: 80px; /* Increased spacing between header and question card */
+  margin-top: 20px; /* Add space from fixed header */
+}
+
+.measurements-game .game-title {
+  text-align: right; /* Align text to the right */
 }
 
 .measurement-badge {
@@ -61,19 +81,106 @@
   min-width: 60px;
 }
 
+.submit-button .button-text {
+  display: inline;
+}
+
+.submit-button .button-icon {
+  display: none;
+}
+
 @media (max-width: 768px) {
+  .measurements-game {
+    padding: 15px;
+    padding-bottom: 50px; /* Space at bottom for keyboard */
+    margin-top: 70px;
+  }
+
+  /* Hide stats on mobile - show only back button */
+  .game-stats {
+    display: none;
+  }
+
+  .game-header {
+    margin-bottom: 40px; /* Spacing between header and question card on mobile */
+  }
+
   .question-text {
     font-size: 1.2rem;
     padding: 20px;
   }
 
-  .answer-input-group {
-    flex-direction: column;
+  .answer-section {
+    flex-direction: row;
     gap: 10px;
+    width: 100%;
+    max-width: 400px;
+  }
+
+  .answer-input-group {
+    flex-direction: row;
+    gap: 10px;
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .answer-input {
+    flex: 1;
+    max-width: none;
+  }
+
+  .submit-button {
+    padding: 15px;
+    min-width: 50px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .submit-button .button-text {
+    display: none;
+  }
+
+  .submit-button .button-icon {
+    display: inline;
   }
 
   .unit-label {
     font-size: 1.2rem;
+  }
+}
+
+/* Landscape mode (tablet lying down) */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .measurements-game {
+    padding: 10px;
+    margin-top: 70px;
+  }
+
+  .question-text {
+    font-size: 1.1rem;
+    padding: 15px;
+    margin: 15px 0;
+  }
+
+  .answer-input-group {
+    gap: 10px;
+  }
+
+  .unit-label {
+    font-size: 1.1rem;
+  }
+
+  .measurement-badge {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+    top: -25px;
   }
 }
 

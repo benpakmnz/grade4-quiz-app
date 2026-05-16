@@ -77,31 +77,6 @@
   flex-shrink: 0;
 }
 
-.achievements-tabs {
-  display: flex;
-  gap: 10px;
-  padding: 0 30px;
-  border-bottom: 2px solid #e0e0e0;
-  flex-shrink: 0;
-}
-
-.tab-content {
-  animation: fadeIn 0.3s ease;
-  padding: 30px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 0;
-}
-
-.achievements-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 30px 30px 20px 30px;
-  border-bottom: 3px solid #f0f0f0;
-  flex-shrink: 0;
-}
-
 .achievements-title {
   font-size: 2.5rem;
   color: #667eea;
@@ -1011,5 +986,24 @@
 
   .category-overview-name {
     font-size: 1.1rem;
+  }
+}
+
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .achievements-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+  
+  .achievements-header > div:first-child {
+    width: 100%;
+  }
+  
+  .achievements-header button[style*="background: #ef4444"] {
+    width: 100% !important;
+    max-width: none !important;
   }
 }

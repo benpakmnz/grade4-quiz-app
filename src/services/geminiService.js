@@ -1,4 +1,15 @@
-import { questionsBank } from '../data/questionsBank';
+import { wordProblems } from '../data/wordProblems';
+import { shapes } from '../data/shapes';
+import { measurements } from '../data/measurements';
+import { dataAnalysis } from '../data/dataAnalysis';
+
+// Question banks
+const questionsBank = {
+  wordProblems,
+  shapes,
+  measurements,
+  dataAnalysis
+};
 
 // Track which questions were used to avoid repetition
 const usedQuestions = {

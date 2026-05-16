@@ -230,23 +230,39 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
       >
-        <div className="achievements-header">
-          <h2 className="achievements-title">🏆 ההישגים שלי</h2>
-          <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="achievements-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <h2 className="achievements-title" style={{ margin: 0 }}>🏆 ההישגים שלי</h2>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
             <button 
               style={{
                 background: '#ef4444',
                 color: 'white',
                 border: 'none',
-                padding: '8px 15px',
+                padding: '8px 16px',
                 borderRadius: '20px',
                 fontSize: '0.9rem',
                 cursor: 'pointer',
-                fontWeight: 'bold'
+                fontWeight: 'bold',
+                boxShadow: '0 2px 8px rgba(239, 68, 68, 0.3)',
+                transition: 'all 0.3s ease',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = '0 4px 12px rgba(239, 68, 68, 0.4)';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
               }}
               onClick={() => {
-                if (window.confirm(getGenderText('האם את בטוחה שברצונך לאפס את כל הנתונים?', userData?.gender))) {
+                if (window.confirm(getGenderText('האם אתה בטוח שברצונך לאפס את כל הנתונים?', userData?.gender))) {
                   localStorage.removeItem('quiz_categoryStats');
+                  localStorage.removeItem('quiz_score');
+                  localStorage.removeItem('quiz_streak');
+                  localStorage.removeItem('quiz_questionCount');
+                  localStorage.removeItem('quiz_history');
+                  localStorage.removeItem('quiz_achievements');
                   window.location.reload();
                 }
               }}

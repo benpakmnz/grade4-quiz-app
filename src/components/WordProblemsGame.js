@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { generateWordProblem } from '../services/geminiService';
 import { getGenderText } from '../utils/genderText';
@@ -117,20 +117,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
-        <div className="game-stats">
-          <div className="stat">
-            <span className="stat-label">נקודות:</span>
-            <span className="stat-value">{score}</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">רצף:</span>
-            <span className="stat-value">{streak} 🔥</span>
-          </div>
-          <div className="stat">
-            <span className="stat-label">שאלות:</span>
-            <span className="stat-value">{questionCount}</span>
-          </div>
-        </div>
+        <h2 className="game-title">בעיות מילוליות</h2>
       </div>
 
       {loading ? (
@@ -186,9 +173,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                   className="submit-button"
                   onClick={checkAnswer}
                   disabled={!userAnswer}
-                >
-                  בדוק תשובה ✓
-                </button>
+                ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
               </motion.div>
             ) : feedback.isRetry ? (
               <motion.div
@@ -219,9 +204,7 @@ const WordProblemsGame = ({ onBack, score, setScore, onAnswer, userData }) => {
                   className="submit-button"
                   onClick={checkAnswer}
                   disabled={!userAnswer}
-                >
-                  בדוק תשובה ✓
-                </button>
+                ><span className="button-text">בדוק תשובה ✓</span><span className="button-icon">✓</span></button>
               </motion.div>
             ) : (
               <motion.div
