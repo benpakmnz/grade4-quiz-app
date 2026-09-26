@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom/client';
-import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import './index.css';
-import App from './App';
 import reportWebVitals from './reportWebVitals';
+import { isPartyPath } from './party/routes';
+
+// "/party" (TV) and "/join/<code>" (phones) run the birthday game,
+// everything else is the grade-4 quiz app.
+const QuizRoot = lazy(() => import('./QuizRoot'));
+const PartyApp = lazy(() => import('./party/PartyApp'));
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <ChakraProvider value={defaultSystem}>
-      <App />
-    </ChakraProvider>
+    <Suspense fallback={null}>
+      {isPartyPath(window.location.pathname) ? <PartyApp /> : <QuizRoot />}
+    </Suspense>
   </React.StrictMode>
 );
 
