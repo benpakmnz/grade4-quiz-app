@@ -743,3 +743,86 @@
     font-size: 1.05rem;
   }
 }
+
+/* ===== Read-aloud player ===== */
+.reader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.reader-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.reader.compact .play-button {
+  font-size: 1.05rem;
+  padding: 10px 24px;
+}
+
+.play-button.pause {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.play-button.restart {
+  background: linear-gradient(135deg, #94a3b8, #64748b);
+  font-size: 1rem;
+  padding: 10px 20px;
+}
+
+.reader-progress {
+  width: 100%;
+  max-width: 360px;
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.reader-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2dd4bf, #0d9488);
+  transition: width 0.4s ease;
+}
+
+.reader-status {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.speed-picker {
+  display: inline-flex;
+  background: #f1f5f9;
+  border-radius: 50px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.speed-option {
+  border: none;
+  background: transparent;
+  border-radius: 50px;
+  padding: 7px 14px;
+  font-weight: bold;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.speed-option.active {
+  background: white;
+  color: #0f766e;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+}
+
+.passage-text .reading-now {
+  background: #fde68a;
+  border-radius: 6px;
+  box-shadow: 0 0 0 3px #fde68a;
+}

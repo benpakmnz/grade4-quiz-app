@@ -10,7 +10,7 @@ const SpeakButton = ({ text, rate, title = 'הקשבה', small = false }) => {
       className={`speak-button ${small ? 'small' : ''}`}
       onClick={(e) => {
         e.stopPropagation();
-        speak(text, { rate });
+        speak(text, rate ? { rate } : undefined);
       }}
       title={title}
       aria-label={title}

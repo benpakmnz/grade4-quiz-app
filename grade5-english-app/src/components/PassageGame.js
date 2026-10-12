@@ -3,8 +3,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getPassage, shuffle } from '../data/questionGenerator';
 import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
-import { speak, stopSpeaking, isSpeechSupported } from '../utils/speech';
+import { stopSpeaking, isSpeechSupported, splitIntoSentences } from '../utils/speech';
+import ReadAloudPlayer from './ReadAloudPlayer';
 import SpeakButton from './SpeakButton';
+import { LessonLauncher } from './LessonViewer';
 import './Game.css';
 import './EnglishGame.css';
 
@@ -24,8 +26,7 @@ const PassageGame = (props) => {
   const [orderPool, setOrderPool] = useState([]);
   const [orderPicked, setOrderPicked] = useState([]);
   const [showText, setShowText] = useState(!isListening);
-  const [playing, setPlaying] = useState(false);
-  const [timesPlayed, setTimesPlayed] = useState(0);
+  const [currentSentence, setCurrentSentence] = useState(null);
 
   const question = passage && qIndex < passage.questions.length ? passage.questions[qIndex] : null;
   const finished = passage && qIndex >= passage.questions.length;
@@ -49,8 +50,7 @@ const PassageGame = (props) => {
     setQIndex(0);
     setResults([]);
     setShowText(category !== 'listening');
-    setPlaying(false);
-    setTimesPlayed(0);
+    setCurrentSentence(null);
     prepareQuestion(p.questions[0]);
   }, [category]);
 
@@ -61,16 +61,11 @@ const PassageGame = (props) => {
 
   if (!passage) return null;
 
-  const play = (rate) => {
-    setPlaying(true);
-    setTimesPlayed(t => t + 1);
-    speak(passage.text, { rate, onEnd: () => setPlaying(false) });
-  };
-
-  const stop = () => {
-    stopSpeaking();
-    setPlaying(false);
-  };
+  // הטקסט מחולק למשפטים כדי להדגיש את המשפט שמוקרא עכשיו
+  let sentenceCounter = 0;
+  const paragraphs = passage.text.split('\n').map(para =>
+    splitIntoSentences(para).map(sentence => ({ sentence, index: sentenceCounter++ }))
+  );
 
   const maxAttempts = question
     ? question.type === 'yesno' ? 1 : 2
@@ -162,6 +157,7 @@ const PassageGame = (props) => {
         <button className="back-button" onClick={() => { stopSpeaking(); onBack(); }}>
           ← חזרה
         </button>
+        <LessonLauncher categoryId={category} userData={userData} />
         <h2 className="game-title">{title}</h2>
       </div>
 
@@ -187,18 +183,7 @@ const PassageGame = (props) => {
               {!isSpeechSupported() && (
                 <p className="warning-text">הדפדפן לא תומך בהקראה - הטקסט מוצג במקום</p>
               )}
-              {playing ? (
-                <button className="play-button stop" onClick={stop}>⏹️ עצירה</button>
-              ) : (
-                <>
-                  <button className="play-button" onClick={() => play(0.8)}>
-                    ▶️ {timesPlayed === 0 ? 'השמעת הקטע' : 'השמעה שוב'}
-                  </button>
-                  <button className="play-button slow" onClick={() => play(0.6)}>
-                    🐢 לאט
-                  </button>
-                </>
-              )}
+              <ReadAloudPlayer text={passage.text} onSentence={setCurrentSentence} />
               <p className="listening-tip">
                 {g('הקשיבי לקטע (אפשר לשמוע כמה פעמים) ועני על השאלות')}
               </p>
@@ -210,11 +195,20 @@ const PassageGame = (props) => {
             </div>
           )}
 
+          {!isListening && (
+            <ReadAloudPlayer text={passage.text} onSentence={setCurrentSentence} compact playLabel="הקראת הקטע" />
+          )}
+
           {(showText || !isSpeechSupported()) && (
             <div className="passage-text" dir="ltr">
-              {!isListening && <SpeakButton text={passage.text} title="הקראת הקטע" small />}
-              {passage.text.split('\n').map((para, i) => (
-                <p key={i}>{para}</p>
+              {paragraphs.map((para, i) => (
+                <p key={i}>
+                  {para.map(({ sentence, index }) => (
+                    <span key={index} className={index === currentSentence ? 'reading-now' : undefined}>
+                      {sentence}{' '}
+                    </span>
+                  ))}
+                </p>
               ))}
             </div>
           )}

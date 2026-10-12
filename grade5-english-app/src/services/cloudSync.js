@@ -13,7 +13,8 @@ export const PROGRESS_KEYS = [
   'english_categoryStats',
   'english_achievements',
   'english_writingDraft',
-  'english_hasSeenWelcome'
+  'english_hasSeenWelcome',
+  'english_lessonsSeen'
 ];
 
 const OWNER_KEY = 'english_owner';         // ה-uid שהנתונים המקומיים שייכים לו
