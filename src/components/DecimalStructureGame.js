@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGenderText } from '../utils/genderText';
 import './MathGame.css';
@@ -45,10 +45,11 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
         number = Math.floor(Math.random() * 9000) + 1000;
         numberStr = number.toString();
         position = Math.floor(Math.random() * numberStr.length);
-        oldDigit = parseInt(numberStr[position]);
+        const candidate = parseInt(numberStr[position]);
+        oldDigit = candidate;
         
         // בדוק שהספרה מופיעה רק פעם אחת במספר
-        const digitCount = numberStr.split('').filter(d => parseInt(d) === oldDigit).length;
+        const digitCount = numberStr.split('').filter(d => parseInt(d) === candidate).length;
         if (digitCount === 1) {
           validNumber = true;
         }
@@ -75,7 +76,6 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
       position = Math.floor(Math.random() * numberStr.length);
       digit = numberStr[position];
       
-      const placeNames = ['אלפים', 'מאות', 'עשרות', 'יחידות'];
       const placeValues = [1000, 100, 10, 1];
       answer = placeValues[position];
       
@@ -113,7 +113,7 @@ const DecimalStructureGame = ({ onBack, score, setScore, streak, setStreak, ques
 
   useEffect(() => {
     generateQuestion();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAnswer = () => {
     const isCorrect = parseInt(userAnswer) === question.answer;

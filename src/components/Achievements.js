@@ -192,7 +192,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
         setShowNotification(null);
       }, 4000);
     }
-  }, [score, streak, questionCount]);
+  }, [score, streak, questionCount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const progress = {
     total: achievements.length,
