@@ -36,3 +36,9 @@ export const setBuiltinHidden = (bank, id, isHidden) =>
   isHidden
     ? set(ref(db, `${CONTENT_PATH}/hidden/${bank}/${id}`), true)
     : remove(ref(db, `${CONTENT_PATH}/hidden/${bank}/${id}`));
+
+/** כל המשתמשים וההתקדמות שלהם - רק למנהלים (לפי כללי האבטחה) */
+export const fetchAllUsers = async () => {
+  const snap = await get(ref(db, 'english/users'));
+  return snap.val() || {};
+};

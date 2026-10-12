@@ -5,6 +5,7 @@ import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
 import { stopSpeaking, isSpeechSupported, splitIntoSentences } from '../utils/speech';
 import ReadAloudPlayer from './ReadAloudPlayer';
+import { logMistake } from '../utils/mistakes';
 import SpeakButton from './SpeakButton';
 import { LessonLauncher } from './LessonViewer';
 import './Game.css';
@@ -23,6 +24,7 @@ const PassageGame = (props) => {
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const [wrongOptions, setWrongOptions] = useState([]);
+  const [firstWrong, setFirstWrong] = useState(null);
   const [orderPool, setOrderPool] = useState([]);
   const [orderPicked, setOrderPicked] = useState([]);
   const [showText, setShowText] = useState(!isListening);
@@ -35,6 +37,7 @@ const PassageGame = (props) => {
     setFeedback(null);
     setAttempts(0);
     setWrongOptions([]);
+    setFirstWrong(null);
     setOrderPicked([]);
     if (q && q.type === 'order') {
       let pool = shuffle(q.events);
@@ -71,7 +74,18 @@ const PassageGame = (props) => {
     ? question.type === 'yesno' ? 1 : 2
     : 1;
 
-  const finish = (isCorrect) => {
+  const correctText = () => (question.type === 'order' ? question.events.join(' → ') : question.answer);
+
+  const finish = (isCorrect, wrongAnswer = null) => {
+    if (wrongAnswer !== null) {
+      logMistake({
+        category,
+        question: `${passage.title}: ${question.q}`,
+        given: wrongAnswer,
+        correct: correctText(),
+        finalCorrect: isCorrect
+      });
+    }
     const points = registerResult(isCorrect, attempts === 0 ? 15 : 10);
     setResults(r => [...r, isCorrect]);
     setFeedback({
@@ -82,11 +96,13 @@ const PassageGame = (props) => {
     });
   };
 
-  const wrong = (extraMessage) => {
+  const wrong = (given, extraMessage) => {
+    const first = firstWrong ?? given;
+    setFirstWrong(first);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
     if (newAttempts >= maxAttempts) {
-      finish(false);
+      finish(false, first);
     } else {
       setFeedback({ done: false, message: extraMessage || g('לא נכון, נסי שוב! 💪') });
     }
@@ -97,10 +113,10 @@ const PassageGame = (props) => {
   const handleOption = (option) => {
     if (feedback?.done) return;
     if (option === answer) {
-      finish(true);
+      finish(true, firstWrong);
     } else {
       setWrongOptions(w => [...w, option]);
-      wrong();
+      wrong(option);
     }
   };
 
@@ -119,9 +135,10 @@ const PassageGame = (props) => {
 
   const checkOrder = () => {
     if (orderPicked.join('|') === question.events.join('|')) {
-      finish(true);
+      finish(true, firstWrong);
       return;
     }
+    const given = orderPicked.join(' → ');
     let ok = 0;
     while (ok < orderPicked.length && orderPicked[ok] === question.events[ok]) ok++;
     const msg = ok > 0
@@ -131,7 +148,7 @@ const PassageGame = (props) => {
     const kept = orderPicked.slice(0, ok);
     setOrderPool(p => [...p, ...orderPicked.slice(ok)]);
     setOrderPicked(kept);
-    wrong(msg);
+    wrong(given, msg);
   };
 
   const next = () => {

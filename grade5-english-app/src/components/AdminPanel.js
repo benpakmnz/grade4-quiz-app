@@ -4,6 +4,8 @@ import { ADMIN_SECTIONS, emptyItem, emptyPassageQuestion, cleanItem } from '../d
 import { listBank, onContentChange } from '../data/contentStore';
 import { addQuestion, deleteCustomQuestion, setBuiltinHidden } from '../services/contentSync';
 import './Game.css';
+import './EnglishGame.css';
+import UsersDashboard from './UsersDashboard';
 import './AdminPanel.css';
 
 const BLANK = '____';
@@ -182,6 +184,7 @@ const AddForm = ({ bankDef, onDone }) => {
 
 // ---------- המסך הראשי ----------
 const AdminPanel = ({ onBack }) => {
+  const [view, setView] = useState('questions'); // questions | users
   const sections = ADMIN_SECTIONS.map(s => ({ ...s, category: categories.find(c => c.id === s.id) }));
   const [sectionId, setSectionId] = useState(sections[0].id);
   const [bankIndex, setBankIndex] = useState(0);
@@ -241,9 +244,21 @@ const AdminPanel = ({ onBack }) => {
     <div className="math-game english-game admin-panel">
       <div className="game-header">
         <button className="back-button" onClick={onBack}>← חזרה</button>
-        <h2 className="game-title">⚙️ ניהול שאלות</h2>
+        <h2 className="game-title">⚙️ ניהול</h2>
       </div>
 
+      <div className="mode-tabs">
+        <button className={`mode-tab ${view === 'questions' ? 'active' : ''}`} onClick={() => setView('questions')}>
+          📝 שאלות
+        </button>
+        <button className={`mode-tab ${view === 'users' ? 'active' : ''}`} onClick={() => setView('users')}>
+          📊 משתמשים
+        </button>
+      </div>
+
+      {view === 'users' ? (
+        <div className="admin-card"><UsersDashboard /></div>
+      ) : (
       <div className="admin-card">
         <div className="admin-tabs">
           {sections.map(s => (
@@ -309,6 +324,7 @@ const AdminPanel = ({ onBack }) => {
           {visible.length === 0 && <li className="admin-empty">אין שאלות להצגה</li>}
         </ul>
       </div>
+      )}
     </div>
   );
 };
