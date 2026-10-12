@@ -26,19 +26,14 @@
 `english/users/<uid>` ב-Realtime Database ועוברת בין מכשירים. בלי אינטרנט האפליקציה ממשיכה לעבוד ומסתנכרנת כשהחיבור חוזר.
 אפשר גם "להמשיך בלי התחברות" - אז הכול נשמר רק בדפדפן, ואפשר להתחבר מאוחר יותר מחלון עריכת הפרופיל (לחיצה על השם) וההתקדמות תעלה לענן.
 
-**הגדרה חד-פעמית ב-[Firebase Console](https://console.firebase.google.com):**
-1. **Add project** - שם לבחירה (למשל `english-practice`). Google Analytics לא נחוץ.
-2. **Build ← Realtime Database ← Create Database** - מיקום **europe-west1 (Belgium)**, מצב **Start in locked mode**.
-3. **Realtime Database ← Rules** - למחוק הכול, להדביק את התוכן של [`database.rules.json`](database.rules.json) ו-**Publish**.
-   כל ילד/ה יכול/ה לקרוא ולכתוב רק את הנתונים של עצמו/ה.
-4. **Build ← Authentication ← Get started ← Sign-in method ← Google ← Enable** (לבחור אימייל תמיכה ← Save).
-5. **Authentication ← Settings ← Authorized domains ← Add domain** - להוסיף את כתובת האתר ב-Vercel (למשל `grade5-english-app.vercel.app`). `localhost` כבר מאושר.
-6. **Project settings ⚙️ ← Your apps ← `</>`** - לרשום אפליקציית Web (בלי Firebase Hosting) ולהעתיק את ה-`firebaseConfig`.
-7. ב-Vercel: **Settings ← Environment Variables** - להוסיף את המשתנים מ-[`.env.example`](.env.example) עם הערכים
-   (`databaseURL` נמצא ב-`firebaseConfig` או בראש הלשונית Realtime Database ← Data), ואז **Redeploy** -
-   הערכים נכנסים לקוד בזמן הבנייה. להרצה מקומית - קובץ `.env.local` עם אותם משתנים.
+האפליקציה מחוברת לפרויקט Firebase בשם `english-practice-87420` (הפרטים ב-`src/services/firebase.js`), כך שאין צורך במשתני סביבה.
 
-בלי המשתנים האלה האפליקציה עובדת כמו קודם, בלי מסך התחברות.
+**הגדרות שצריכות להיות בפרויקט ב-[Firebase Console](https://console.firebase.google.com):**
+1. **Realtime Database ← Rules** - התוכן של [`database.rules.json`](database.rules.json) (כל ילד/ה קורא/ת וכותב/ת רק את הנתונים של עצמו/ה).
+2. **Authentication ← Sign-in method ← Google** - מופעל.
+3. **Authentication ← Settings ← Authorized domains** - כולל את כתובת האתר ב-Vercel. `localhost` כבר מאושר.
+
+למעבר לפרויקט Firebase אחר או לעבודה בלי ענן - ראו [`.env.example`](.env.example).
 
 ## 🚀 הרצה
 
