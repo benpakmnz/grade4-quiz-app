@@ -56,6 +56,7 @@ const vocabularyQuestion = () => {
     return {
       kind: 'mc',
       label: Math.random() < 0.5 ? 'השלמת משפט בעזרת מחסן מילים' : 'בחירת המילה המתאימה למשפט',
+      instruction: 'Complete the sentence with a word from the word bank.',
       prompt: 'בחרי את המילה שמשלימה את המשפט:',
       english: item.sentence,
       wordBank: true,
@@ -73,6 +74,7 @@ const vocabularyQuestion = () => {
     return {
       kind: 'mc',
       label: 'הבנת מילים ומשמעותן',
+      instruction: 'Choose the correct meaning.',
       prompt: 'מה הפירוש של המילה?',
       english: word.en,
       big: true,
@@ -89,6 +91,7 @@ const vocabularyQuestion = () => {
     return {
       kind: 'mc',
       label: 'הבנת מילים ומשמעותן',
+      instruction: 'Choose the correct word.',
       prompt: `איך אומרים "${word.he}" באנגלית?`,
       options: shuffle([word.en, ...distractors.map(d => d.en)]),
       answer: word.en,
@@ -102,6 +105,7 @@ const vocabularyQuestion = () => {
     return {
       kind: 'mc',
       label: 'התאמת מילה לתמונה',
+      instruction: 'Match the word to the picture.',
       prompt: 'איזו מילה מתאימה לתמונה?',
       emoji: word.emoji,
       options: shuffle([word.en, ...distractors.map(d => d.en)]),
@@ -116,6 +120,7 @@ const vocabularyQuestion = () => {
   return {
     kind: 'mc',
     label: 'התאמת מילה להגדרה',
+    instruction: 'Match the word to the definition.',
     prompt: 'איזו מילה מתאימה להגדרה?',
     english: word.def,
     options: shuffle([word.en, ...distractors.map(d => d.en)]),
@@ -126,32 +131,82 @@ const vocabularyQuestion = () => {
 };
 
 // ---------- דקדוק ----------
-const grammarQuestion = (key, bank, pair, label, rule) => {
-  const item = pickUnused(key, bank);
-  // החסר בתחילת משפט (גם אחרי נקודה / סימן שאלה) ← אות גדולה
-  const atStart = /(^|[.!?]\s+)____/.test(item.sentence);
-  const options = pair.map(o => (atStart ? capitalize(o) : o));
-  const answer = atStart ? capitalize(item.answer) : item.answer;
+const GRAMMAR = {
+  isAre: {
+    bank: isAre,
+    options: ['am', 'is', 'are'],
+    label: 'am / is / are',
+    instruction: 'Fill in the blank with am, is, or are.',
+    rule: 'I ← am | יחיד (he, she, it, שם אחד) ← is | רבים (we, you, they, כמה) ← are'
+  },
+  hasHave: {
+    bank: hasHave,
+    options: ['has', 'have'],
+    label: 'has / have',
+    instruction: 'Fill in the blank with have or has.',
+    rule: 'he, she, it ← has | I, you, we, they ← have'
+  },
+  canCant: {
+    bank: canCant,
+    options: ['can', 'can\'t'],
+    label: 'can / can\'t',
+    instruction: 'Fill in the blank with can (ability) or can\'t (inability).',
+    rule: 'can = יכול/ה | can\'t = לא יכול/ה'
+  },
+  becauseWhy: {
+    bank: becauseWhy,
+    options: ['why', 'because'],
+    label: 'because / why',
+    instruction: 'Fill in the blank with Why or because.',
+    rule: 'Why = למה (שאלה) | because = כי (תשובה / סיבה)'
+  }
+};
+
+// החסר בתחילת משפט (גם אחרי נקודה / סימן שאלה) ← אות גדולה
+const blankStartsSentence = (sentence) => /(^|[.!?]\s+)____/.test(sentence);
+
+/**
+ * שאלת דקדוק. style:
+ *   'blank'   - השלמת החסר (Fill in the blank) עם כל האפשרויות של הנושא
+ *   'circle'  - "הקיפי את המילה הנכונה": ( is / are ) בתוך המשפט, שתי אפשרויות
+ */
+const grammarQuestion = (key, style = 'blank') => {
+  const g = GRAMMAR[key];
+  const item = pickUnused(key, g.bank);
+  const atStart = blankStartsSentence(item.sentence);
+  const fix = (o) => (atStart ? capitalize(o) : o);
+  const answer = fix(item.answer.toLowerCase());
+
+  let options = g.options.map(fix);
+  if (style === 'circle' && options.length > 2) {
+    const others = options.filter(o => o !== answer);
+    options = shuffle([answer, others[Math.floor(Math.random() * others.length)]]);
+  }
+
   const full = item.sentence.replace('____', answer);
   return {
     kind: 'mc',
-    label,
-    prompt: 'השלימי את המשפט:',
-    english: item.sentence,
+    label: style === 'circle' ? `תרגול מעורב · ${g.label}` : g.label,
+    instruction: style === 'circle' ? 'Circle the correct word.' : g.instruction,
+    prompt: style === 'circle' ? 'בחרי את המילה הנכונה מתוך הסוגריים:' : 'השלימי את המשפט:',
+    english: style === 'circle'
+      ? item.sentence.replace('____', `( ${options.join(' / ')} )`)
+      : item.sentence,
     options,
     answer,
-    explanation: `${item.why}\n${rule}`,
+    explanation: `${item.why}\n${g.rule}`,
     fullSentence: full,
     speak: full
   };
 };
 
 const becauseWhyQuestion = () => {
-  if (Math.random() < 0.35) {
+  if (Math.random() < 0.3) {
     const item = pickUnused('whyMatch', whyMatch);
     return {
       kind: 'mc',
       label: 'שאלת Why ← תשובת Because',
+      instruction: 'Choose the correct answer.',
       prompt: 'בחרי את התשובה המתאימה לשאלה:',
       english: item.q,
       options: shuffle([item.a, ...item.distractors]),
@@ -160,23 +215,53 @@ const becauseWhyQuestion = () => {
       speak: `${item.q} ${item.a}`
     };
   }
-  return grammarQuestion('becauseWhy', becauseWhy, ['why', 'because'], 'because / why',
-    'Why = למה (שאלה) | because = כי (תשובה / סיבה)');
+  return grammarQuestion('becauseWhy');
+};
+
+// מבחן מסכם ומעורב - כל נושאי הדקדוק בפורמט "הקיפי את המילה הנכונה"
+const mixedQuestion = () => {
+  const key = pickRandom(Object.keys(GRAMMAR));
+  return grammarQuestion(key, 'circle');
 };
 
 // ---------- סידור משפטים ----------
+// מילים שנשארות באות גדולה גם כשהן מעורבבות (I, שמות, ימים, שפות)
+const NAMES = ['I', 'Dan', 'Tom', 'Danny', 'Maya', 'Noa', 'Ben', 'Max'];
+const KEEP_CASE = new Set([
+  ...NAMES,
+  ...sentences.flatMap(s => s.en.split(' ').slice(1).filter(w => /^[A-Z]/.test(w)).map(w => w.replace(/[.,!?]$/, '')))
+]);
+
+// כמו בדף העבודה: מילים קטנות, בלי נקודה בסוף, וסימן שאלה כאריח נפרד
+export const toTiles = (sentence) => {
+  const words = sentence.trim().split(/\s+/);
+  const last = words[words.length - 1];
+  const tiles = [...words];
+  const end = last.slice(-1);
+  if (['.', '!', '?'].includes(end)) {
+    tiles[tiles.length - 1] = last.slice(0, -1);
+    if (end === '?') tiles.push('?');
+  }
+  const first = tiles[0];
+  if (!KEEP_CASE.has(first)) tiles[0] = first.toLowerCase();
+  return tiles;
+};
+
 const sentenceOrderQuestion = () => {
   const item = pickUnused('sentences', sentences);
-  const tokens = item.en.split(' ');
-  let scrambled = shuffle(tokens);
+  const tiles = toTiles(item.en);
+  const target = tiles.join(' ');
+  let scrambled = shuffle(tiles);
   // לוודא שהמשפט באמת מעורבב
-  for (let i = 0; i < 5 && scrambled.join(' ') === item.en; i++) scrambled = shuffle(tokens);
+  for (let i = 0; i < 5 && scrambled.join(' ') === target; i++) scrambled = shuffle(tiles);
   return {
     kind: 'order',
     label: 'סידור מילים למשפט',
+    instruction: 'Unscramble the words to make a correct sentence.',
     prompt: 'סדרי את המילים למשפט נכון באנגלית:',
     hint: item.he,
     tokens: scrambled.map((t, i) => ({ id: i, text: t })),
+    answerTokens: tiles,
     answer: item.en,
     speak: item.en
   };
@@ -187,18 +272,15 @@ export const generateQuestion = (category) => {
     case 'vocabulary':
       return vocabularyQuestion();
     case 'isAre':
-      return grammarQuestion('isAre', isAre, ['is', 'are'], 'is / are',
-        'יחיד (he, she, it, שם אחד) ← is | רבים (we, you, they, כמה) ← are');
     case 'hasHave':
-      return grammarQuestion('hasHave', hasHave, ['has', 'have'], 'has / have',
-        'he, she, it ← has | I, you, we, they ← have');
     case 'canCant':
-      return grammarQuestion('canCant', canCant, ['can', 'can\'t'], 'can / can\'t',
-        'can = יכול/ה | can\'t = לא יכול/ה');
+      return grammarQuestion(category);
     case 'becauseWhy':
       return becauseWhyQuestion();
     case 'sentenceOrder':
       return sentenceOrderQuestion();
+    case 'mixed':
+      return mixedQuestion();
     default:
       return null;
   }

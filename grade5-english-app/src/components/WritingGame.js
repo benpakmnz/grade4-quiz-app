@@ -135,6 +135,7 @@ const WritingGame = (props) => {
           animate={{ scale: 1, opacity: 1 }}
         >
           <div className="question-label">כתיבה נכונה</div>
+          <div className="instruction" dir="ltr">Instructions: Choose the sentence that is written correctly.</div>
           <h2 className="question-title">{g('בחרי את המשפט שכתוב נכון:')}</h2>
           <div className="options-grid single-column">
             {question.options.map(option => {
@@ -191,6 +192,7 @@ const WritingGame = (props) => {
         <motion.div className="writing-layout" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="question-card writing-card">
             <div className="question-label">Write about yourself</div>
+            <div className="instruction" dir="ltr">Instructions: Write a short paragraph about yourself.</div>
             <h2 className="question-title">{g('כתבי קטע קצר באנגלית על עצמך')}</h2>
             <p className="writing-tip">
               {g('לחצי על פתיח כדי להוסיף אותו, והשלימי את המשפט במילים שלך')}

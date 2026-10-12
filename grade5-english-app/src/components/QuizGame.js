@@ -7,9 +7,34 @@ import SpeakButton from './SpeakButton';
 import './Game.css';
 import './EnglishGame.css';
 
+const TestSummary = ({ results, onRestart, onBack, g }) => {
+  const correct = results.filter(Boolean).length;
+  const pct = Math.round((correct / results.length) * 100);
+  return (
+    <motion.div className="question-card passage-summary" initial={{ scale: 0 }} animate={{ scale: 1 }}>
+      <div className="summary-emoji">{pct === 100 ? '🏆' : pct >= 80 ? '⭐' : pct >= 60 ? '👍' : '💪'}</div>
+      <h3>{correct} / {results.length} תשובות נכונות ({pct}%)</h3>
+      <p>
+        {pct === 100
+          ? g('מושלם! את מוכנה למבחן!')
+          : pct >= 80
+            ? g('כל הכבוד! עוד קצת תרגול ואת שם!')
+            : g('כדאי לתרגל עוד את הנושאים שטעית בהם - ונסי שוב!')}
+      </p>
+      <div className="progress-dots summary-dots">
+        {results.map((ok, i) => <span key={i} className={`dot ${ok ? 'ok' : 'bad'}`} />)}
+      </div>
+      <div className="builder-actions">
+        <button className="next-button big" onClick={onRestart}>🎯 מבחן חדש</button>
+        <button className="clear-button" onClick={onBack}>← לכל הנושאים</button>
+      </div>
+    </motion.div>
+  );
+};
+
 // משחק שאלות אמריקאיות (אוצר מילים ודקדוק) + סידור מילים למשפט
 const QuizGame = (props) => {
-  const { category, title, onBack, streak, userData } = props;
+  const { category, title, onBack, streak, userData, testLength = 0 } = props;
   const { registerResult, praise } = useGameScoring(props);
   const g = (text) => getGenderText(text, userData?.gender);
 
@@ -21,6 +46,9 @@ const QuizGame = (props) => {
   // לסידור משפטים
   const [placed, setPlaced] = useState([]);
   const [showHint, setShowHint] = useState(false);
+  // מצב מבחן: מספר קבוע של שאלות ואז סיכום
+  const [testResults, setTestResults] = useState([]);
+  const [testDone, setTestDone] = useState(false);
 
   const nextQuestion = useCallback(() => {
     setQuestion(generateQuestion(category));
@@ -36,6 +64,20 @@ const QuizGame = (props) => {
     nextQuestion();
   }, [nextQuestion]);
 
+  const goNext = () => {
+    if (testLength && testResults.length >= testLength) {
+      setTestDone(true);
+      return;
+    }
+    nextQuestion();
+  };
+
+  const restartTest = () => {
+    setTestResults([]);
+    setTestDone(false);
+    nextQuestion();
+  };
+
   if (!question) return null;
 
   const maxAttempts = question.kind === 'order' ? 3 : question.options.length <= 2 ? 1 : 2;
@@ -43,6 +85,7 @@ const QuizGame = (props) => {
   const finish = (isCorrect) => {
     const firstTry = attempts === 0;
     const points = registerResult(isCorrect, firstTry ? 15 : 10);
+    if (testLength) setTestResults(r => [...r, isCorrect]);
     setFeedback({
       done: true,
       correct: isCorrect,
@@ -85,8 +128,9 @@ const QuizGame = (props) => {
   };
 
   const checkOrder = () => {
-    const built = placed.map(p => p.text).join(' ');
-    if (built === question.answer) {
+    const target = question.answerTokens || question.answer.split(' ');
+    const built = placed.map(p => p.text);
+    if (built.join(' ') === target.join(' ')) {
       finish(true);
       return;
     }
@@ -96,7 +140,6 @@ const QuizGame = (props) => {
       finish(false);
     } else {
       // כמה מילים בהתחלה נכונות?
-      const target = question.answer.split(' ');
       let ok = 0;
       while (ok < placed.length && placed[ok].text === target[ok]) ok++;
       setFeedback({
@@ -135,13 +178,32 @@ const QuizGame = (props) => {
         <h2 className="game-title">{title}</h2>
       </div>
 
+      {testDone ? (
+        <TestSummary results={testResults} onRestart={restartTest} onBack={onBack} g={g} />
+      ) : (
       <motion.div
         className="question-card"
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         key={questionKey}
       >
+        {testLength > 0 && (
+          <div className="question-progress">
+            שאלה {Math.min(testResults.length + (feedback?.done ? 0 : 1), testLength)} מתוך {testLength}
+            <div className="progress-dots">
+              {Array.from({ length: testLength }, (_, i) => (
+                <span
+                  key={i}
+                  className={`dot ${i < testResults.length ? (testResults[i] ? 'ok' : 'bad') : i === testResults.length ? 'current' : ''}`}
+                />
+              ))}
+            </div>
+          </div>
+        )}
         <div className="question-label">{question.label}</div>
+        {question.instruction && (
+          <div className="instruction" dir="ltr">Instructions: {question.instruction}</div>
+        )}
         <h2 className="question-title">{g(question.prompt)}</h2>
 
         {question.emoji && <div className="picture-emoji">{question.emoji}</div>}
@@ -274,13 +336,14 @@ const QuizGame = (props) => {
                   ))}
                 </div>
               )}
-              <button className="next-button" onClick={nextQuestion}>
-                שאלה הבאה →
+              <button className="next-button" onClick={goNext}>
+                {testLength && testResults.length >= testLength ? 'לתוצאות המבחן →' : 'שאלה הבאה →'}
               </button>
             </motion.div>
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       {streak >= 3 && (
         <motion.div

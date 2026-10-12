@@ -30,6 +30,18 @@
   margin-bottom: 4px;
 }
 
+.instruction {
+  font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', Roboto, sans-serif;
+  font-style: italic;
+  color: #6b7280;
+  font-size: 1.05rem;
+  margin-top: 10px;
+}
+
+.summary-dots {
+  margin: 14px 0 20px;
+}
+
 .english-game .question-title {
   font-size: 1.6rem;
   margin: 12px 0 20px;

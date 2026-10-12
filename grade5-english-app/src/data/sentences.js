@@ -41,5 +41,14 @@ export const sentences = [
   { en: 'Please open the window.', he: 'בבקשה פתח/י את החלון.' },
   { en: 'It is raining outside today.', he: 'יורד גשם בחוץ היום.' },
   { en: 'I read a book every night.', he: 'אני קורא/ת ספר כל לילה.' },
-  { en: 'The teacher is in the library.', he: 'המורה בספרייה.' }
+  { en: 'The teacher is in the library.', he: 'המורה בספרייה.' },
+  // מהדף של אמא של חברה מהכיתה
+  { en: 'They like eating pizza for dinner.', he: 'הם אוהבים לאכול פיצה לארוחת ערב.' },
+  { en: 'We are going to school tomorrow.', he: 'אנחנו הולכים לבית הספר מחר.' },
+  { en: 'She has a beautiful new toy.', he: 'יש לה צעצוע חדש ויפה.' },
+  { en: 'Do you speak English?', he: 'את/ה מדבר/ת אנגלית?' },
+  { en: 'The dog is barking loudly.', he: 'הכלב נובח בקול רם.' },
+  { en: 'He can play soccer very well.', he: 'הוא יודע לשחק כדורגל טוב מאוד.' },
+  { en: 'Our teacher is very kind.', he: 'המורה שלנו נחמדה מאוד.' },
+  { en: 'I am reading an interesting book.', he: 'אני קורא/ת ספר מעניין.' }
 ];

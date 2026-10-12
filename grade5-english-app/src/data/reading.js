@@ -6,6 +6,23 @@
 
 export const readingPassages = [
   {
+    id: 'ben-puppy',
+    title: 'Ben\'s New Puppy',
+    text: `Ben is ten years old. He lives in a small house with his parents. Ben loves animals very much, but he doesn't have any pets.
+Yesterday was Ben's birthday. His parents gave him a special surprise: a small, white puppy! Ben is very happy because he always wanted a dog. The puppy has long ears and a short tail. Ben named his new puppy "Max".
+Max can run very fast, and he can jump high, but he can't swim yet. Ben and Max play with a ball in the garden every afternoon. Ben asks his mom, "Why does Max bark at the ball?" His mom smiles and says, "Because he thinks the ball is a game!" Ben loves Max and takes good care of him.`,
+    questions: [
+      { type: 'mc', q: 'How old is Ben?', options: ['eight', 'nine', 'ten', 'eleven'], answer: 'ten' },
+      { type: 'mc', q: 'Why is Ben happy?', options: ['Because he always wanted a dog', 'Because he has a new bike', 'Because it is summer', 'Because he can swim'], answer: 'Because he always wanted a dog' },
+      { type: 'mc', q: 'What color is the puppy?', options: ['black', 'brown', 'white', 'grey'], answer: 'white' },
+      { type: 'mc', q: 'What can Max do?', options: ['Fly and run.', 'Swim and jump.', 'Run and jump.'], answer: 'Run and jump.' },
+      { type: 'mc', q: 'Why does Max bark at the ball?', options: ['Because he is hungry', 'Because he thinks the ball is a game', 'Because he is scared', 'Because he wants to swim'], answer: 'Because he thinks the ball is a game' },
+      { type: 'yesno', q: 'Did Ben have a pet before his birthday?', answer: 'No' },
+      { type: 'yesno', q: 'Does the puppy have long ears?', answer: 'Yes' },
+      { type: 'order', q: 'Put the events in order:', events: ['Ben has no pets.', 'Ben\'s parents give him a puppy.', 'Ben names the puppy "Max".', 'Ben and Max play with a ball in the garden.'] }
+    ]
+  },
+  {
     id: 'maya',
     title: 'My Name Is Maya',
     text: `Hi! My name is Maya. I am ten years old. I live in Haifa with my family. I have a mother, a father and a little brother. My brother's name is Ben. He is five years old.

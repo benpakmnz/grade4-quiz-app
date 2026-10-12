@@ -229,6 +229,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null }) {
       key: category.id,
       category: category.id,
       title: category.title,
+      testLength: category.testLength || 0,
       onBack: () => setCurrentGame('home'),
       score,
       setScore,
