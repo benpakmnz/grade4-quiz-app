@@ -8,6 +8,7 @@ import { shuffle } from '../data/questionGenerator';
 import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
 import SpeakButton from './SpeakButton';
+import { LessonLauncher } from './LessonViewer';
 import { notifyLocalChange } from '../services/cloudSync';
 import './Game.css';
 import './EnglishGame.css';
@@ -117,6 +118,7 @@ const WritingGame = (props) => {
         <button className="back-button" onClick={onBack}>
           ← חזרה
         </button>
+        <LessonLauncher categoryId={"writing"} userData={userData} />
         <h2 className="game-title">{title}</h2>
       </div>
 
