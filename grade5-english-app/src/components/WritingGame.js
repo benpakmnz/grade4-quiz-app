@@ -10,6 +10,7 @@ import { useGameScoring } from '../utils/useGameScoring';
 import SpeakButton from './SpeakButton';
 import { LessonLauncher } from './LessonViewer';
 import { notifyLocalChange } from '../services/cloudSync';
+import { logMistake } from '../utils/mistakes';
 import './Game.css';
 import './EnglishGame.css';
 
@@ -52,7 +53,15 @@ const WritingGame = (props) => {
 
   const handleOption = (option) => {
     if (feedback?.done) return;
+    const log = (finalCorrect) => logMistake({
+      category: 'writing',
+      question: 'איזה משפט כתוב נכון?',
+      given: wrongOptions[0] ?? option,
+      correct: question.correct,
+      finalCorrect
+    });
     if (option === question.correct) {
+      if (wrongOptions.length > 0) log(true);
       const points = registerResult(true, wrongOptions.length === 0 ? 15 : 10);
       setFeedback({ done: true, correct: true, message: praise(), points });
     } else if (wrongOptions.length === 0) {
@@ -60,6 +69,7 @@ const WritingGame = (props) => {
       setFeedback({ done: false, message: g('לא נכון, נסי שוב! 💪') });
     } else {
       setWrongOptions([...wrongOptions, option]);
+      log(false);
       registerResult(false);
       setFeedback({ done: true, correct: false, message: g('לא נורא! בפעם הבאה תצליחי 💪') });
     }

@@ -5,6 +5,7 @@ import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
 import SpeakButton from './SpeakButton';
 import { LessonLauncher } from './LessonViewer';
+import { logMistake } from '../utils/mistakes';
 import './Game.css';
 import './EnglishGame.css';
 
@@ -44,6 +45,7 @@ const QuizGame = (props) => {
   const [feedback, setFeedback] = useState(null);
   const [attempts, setAttempts] = useState(0);
   const [wrongOptions, setWrongOptions] = useState([]);
+  const [firstWrong, setFirstWrong] = useState(null);
   // לסידור משפטים
   const [placed, setPlaced] = useState([]);
   const [showHint, setShowHint] = useState(false);
@@ -57,6 +59,7 @@ const QuizGame = (props) => {
     setFeedback(null);
     setAttempts(0);
     setWrongOptions([]);
+    setFirstWrong(null);
     setPlaced([]);
     setShowHint(false);
   }, [category]);
@@ -83,8 +86,25 @@ const QuizGame = (props) => {
 
   const maxAttempts = question.kind === 'order' ? 3 : question.options.length <= 2 ? 1 : 2;
 
-  const finish = (isCorrect) => {
+  // נוסח השאלה ליומן הטעויות
+  const describeQuestion = () => {
+    if (question.kind === 'order') return `${question.tokens.map(t => t.text).join(' / ')}  (${question.hint})`;
+    if (question.english) return question.english;
+    return `${question.emoji || ''} ${question.prompt}`.trim();
+  };
+
+  // wrongAnswer - התשובה השגויה הראשונה (אם הייתה)
+  const finish = (isCorrect, wrongAnswer = null) => {
     const firstTry = attempts === 0;
+    if (wrongAnswer !== null) {
+      logMistake({
+        category,
+        question: describeQuestion(),
+        given: wrongAnswer,
+        correct: question.answer,
+        finalCorrect: isCorrect
+      });
+    }
     const points = registerResult(isCorrect, firstTry ? 15 : 10);
     if (testLength) setTestResults(r => [...r, isCorrect]);
     setFeedback({
@@ -98,14 +118,16 @@ const QuizGame = (props) => {
   const handleOption = (option) => {
     if (feedback?.done) return;
     if (option === question.answer) {
-      finish(true);
+      finish(true, firstWrong);
       return;
     }
+    const first = firstWrong ?? option;
+    setFirstWrong(first);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
     setWrongOptions(prev => [...prev, option]);
     if (newAttempts >= maxAttempts) {
-      finish(false);
+      finish(false, first);
     } else {
       setFeedback({ done: false, message: g('לא נכון, נסי שוב! 💪') });
     }
@@ -132,13 +154,15 @@ const QuizGame = (props) => {
     const target = question.answerTokens || question.answer.split(' ');
     const built = placed.map(p => p.text);
     if (built.join(' ') === target.join(' ')) {
-      finish(true);
+      finish(true, firstWrong);
       return;
     }
+    const first = firstWrong ?? built.join(' ');
+    setFirstWrong(first);
     const newAttempts = attempts + 1;
     setAttempts(newAttempts);
     if (newAttempts >= maxAttempts) {
-      finish(false);
+      finish(false, first);
     } else {
       // כמה מילים בהתחלה נכונות?
       let ok = 0;
