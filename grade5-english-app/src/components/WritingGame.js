@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  correctSentenceQuestions, sentenceStarters, modelParagraph, writingChecks, splitSentences
+  sentenceStarters, modelParagraph, writingChecks, splitSentences
 } from '../data/writing';
+import { getBank } from '../data/contentStore';
 import { shuffle } from '../data/questionGenerator';
 import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
@@ -16,6 +17,7 @@ const PASS_CHECKS = 8; // כמה בדיקות צריך לעבור כדי שהק�
 
 let usedIdx = new Set();
 const pickSentenceQuestion = () => {
+  const correctSentenceQuestions = getBank('writing');
   let available = correctSentenceQuestions.map((_, i) => i).filter(i => !usedIdx.has(i));
   if (available.length === 0) {
     usedIdx = new Set();
