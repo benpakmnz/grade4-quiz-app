@@ -13,6 +13,7 @@ import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import { getGenderText } from './utils/genderText';
 import { categories, getEmptyCategoryStats, getDaysUntilExam, TARGET_PER_CATEGORY } from './data/categories';
+import { notifyLocalChange } from './services/cloudSync';
 import {
   Box,
   Text,
@@ -22,7 +23,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 
-function App() {
+function App({ authUser = null, cloudEnabled = false, syncError = null }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -129,6 +130,12 @@ function App() {
     localStorage.setItem('english_categoryStats', JSON.stringify(categoryStats));
   }, [categoryStats, isInitialLoad]);
 
+  // שמירה בענן אחרי כל שינוי (רק כשמחוברים; עם השהיה קצרה)
+  useEffect(() => {
+    if (isInitialLoad) return;
+    notifyLocalChange();
+  }, [score, streak, questionCount, userData, gameHistory, categoryStats, isInitialLoad]);
+
   const handleWelcomeComplete = (data) => {
     
     // Add default values if not provided
@@ -144,6 +151,7 @@ function App() {
     const isFirstTime = !localStorage.getItem('english_hasSeenWelcome');
     if (isFirstTime) {
       localStorage.setItem('english_hasSeenWelcome', 'true');
+      notifyLocalChange();
       // Small delay to let the UI render first
       setTimeout(() => {
         setShowWelcomeDialog(true);
@@ -198,7 +206,7 @@ function App() {
 
   const renderGame = () => {
     if (currentGame === 'welcome') {
-      return <WelcomeScreen onStart={handleWelcomeComplete} />;
+      return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={(authUser?.displayName || '').split(' ')[0]} />;
     }
     if (currentGame === 'home') {
       return <HomePage
@@ -249,6 +257,10 @@ function App() {
         : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
       <BackgroundElements />
+
+      {syncError && currentGame !== 'welcome' && (
+        <div className="sync-error-banner">⚠️ {syncError}</div>
+      )}
       
       {/* Fixed Header */}
       {currentGame !== 'welcome' && (
@@ -290,6 +302,9 @@ function App() {
                   >
                     שלום {userData.name}! 👋
                   </Text>
+                  {authUser && (
+                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${authUser.email})`}>☁️</Text>
+                  )}
                 </HStack>
               )}
   
@@ -376,6 +391,9 @@ function App() {
                   >
                     שלום {userData.name}! 👋
                   </Text>
+                  {authUser && (
+                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${authUser.email})`}>☁️</Text>
+                  )}
                 </HStack>
               )}
   
@@ -457,6 +475,8 @@ function App() {
       {showProfileEdit && userData && (
         <ProfileEditDialog
           userData={userData}
+          authUser={authUser}
+          cloudEnabled={cloudEnabled}
           onSave={handleProfileSave}
           onClose={closeProfileEdit}
         />

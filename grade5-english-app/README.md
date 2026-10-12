@@ -19,6 +19,24 @@
 
 🔊 בכל מקום שיש כפתור רמקול אפשר לשמוע את המילה / המשפט באנגלית (Web Speech API - בלי שרת ובלי מפתח API).
 
+## ☁️ התחברות עם Google ושמירה בענן (Firebase)
+
+האפליקציה משתמשת באותו פרויקט Firebase של משחק יום ההולדת (`rotem-heart-bank`).
+כל ילד/ה מתחבר/ת עם Google, וההתקדמות (פרופיל, נקודות, הישגים, סטטיסטיקה וטיוטת הכתיבה) נשמרת תחת
+`english/users/<uid>` ב-Realtime Database ועוברת בין מכשירים. בלי אינטרנט האפליקציה ממשיכה לעבוד ומסתנכרנת כשהחיבור חוזר.
+אפשר גם "להמשיך בלי התחברות" - אז הכול נשמר רק בדפדפן, ואפשר להתחבר מאוחר יותר מחלון עריכת הפרופיל (לחיצה על השם) וההתקדמות תעלה לענן.
+
+**הגדרה חד-פעמית ב-[Firebase Console](https://console.firebase.google.com) ← פרויקט `rotem-heart-bank`:**
+1. **Authentication ← Get started ← Sign-in method ← Google ← Enable** (לבחור אימייל תמיכה ← Save).
+2. **Authentication ← Settings ← Authorized domains ← Add domain** - להוסיף את כתובת האתר ב-Vercel (למשל `grade5-english-app.vercel.app`). `localhost` כבר מאושר.
+3. **Realtime Database ← Rules** - למחוק הכול, להדביק את כל התוכן של [`database.rules.json`](database.rules.json) ו-**Publish**.
+   הקובץ כולל גם את הכללים של משחק יום ההולדת (`rooms`), כך שהמשחק ממשיך לעבוד. כל ילד/ה יכול/ה לקרוא ולכתוב רק את הנתונים של עצמו/ה.
+4. **Project settings ⚙️ ← Your apps ← `</>`** - לרשום אפליקציית Web, ולהעתיק מה-`firebaseConfig` את `apiKey` ו-`appId`.
+5. ב-Vercel: **Settings ← Environment Variables** - להוסיף את המשתנים מ-[`.env.example`](.env.example) עם הערכים, ואז **Redeploy**
+   (הערכים נכנסים לקוד בזמן הבנייה). להרצה מקומית - קובץ `.env.local` עם אותם משתנים.
+
+בלי המשתנים האלה האפליקציה עובדת כמו קודם, בלי מסך התחברות.
+
 ## 🚀 הרצה
 
 ```bash

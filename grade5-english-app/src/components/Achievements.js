@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './Achievements.css';
 import { getGenderText } from '../utils/genderText';
+import { notifyLocalChange, pushNow } from '../services/cloudSync';
 import { categories, TARGET_PER_CATEGORY, getDaysUntilExam } from '../data/categories';
 
 const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData }) => {
@@ -161,7 +162,11 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
   // Save unlocked achievements to localStorage whenever they change
   useEffect(() => {
     if (unlockedAchievements.length > 0) {
-      localStorage.setItem('english_achievements', JSON.stringify(unlockedAchievements));
+      const value = JSON.stringify(unlockedAchievements);
+      if (localStorage.getItem('english_achievements') !== value) {
+        localStorage.setItem('english_achievements', value);
+        notifyLocalChange();
+      }
     }
   }, [unlockedAchievements]);
 
@@ -243,14 +248,17 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
                 e.target.style.transform = 'translateY(0)';
                 e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
               }}
-              onClick={() => {
-                if (window.confirm(getGenderText('האם אתה בטוח שברצונך לאפס את כל הנתונים?', userData?.gender))) {
+              onClick={async () => {
+                if (window.confirm(getGenderText('האם את בטוחה שברצונך לאפס את כל הנתונים?', userData?.gender))) {
                   localStorage.removeItem('english_categoryStats');
                   localStorage.removeItem('english_score');
                   localStorage.removeItem('english_streak');
                   localStorage.removeItem('english_questionCount');
                   localStorage.removeItem('english_history');
                   localStorage.removeItem('english_achievements');
+                  localStorage.setItem('english_localUpdatedAt', String(Date.now()));
+                  // לעדכן גם את הענן לפני הטעינה מחדש, אחרת הנתונים הישנים יחזרו
+                  await pushNow().catch(() => {});
                   window.location.reload();
                 }
               }}

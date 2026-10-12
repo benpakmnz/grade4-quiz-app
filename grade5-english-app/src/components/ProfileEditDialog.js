@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ProfileEditDialog.css';
+import { signInWithGoogle, signOut, describeAuthError } from '../services/firebase';
+import { pushNow, clearLocalProgress, deleteCloudProgress } from '../services/cloudSync';
 
-const ProfileEditDialog = ({ userData, onSave, onClose }) => {
+const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEnabled = false }) => {
+  const [accountBusy, setAccountBusy] = useState(false);
+  const [accountError, setAccountError] = useState(null);
   const [name, setName] = useState(userData.name);
   const [gender, setGender] = useState(userData.gender || 'female');
   const [selectedCharacter, setSelectedCharacter] = useState(userData.character);
@@ -45,19 +49,42 @@ const ProfileEditDialog = ({ userData, onSave, onClose }) => {
         character: selectedCharacter,
         themeColor: selectedColor
       };
-      console.log('ProfileEditDialog - Saving:', dataToSave);
       onSave(dataToSave);
       onClose();
     }
   };
 
-  const handleDeleteProfile = () => {
-    if (window.confirm('האם אתה בטוח שברצונך למחוק את הפרופיל? כל הנתונים יימחקו לצמיתות!')) {
-      // Clear all localStorage
-      localStorage.clear();
-      // Reload the page to start fresh
+  const handleDeleteProfile = async () => {
+    const where = authUser ? ' (גם מהענן)' : '';
+    if (window.confirm(`האם למחוק את הפרופיל? כל הנתונים יימחקו לצמיתות${where}!`)) {
+      if (authUser) {
+        await deleteCloudProgress().catch(() => {});
+      }
+      clearLocalProgress();
       window.location.reload();
     }
+  };
+
+  const handleSignIn = async () => {
+    setAccountBusy(true);
+    setAccountError(null);
+    try {
+      // אחרי ההתחברות ההתקדמות מהמכשיר הזה עולה לענן אוטומטית
+      await signInWithGoogle();
+    } catch (err) {
+      setAccountError(describeAuthError(err));
+      setAccountBusy(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    if (!window.confirm('להתנתק? ההתקדמות שמורה בענן ותחזור בהתחברות הבאה.')) return;
+    setAccountBusy(true);
+    await pushNow().catch(() => {});
+    await signOut();
+    // לא להשאיר את הנתונים במכשיר - אולי ילד/ה אחר/ת יתחבר/ו כאן
+    clearLocalProgress();
+    window.location.reload();
   };
 
   return (
@@ -177,6 +204,27 @@ const ProfileEditDialog = ({ userData, onSave, onClose }) => {
               </div>
             </div>
           </div>
+
+          {cloudEnabled && (
+            <div className="account-section">
+              {authUser ? (
+                <>
+                  <span>☁️ מחובר/ת עם Google: <b dir="ltr">{authUser.email}</b> - ההתקדמות נשמרת בענן</span>
+                  <button className="account-btn" onClick={handleSignOut} disabled={accountBusy}>
+                    🚪 התנתקות
+                  </button>
+                </>
+              ) : (
+                <>
+                  <span>📱 ההתקדמות נשמרת רק במכשיר הזה</span>
+                  <button className="account-btn primary" onClick={handleSignIn} disabled={accountBusy}>
+                    {accountBusy ? 'מתחברים...' : '☁️ התחברות עם Google לשמירה בענן'}
+                  </button>
+                </>
+              )}
+              {accountError && <div className="account-error">⚠️ {accountError}</div>}
+            </div>
+          )}
 
           <div className="profile-dialog-footer">
             <button 

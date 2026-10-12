@@ -7,6 +7,7 @@ import { shuffle } from '../data/questionGenerator';
 import { getGenderText } from '../utils/genderText';
 import { useGameScoring } from '../utils/useGameScoring';
 import SpeakButton from './SpeakButton';
+import { notifyLocalChange } from '../services/cloudSync';
 import './Game.css';
 import './EnglishGame.css';
 
@@ -75,7 +76,10 @@ const WritingGame = (props) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, text);
+      if (localStorage.getItem(DRAFT_KEY) !== text) {
+        localStorage.setItem(DRAFT_KEY, text);
+        notifyLocalChange();
+      }
     } catch {
       // ignore
     }

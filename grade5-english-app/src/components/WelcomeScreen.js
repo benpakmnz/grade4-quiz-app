@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import './WelcomeScreen.css';
 
-const WelcomeScreen = ({ onStart }) => {
-  const [name, setName] = useState('');
+const WelcomeScreen = ({ onStart, defaultName = '' }) => {
+  const [name, setName] = useState(defaultName);
   const [gender, setGender] = useState('female');
   const [selectedCharacter, setSelectedCharacter] = useState(null);
   const [selectedColor, setSelectedColor] = useState('#667eea');
