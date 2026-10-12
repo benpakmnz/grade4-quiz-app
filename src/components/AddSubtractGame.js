@@ -48,7 +48,7 @@ const AddSubtractGame = ({ onBack, score, setScore, streak, setStreak, questionC
 
   useEffect(() => {
     generateQuestion();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const checkAnswer = () => {
     const isCorrect = parseInt(userAnswer) === question.answer;
