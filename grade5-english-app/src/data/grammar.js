@@ -1,4 +1,4 @@
-// שאלות דקדוק: is/are, has/have, can/can't, because/why
+// שאלות דקדוק: am/is/are, has/have, can/can't, because/why
 // כל שאלה: sentence עם ____ במקום החסר, answer, ו-why (הסבר קצר בעברית)
 
 export const isAre = [
@@ -37,7 +37,27 @@ export const isAre = [
   { sentence: 'Where ____ my keys?', answer: 'are', why: 'keys = רבים ← are' },
   { sentence: 'What ____ your name?', answer: 'is', why: 'your name = שם אחד ← is' },
   { sentence: 'Dana and I ____ in the same class.', answer: 'are', why: 'Dana and I = we ← are' },
-  { sentence: 'The milk ____ in the fridge.', answer: 'is', why: 'milk = it ← is' }
+  { sentence: 'The milk ____ in the fridge.', answer: 'is', why: 'milk = it ← is' },
+  // am - רק עם I
+  { sentence: 'I ____ ten years old.', answer: 'am', why: 'עם I תמיד am' },
+  { sentence: 'I ____ so excited for the English test tomorrow!', answer: 'am', why: 'עם I תמיד am' },
+  { sentence: 'I ____ hungry. Can I have a sandwich?', answer: 'am', why: 'עם I תמיד am' },
+  { sentence: 'I ____ in the fifth grade.', answer: 'am', why: 'עם I תמיד am' },
+  { sentence: 'I ____ reading an interesting book.', answer: 'am', why: 'עם I תמיד am' },
+  { sentence: '____ I late for the lesson?', answer: 'Am', why: 'עם I תמיד Am (גם בשאלה)' },
+  // מהדף של אמא של חברה מהכיתה
+  { sentence: 'She ____ a very smart student in my class.', answer: 'is', why: 'עם she משתמשים ב-is' },
+  { sentence: 'They ____ playing football in the park right now.', answer: 'are', why: 'עם they משתמשים ב-are' },
+  { sentence: 'The dog ____ barking loudly at the cat.', answer: 'is', why: 'The dog = it ← is' },
+  { sentence: 'We ____ going to the beach this weekend.', answer: 'are', why: 'עם we משתמשים ב-are' },
+  { sentence: 'My brother and I ____ best friends.', answer: 'are', why: 'My brother and I = we ← are' },
+  { sentence: 'You ____ always helpful when I do my homework.', answer: 'are', why: 'עם you תמיד are' },
+  { sentence: 'The books ____ on the top shelf of the library.', answer: 'are', why: 'The books = רבים ← are' },
+  { sentence: 'It ____ a sunny day today.', answer: 'is', why: 'עם it משתמשים ב-is' },
+  { sentence: 'Danny ____ the tallest boy in fifth grade.', answer: 'is', why: 'Danny = he ← is' },
+  { sentence: 'Tom and Jerry ____ classic cartoon characters.', answer: 'are', why: 'Tom and Jerry = they ← are' },
+  { sentence: 'You ____ the best student here.', answer: 'are', why: 'עם you תמיד are' },
+  { sentence: '____ you ready for the final test?', answer: 'Are', why: 'עם you תמיד Are' }
 ];
 
 export const hasHave = [
@@ -70,7 +90,18 @@ export const hasHave = [
   { sentence: 'We ____ a new teacher this year.', answer: 'have', why: 'עם we משתמשים ב-have' },
   { sentence: 'The giraffe ____ a long neck.', answer: 'has', why: 'The giraffe = it ← has' },
   { sentence: 'My sisters ____ blue eyes.', answer: 'have', why: 'My sisters = they ← have' },
-  { sentence: 'The farmer ____ ten cows.', answer: 'has', why: 'The farmer = he ← has' }
+  { sentence: 'The farmer ____ ten cows.', answer: 'has', why: 'The farmer = he ← has' },
+  // מהדף של אמא של חברה מהכיתה
+  { sentence: 'My sister ____ a beautiful blue bicycle.', answer: 'has', why: 'My sister = she ← has' },
+  { sentence: 'We ____ a lot of homework to finish today.', answer: 'have', why: 'עם we משתמשים ב-have' },
+  { sentence: 'I ____ a big dog named Max.', answer: 'have', why: 'עם I משתמשים ב-have' },
+  { sentence: 'They ____ a new computer in their classroom.', answer: 'have', why: 'עם they משתמשים ב-have' },
+  { sentence: 'He ____ a guitar lesson every Tuesday afternoon.', answer: 'has', why: 'עם he משתמשים ב-has' },
+  { sentence: 'The students ____ lunch at 12 o\'clock.', answer: 'have', why: 'The students = they ← have' },
+  { sentence: 'It ____ been a wonderful day so far.', answer: 'has', why: 'עם it משתמשים ב-has' },
+  { sentence: 'You ____ a very nice smile.', answer: 'have', why: 'עם you משתמשים ב-have' },
+  { sentence: 'My friend ____ a pet rabbit.', answer: 'has', why: 'My friend = he / she ← has' },
+  { sentence: 'The boys ____ a new basketball game.', answer: 'have', why: 'The boys = they ← have' }
 ];
 
 // can / can't - לפי ההיגיון של המשפט
@@ -104,7 +135,19 @@ export const canCant = [
   { sentence: 'I am hungry. ____ I have a sandwich, please?', answer: 'Can', why: 'בקשה מנומסת: Can I have...?' },
   { sentence: 'Dad is a good cook. He ____ make pizza.', answer: 'can', why: 'אבא טבח טוב - הוא יכול להכין פיצה' },
   { sentence: 'The baby ____ walk. She is only three months old.', answer: 'can\'t', why: 'תינוקת בת 3 חודשים עוד לא הולכת' },
-  { sentence: 'Fish ____ live without water.', answer: 'can\'t', why: 'דגים לא יכולים לחיות בלי מים' }
+  { sentence: 'Fish ____ live without water.', answer: 'can\'t', why: 'דגים לא יכולים לחיות בלי מים' },
+  // מהדף של אמא של חברה מהכיתה
+  { sentence: 'Birds can fly high, but elephants ____ fly at all.', answer: 'can\'t', why: 'לפילים אין כנפיים 🐘' },
+  { sentence: 'I am fluent in English, so I ____ speak with you easily.', answer: 'can', why: 'אני שולט/ת באנגלית - אני יכול/ה לדבר' },
+  { sentence: 'He broke his leg, so he ____ play soccer today.', answer: 'can\'t', why: 'הרגל שבורה - הוא לא יכול לשחק' },
+  { sentence: 'It is too dark outside. I ____ see anything without a flashlight.', answer: 'can\'t', why: 'חושך - אי אפשר לראות בלי פנס' },
+  { sentence: 'Monkeys ____ climb trees quickly.', answer: 'can', why: 'קופים יכולים לטפס מהר 🐒' },
+  { sentence: 'She is only one year old, so she ____ read books yet.', answer: 'can\'t', why: 'בת שנה עוד לא יודעת לקרוא' },
+  { sentence: 'If you study hard, you ____ pass the English exam.', answer: 'can', why: 'אם לומדים - אפשר להצליח! 💪' },
+  { sentence: 'A turtle ____ walk fast; it is very slow.', answer: 'can\'t', why: 'צב איטי מאוד 🐢' },
+  { sentence: 'We have free time now, so we ____ watch a movie.', answer: 'can', why: 'יש זמן פנוי - אפשר לראות סרט' },
+  { sentence: 'An owl ____ see very well in the dark.', answer: 'can', why: 'ינשוף רואה טוב בחושך 🦉' },
+  { sentence: 'Cats ____ fly, but they can jump high.', answer: 'can\'t', why: 'לחתולים אין כנפיים' }
 ];
 
 // because / why - why שואל "למה?", because עונה "כי..."
@@ -128,7 +171,21 @@ export const becauseWhy = [
   { sentence: '____ do birds fly south? Because it is cold in winter.', answer: 'Why', why: 'שאלה ← Why' },
   { sentence: 'My mom is angry ____ my room is not clean.', answer: 'because', why: 'הסבר לסיבה ← because' },
   { sentence: '____ are you running? Because I am late for school.', answer: 'Why', why: 'שאלה ← Why' },
-  { sentence: 'I love Saturday ____ there is no school.', answer: 'because', why: 'הסבר לסיבה ← because' }
+  { sentence: 'I love Saturday ____ there is no school.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  // מהדף של אמא של חברה מהכיתה
+  { sentence: '____ are you late for school this morning?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'I am wearing a coat ____ it is very cold outside.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: '____ is she smiling so happily?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'She is happy ____ she got a 100 on her test.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: '____ do we need to eat healthy food?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'We eat vegetables ____ they are good for our body.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: '____ are the lights turned off in the living room?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'The lights are off ____ everyone is sleeping.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: '____ did you choose this book from the library?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'I chose it ____ I love stories about space.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: '____ is the baby crying?', answer: 'Why', why: 'שאלה ← Why' },
+  { sentence: 'I am crying ____ I lost my favorite pen.', answer: 'because', why: 'הסבר לסיבה ← because' },
+  { sentence: 'We love summer ____ we can go swimming.', answer: 'because', why: 'הסבר לסיבה ← because' }
 ];
 
 // התאמת שאלת Why לתשובה המתאימה (Because...)

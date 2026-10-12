@@ -176,6 +176,11 @@ const PassageGame = (props) => {
           <div className="passage-title" dir="ltr">
             {isListening ? '🎧 ' : '📖 '}{passage.title}
           </div>
+          <div className="instruction" dir="ltr">
+            Instructions: {isListening
+              ? 'Listen to the text and answer the questions.'
+              : 'Read the story and answer the questions below.'}
+          </div>
 
           {isListening && (
             <div className="listening-controls">

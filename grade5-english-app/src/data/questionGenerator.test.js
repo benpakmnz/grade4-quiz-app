@@ -1,9 +1,9 @@
-import { generateQuestion, getPassage } from './questionGenerator';
+import { generateQuestion, getPassage, toTiles } from './questionGenerator';
 import { categories } from './categories';
 import { readingPassages, listeningPassages } from './reading';
 import { correctSentenceQuestions, writingChecks, splitSentences, modelParagraph } from './writing';
 
-const quizCategories = ['vocabulary', 'isAre', 'hasHave', 'canCant', 'becauseWhy', 'sentenceOrder'];
+const quizCategories = ['vocabulary', 'isAre', 'hasHave', 'canCant', 'becauseWhy', 'sentenceOrder', 'mixed'];
 
 describe('question generator', () => {
   quizCategories.forEach(cat => {
@@ -16,7 +16,7 @@ describe('question generator', () => {
           expect(new Set(q.options).size).toBe(q.options.length);
           if (q.english) expect(typeof q.english).toBe('string');
         } else {
-          expect(q.tokens.map(t => t.text).sort()).toEqual(q.answer.split(' ').sort());
+          expect(q.tokens.map(t => t.text).sort()).toEqual([...q.answerTokens].sort());
         }
       }
     });
@@ -27,6 +27,30 @@ describe('question generator', () => {
       const q = generateQuestion('vocabulary');
       if (q.emoji) expect(q.options).toContain(q.answer);
     }
+  });
+
+  test('am / is / are offers all three, capitalized at the start of a sentence', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generateQuestion('isAre');
+      expect(q.options).toHaveLength(3);
+      if (/^____/.test(q.english)) expect(q.options).toEqual(['Am', 'Is', 'Are']);
+    }
+  });
+
+  test('mixed test shows the choice in brackets with two options', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = generateQuestion('mixed');
+      expect(q.options).toHaveLength(2);
+      expect(q.english).toContain(`( ${q.options.join(' / ')} )`);
+      expect(q.instruction).toBe('Circle the correct word.');
+    }
+  });
+
+  test('sentence tiles look like the worksheet', () => {
+    expect(toTiles('Do you speak English?')).toEqual(['do', 'you', 'speak', 'English', '?']);
+    expect(toTiles('I am reading an interesting book.')).toEqual(['I', 'am', 'reading', 'an', 'interesting', 'book']);
+    expect(toTiles('Dan and Tom are good friends.')).toEqual(['Dan', 'and', 'Tom', 'are', 'good', 'friends']);
+    expect(toTiles('We have English on Monday.')).toEqual(['we', 'have', 'English', 'on', 'Monday']);
   });
 
   test('every category is routable', () => {

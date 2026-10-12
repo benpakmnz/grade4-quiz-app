@@ -25,9 +25,9 @@ export const categories = [
   },
   {
     id: 'isAre',
-    title: '🟰 is / are',
-    name: 'is / are',
-    description: 'יחיד או רבים?',
+    title: '🟰 am / is / are',
+    name: 'am / is / are',
+    description: 'אני, יחיד או רבים?',
     color: 'purple.500',
     emoji: '👥',
     section: 'דקדוק'
@@ -94,6 +94,16 @@ export const categories = [
     color: 'red.500',
     emoji: '📝',
     section: 'כתיבה'
+  },
+  {
+    id: 'mixed',
+    title: '🎯 מבחן מסכם',
+    name: 'מבחן מסכם',
+    description: '10 שאלות מעורבות: הקיפי את המילה הנכונה',
+    color: 'purple.600',
+    emoji: '📋',
+    section: 'כל הדקדוק',
+    testLength: 10
   }
 ];
 
