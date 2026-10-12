@@ -3,6 +3,7 @@ import App from '../App';
 import LoginScreen from './LoginScreen';
 import { isCloudConfigured, onUserChanged } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
+import { subscribeContent, checkIsAdmin } from '../services/contentSync';
 import './LoginScreen.css';
 
 const readGuest = () => {
@@ -18,6 +19,10 @@ const AuthGate = () => {
   const [state, setState] = useState(isCloudConfigured ? 'checking' : 'local');
   const [user, setUser] = useState(null);
   const [syncError, setSyncError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // שאלות שנוספו בממשק הניהול - נטענות לכולם (גם בלי התחברות)
+  useEffect(() => (isCloudConfigured ? subscribeContent() : undefined), []);
 
   useEffect(() => {
     if (!isCloudConfigured) return undefined;
@@ -25,6 +30,7 @@ const AuthGate = () => {
       if (!u) {
         stopSync();
         setUser(null);
+        setIsAdmin(false);
         setState(readGuest() ? 'guest' : 'login');
         return;
       }
@@ -39,6 +45,7 @@ const AuthGate = () => {
           ? 'Firebase חוסם את השמירה - צריך לפרסם את כללי האבטחה (database.rules.json)'
           : 'לא הצלחנו להתחבר לענן - ההתקדמות נשמרת כרגע רק במכשיר');
       }
+      setIsAdmin(await checkIsAdmin(u.uid));
       setUser(u);
       setState('ready');
     });
@@ -72,7 +79,15 @@ const AuthGate = () => {
     );
   }
 
-  return <App key={user?.uid || 'local'} authUser={user} cloudEnabled={isCloudConfigured} syncError={syncError} />;
+  return (
+    <App
+      key={user?.uid || 'local'}
+      authUser={user}
+      cloudEnabled={isCloudConfigured}
+      syncError={syncError}
+      isAdmin={isAdmin}
+    />
+  );
 };
 
 export default AuthGate;

@@ -1,0 +1,273 @@
+.admin-panel {
+  width: calc(100vw - 40px);
+  max-width: 1000px;
+  box-sizing: border-box;
+}
+
+.admin-panel .game-header {
+  margin-bottom: 24px;
+}
+
+.admin-card {
+  background: white;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-tabs, .admin-subtabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-tab, .admin-subtab {
+  border: 2px solid #c7d2fe;
+  background: white;
+  color: #4338ca;
+  border-radius: 50px;
+  padding: 6px 14px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.admin-tab.active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: white;
+}
+
+.admin-subtab.active {
+  background: #eef2ff;
+  border-color: #4f46e5;
+}
+
+.admin-stats {
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+.admin-hint {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.admin-message {
+  background: #ecfdf5;
+  color: #065f46;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.admin-error {
+  background: #fff3cd;
+  color: #856404;
+  font-weight: bold;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.admin-save {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  padding: 12px 24px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.admin-save:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.admin-small-btn {
+  background: white;
+  border: 2px solid #c7d2fe;
+  color: #4338ca;
+  border-radius: 50px;
+  padding: 5px 12px;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  font-size: 0.9rem;
+}
+
+.admin-small-btn.danger {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.admin-form {
+  background: #f8fafc;
+  border: 2px dashed #c7d2fe;
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-field > label {
+  font-weight: bold;
+  color: #374151;
+}
+
+.admin-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 9px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  background: white;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #6366f1;
+}
+
+.admin-input.narrow {
+  width: auto;
+}
+
+textarea.admin-input {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.admin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-row > .admin-input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.admin-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.admin-option input[type="radio"],
+.admin-option input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.admin-questions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.admin-question {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.admin-filters {
+  margin-top: 6px;
+}
+
+.admin-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.admin-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid #f3f4f6;
+  border-radius: 12px;
+}
+
+.admin-item.is-hidden {
+  opacity: 0.55;
+}
+
+.admin-item-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.admin-badge {
+  font-size: 0.75rem;
+  font-weight: bold;
+  border-radius: 50px;
+  padding: 3px 10px;
+  flex-shrink: 0;
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.admin-badge.custom {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.admin-empty {
+  color: #9ca3af;
+  text-align: center;
+  padding: 20px;
+}
+
+@media (max-width: 768px) {
+  .admin-panel {
+    width: calc(100vw - 20px);
+    margin-top: 110px;
+    padding: 10px;
+  }
+
+  .admin-card {
+    padding: 14px;
+  }
+
+  .admin-item {
+    flex-wrap: wrap;
+  }
+}

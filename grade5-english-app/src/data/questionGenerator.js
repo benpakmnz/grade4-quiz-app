@@ -1,7 +1,4 @@
-import { words, fillSentences } from './vocabulary';
-import { isAre, hasHave, canCant, becauseWhy, whyMatch } from './grammar';
-import { sentences } from './sentences';
-import { readingPassages, listeningPassages } from './reading';
+import { getBank } from './contentStore';
 
 export const shuffle = (arr) => {
   const a = [...arr];
@@ -16,7 +13,7 @@ const pickRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
 // מעקב אחרי שאלות שכבר הופיעו כדי למנוע חזרות עד שהמאגר נגמר
 const used = {};
-const pickUnused = (key, bank) => {
+const pickUnused = (key, bank = getBank(key)) => {
   if (!used[key]) used[key] = new Set();
   let available = bank.map((_, i) => i).filter(i => !used[key].has(i));
   if (available.length === 0) {
@@ -32,6 +29,7 @@ const pickUnused = (key, bank) => {
 const pickDistractors = (word, field, count = 3) => {
   const taken = new Set([word[field], word.en]);
   const result = [];
+  const words = getBank('words');
   const sameGroup = shuffle(words.filter(w => w.group === word.group));
   const others = shuffle(words.filter(w => w.group !== word.group));
   for (const w of [...sameGroup, ...others]) {
@@ -51,7 +49,7 @@ const vocabularyQuestion = () => {
   const type = pickRandom(['enToHe', 'heToEn', 'picture', 'definition', 'wordBank', 'wordBank']);
 
   if (type === 'wordBank') {
-    const item = pickUnused('fill', fillSentences);
+    const item = pickUnused('fill');
     const bank = shuffle([item.answer, ...item.distractors]);
     return {
       kind: 'mc',
@@ -67,7 +65,7 @@ const vocabularyQuestion = () => {
     };
   }
 
-  const word = pickUnused('words', words);
+  const word = pickUnused('words');
 
   if (type === 'enToHe') {
     const distractors = pickDistractors(word, 'he');
@@ -133,28 +131,24 @@ const vocabularyQuestion = () => {
 // ---------- דקדוק ----------
 const GRAMMAR = {
   isAre: {
-    bank: isAre,
     options: ['am', 'is', 'are'],
     label: 'am / is / are',
     instruction: 'Fill in the blank with am, is, or are.',
     rule: 'I ← am | יחיד (he, she, it, שם אחד) ← is | רבים (we, you, they, כמה) ← are'
   },
   hasHave: {
-    bank: hasHave,
     options: ['has', 'have'],
     label: 'has / have',
     instruction: 'Fill in the blank with have or has.',
     rule: 'he, she, it ← has | I, you, we, they ← have'
   },
   canCant: {
-    bank: canCant,
     options: ['can', 'can\'t'],
     label: 'can / can\'t',
     instruction: 'Fill in the blank with can (ability) or can\'t (inability).',
     rule: 'can = יכול/ה | can\'t = לא יכול/ה'
   },
   becauseWhy: {
-    bank: becauseWhy,
     options: ['why', 'because'],
     label: 'because / why',
     instruction: 'Fill in the blank with Why or because.',
@@ -172,7 +166,7 @@ const blankStartsSentence = (sentence) => /(^|[.!?]\s+)____/.test(sentence);
  */
 const grammarQuestion = (key, style = 'blank') => {
   const g = GRAMMAR[key];
-  const item = pickUnused(key, g.bank);
+  const item = pickUnused(key);
   const atStart = blankStartsSentence(item.sentence);
   const fix = (o) => (atStart ? capitalize(o) : o);
   const answer = fix(item.answer.toLowerCase());
@@ -202,7 +196,7 @@ const grammarQuestion = (key, style = 'blank') => {
 
 const becauseWhyQuestion = () => {
   if (Math.random() < 0.3) {
-    const item = pickUnused('whyMatch', whyMatch);
+    const item = pickUnused('whyMatch');
     return {
       kind: 'mc',
       label: 'שאלת Why ← תשובת Because',
@@ -227,9 +221,9 @@ const mixedQuestion = () => {
 // ---------- סידור משפטים ----------
 // מילים שנשארות באות גדולה גם כשהן מעורבבות (I, שמות, ימים, שפות)
 const NAMES = ['I', 'Dan', 'Tom', 'Danny', 'Maya', 'Noa', 'Ben', 'Max'];
-const KEEP_CASE = new Set([
+const keepCase = () => new Set([
   ...NAMES,
-  ...sentences.flatMap(s => s.en.split(' ').slice(1).filter(w => /^[A-Z]/.test(w)).map(w => w.replace(/[.,!?]$/, '')))
+  ...getBank('sentences').flatMap(s => s.en.split(' ').slice(1).filter(w => /^[A-Z]/.test(w)).map(w => w.replace(/[.,!?]$/, '')))
 ]);
 
 // כמו בדף העבודה: מילים קטנות, בלי נקודה בסוף, וסימן שאלה כאריח נפרד
@@ -243,12 +237,12 @@ export const toTiles = (sentence) => {
     if (end === '?') tiles.push('?');
   }
   const first = tiles[0];
-  if (!KEEP_CASE.has(first)) tiles[0] = first.toLowerCase();
+  if (!keepCase().has(first)) tiles[0] = first.toLowerCase();
   return tiles;
 };
 
 const sentenceOrderQuestion = () => {
-  const item = pickUnused('sentences', sentences);
+  const item = pickUnused('sentences');
   const tiles = toTiles(item.en);
   const target = tiles.join(' ');
   let scrambled = shuffle(tiles);
@@ -288,5 +282,5 @@ export const generateQuestion = (category) => {
 
 export const getPassage = (category) =>
   category === 'listening'
-    ? pickUnused('listening', listeningPassages)
-    : pickUnused('reading', readingPassages);
+    ? pickUnused('listening')
+    : pickUnused('reading');

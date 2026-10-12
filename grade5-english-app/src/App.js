@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
+import AdminPanel from './components/AdminPanel';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
 import ProfileEditDialog from './components/ProfileEditDialog';
@@ -23,7 +24,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 
-function App({ authUser = null, cloudEnabled = false, syncError = null }) {
+function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -222,6 +223,10 @@ function App({ authUser = null, cloudEnabled = false, syncError = null }) {
       />;
     }
 
+    if (currentGame === 'admin' && isAdmin) {
+      return <AdminPanel onBack={() => setCurrentGame('home')} />;
+    }
+
     const category = categories.find(c => c.id === currentGame);
     if (!category) return null;
 
@@ -346,6 +351,20 @@ function App({ authUser = null, cloudEnabled = false, syncError = null }) {
                   ההישגים שלי
                 </Button>
 
+                {isAdmin && (
+                  <Button
+                    size="sm"
+                    borderRadius="full"
+                    boxShadow="md"
+                    onClick={() => setCurrentGame('admin')}
+                    px={4}
+                    py={2}
+                    title="ניהול שאלות"
+                  >
+                    ⚙️ ניהול
+                  </Button>
+                )}
+
                 {/* Exam Countdown */}
                 <Badge
                   fontSize="sm"
@@ -434,6 +453,21 @@ function App({ authUser = null, cloudEnabled = false, syncError = null }) {
                 >
                   <Text fontSize="xl">🏆</Text>
                 </Button>
+
+                {isAdmin && (
+                  <Button
+                    size="sm"
+                    borderRadius="full"
+                    boxShadow="md"
+                    onClick={() => setCurrentGame('admin')}
+                    px={3}
+                    py={2}
+                    minW="auto"
+                    title="ניהול שאלות"
+                  >
+                    <Text fontSize="xl">⚙️</Text>
+                  </Button>
+                )}
 
                 {/* Exam Countdown - Compact */}
                 <Badge
