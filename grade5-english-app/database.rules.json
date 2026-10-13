@@ -19,6 +19,43 @@
       "content": {
         ".read": true,
         ".write": "auth != null && root.child('english/admins').child(auth.uid).val() === true"
+      },
+      "visits": {
+        ".read": "auth != null && root.child('english/admins').child(auth.uid).val() === true",
+        "$day": {
+          "$visitor": {
+            ".write": "$day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
+            ".validate": "newData.hasChildren(['t', 's'])",
+            "t": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "s": {
+              ".validate": "newData.isBoolean()"
+            },
+            "n": {
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
+      },
+      "presence": {
+        ".read": "auth != null && root.child('english/admins').child(auth.uid).val() === true",
+        "$visitor": {
+          ".write": "$visitor.matches(/^[a-z0-9]{8,24}$/)",
+          ".validate": "newData.hasChildren(['t', 's'])",
+          "t": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "s": {
+            ".validate": "newData.isBoolean()"
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
       }
     }
   }

@@ -1,5 +1,5 @@
 // טעינת השאלות שנוספו בממשק הניהול, ופעולות הניהול עצמן (הוספה / מחיקה / הסתרה)
-import { ref, onValue, get, push, set, remove, serverTimestamp } from 'firebase/database';
+import { ref, onValue, get, push, set, remove, serverTimestamp, query, orderByKey, startAt } from 'firebase/database';
 import { db } from './firebase';
 import { setRemoteContent } from '../data/contentStore';
 
@@ -42,3 +42,20 @@ export const fetchAllUsers = async () => {
   const snap = await get(ref(db, 'english/users'));
   return snap.val() || {};
 };
+
+/** ביקורים מהתאריך הנתון והלאה - רק למנהלים */
+export const fetchVisitsSince = async (fromDay) => {
+  const snap = await get(query(ref(db, 'english/visits'), orderByKey(), startAt(fromDay)));
+  return snap.val() || {};
+};
+
+/** מספר המבקרים שמחוברים עכשיו (מתעדכן בזמן אמת). מחזיר פונקציית ביטול. */
+export const subscribePresence = (callback) =>
+  onValue(
+    ref(db, 'english/presence'),
+    (snap) => {
+      const all = Object.values(snap.val() || {});
+      callback({ total: all.length, signedIn: all.filter(p => p && p.s === true).length });
+    },
+    () => callback(null)
+  );

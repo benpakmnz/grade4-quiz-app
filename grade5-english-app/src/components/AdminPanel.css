@@ -505,3 +505,98 @@ textarea.admin-input {
   .dash-user-stats { width: 100%; }
   .dash-table th:nth-child(4), .dash-table td:nth-child(4) { display: none; }
 }
+
+/* ===== Usage chart ===== */
+.usage {
+  --series-1: #2a78d6; /* מחוברים */
+  --series-2: #eb6834; /* אורחים */
+  --surface-1: #ffffff;
+  --grid: #eef0f3;
+  --axis: #c9ccd3;
+  --text-secondary: #52514e;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dash-kpi.live {
+  background: #ecfdf5;
+}
+
+.dash-kpi.live b {
+  color: #047857;
+}
+
+.usage-controls {
+  justify-content: space-between;
+}
+
+.usage-title {
+  margin: 4px 0 0;
+  color: #4338ca;
+}
+
+.usage-legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.usage-legend span, .usage-tooltip span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.swatch.signed { background: var(--series-1); }
+.swatch.guests { background: var(--series-2); }
+
+.usage-chart {
+  position: relative;
+  width: 100%;
+}
+
+.usage-chart svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  font-family: inherit;
+}
+
+.usage-chart .grid { stroke: var(--grid); stroke-width: 1; }
+.usage-chart .axis { stroke: var(--axis); stroke-width: 1; }
+.usage-chart .tick { fill: var(--text-secondary); font-size: 11px; }
+.usage-chart .bar.signed { fill: var(--series-1); }
+.usage-chart .bar.guests { fill: var(--series-2); }
+
+.usage-tooltip {
+  position: absolute;
+  top: 4px;
+  transform: translateX(-50%);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 0.85rem;
+  color: #1f2937;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 2;
+}
+
+.usage-tooltip .muted {
+  color: #6b7280;
+}
