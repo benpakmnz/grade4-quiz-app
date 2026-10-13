@@ -33,9 +33,13 @@
 
 האפליקציה מחוברת לפרויקט Firebase בשם `english-practice-87420` (הפרטים ב-`src/services/firebase.js`), כך שאין צורך במשתני סביבה.
 
+**שתי דרכי התחברות:** Google, או **שם משתמש וסיסמה** (לילדים בלי חשבון Google). שם המשתמש (3-15 תווים, עברית/אנגלית/מספרים)
+הופך לכתובת פנימית ייחודית `u<hex>@kids.english-practice.app` - אין צורך באימייל אמיתי, ו-Firebase מונע שמות כפולים.
+אין שחזור סיסמה בלי אימייל: אם נשכחה, מוחקים את המשתמש ב-Authentication ← Users ונרשמים מחדש.
+
 **הגדרות שצריכות להיות בפרויקט ב-[Firebase Console](https://console.firebase.google.com):**
 1. **Realtime Database ← Rules** - התוכן של [`database.rules.json`](database.rules.json) (כל ילד/ה קורא/ת וכותב/ת רק את הנתונים של עצמו/ה).
-2. **Authentication ← Sign-in method ← Google** - מופעל.
+2. **Authentication ← Sign-in method** - **Google** ו-**Email/Password** מופעלים.
 3. **Authentication ← Settings ← Authorized domains** - כולל את כתובת האתר ב-Vercel. `localhost` כבר מאושר.
 
 למעבר לפרויקט Firebase אחר או לעבודה בלי ענן - ראו [`.env.example`](.env.example).

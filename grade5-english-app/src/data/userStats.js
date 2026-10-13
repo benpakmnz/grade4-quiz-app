@@ -45,6 +45,7 @@ export const parseUser = (uid, raw = {}) => {
     name: userData.name || profile.name || '(ללא שם)',
     googleName: profile.name || '',
     email: profile.email || '',
+    username: profile.username || '',
     character: userData.character?.emoji || '🙂',
     lastSeen: toNumber(profile.lastSeen) || toNumber(raw.progress?.updatedAt) || 0,
     lastPractice: toNumber(raw.progress?.updatedAt) || 0,

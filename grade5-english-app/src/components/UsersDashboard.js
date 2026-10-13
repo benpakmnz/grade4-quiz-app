@@ -30,7 +30,7 @@ const UserDetails = ({ user, onBack }) => {
         <span className="dash-avatar">{user.character}</span>
         <div>
           <h3>{user.name}</h3>
-          <div className="dash-sub">{user.email} · תרגול אחרון: {formatWhen(user.lastPractice || user.lastSeen)}</div>
+          <div className="dash-sub">{user.email || `👤 ${user.username}`} · תרגול אחרון: {formatWhen(user.lastPractice || user.lastSeen)}</div>
         </div>
       </div>
 
@@ -165,7 +165,7 @@ const UsersDashboard = () => {
                 <span className="dash-avatar small">{u.character}</span>
                 <span className="dash-user-main">
                   <b>{u.name}</b>
-                  <span className="dash-sub">{u.email}</span>
+                  <span className="dash-sub">{u.email || `👤 ${u.username}`}</span>
                 </span>
                 <span className="dash-user-stats">
                   <span>⭐ {u.score}</span>
