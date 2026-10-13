@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ProfileEditDialog.css';
-import { signInWithGoogle, signOut, describeAuthError } from '../services/firebase';
-import { pushNow, clearLocalProgress, deleteCloudProgress } from '../services/cloudSync';
+import { signOut } from '../services/firebase';
+import { pushNow, clearLocalProgress, deleteCloudProgress, GUEST_KEY } from '../services/cloudSync';
+import { accountLabel, emailToUsername } from '../utils/username';
 
 const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEnabled = false }) => {
   const [accountBusy, setAccountBusy] = useState(false);
-  const [accountError, setAccountError] = useState(null);
   const [name, setName] = useState(userData.name);
   const [gender, setGender] = useState(userData.gender || 'female');
   const [selectedCharacter, setSelectedCharacter] = useState(userData.character);
@@ -65,16 +65,14 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
     }
   };
 
-  const handleSignIn = async () => {
-    setAccountBusy(true);
-    setAccountError(null);
+  // אורח/ת שרוצה להתחבר: חוזרים למסך ההתחברות. ההתקדמות מהמכשיר עולה לחשבון אחרי ההתחברות.
+  const handleSignIn = () => {
     try {
-      // אחרי ההתחברות ההתקדמות מהמכשיר הזה עולה לענן אוטומטית
-      await signInWithGoogle();
-    } catch (err) {
-      setAccountError(describeAuthError(err));
-      setAccountBusy(false);
+      localStorage.removeItem(GUEST_KEY);
+    } catch {
+      // ignore
     }
+    window.location.reload();
   };
 
   const handleSignOut = async () => {
@@ -209,7 +207,10 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
             <div className="account-section">
               {authUser ? (
                 <>
-                  <span>☁️ מחובר/ת עם Google: <b dir="ltr">{authUser.email}</b> - ההתקדמות נשמרת בענן</span>
+                  <span>
+                    ☁️ {emailToUsername(authUser.email) ? 'מחובר/ת עם שם משתמש:' : 'מחובר/ת עם Google:'}{' '}
+                    <b dir="auto">{accountLabel(authUser)}</b> - ההתקדמות נשמרת בענן
+                  </span>
                   <button className="account-btn" onClick={handleSignOut} disabled={accountBusy}>
                     🚪 התנתקות
                   </button>
@@ -217,12 +218,11 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
               ) : (
                 <>
                   <span>📱 ההתקדמות נשמרת רק במכשיר הזה</span>
-                  <button className="account-btn primary" onClick={handleSignIn} disabled={accountBusy}>
-                    {accountBusy ? 'מתחברים...' : '☁️ התחברות עם Google לשמירה בענן'}
+                  <button className="account-btn primary" onClick={handleSignIn}>
+                    ☁️ התחברות / הרשמה לשמירה בענן
                   </button>
                 </>
               )}
-              {accountError && <div className="account-error">⚠️ {accountError}</div>}
             </div>
           )}
 

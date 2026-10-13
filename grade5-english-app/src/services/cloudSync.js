@@ -2,6 +2,7 @@
 // localStorage נשאר "עותק העבודה" של האפליקציה; כאן מעתיקים אותו אל english/users/<uid> ובחזרה.
 import { ref, get, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from './firebase';
+import { emailToUsername } from '../utils/username';
 
 // כל המפתחות שמרכיבים את ההתקדמות של הילד/ה
 export const PROGRESS_KEYS = [
@@ -95,8 +96,9 @@ export const startSync = async (user) => {
   localStorage.removeItem(GUEST_KEY);
 
   set(profileRef(user.uid), {
-    name: user.displayName || '',
-    email: user.email || '',
+    name: user.displayName || emailToUsername(user.email) || '',
+    email: emailToUsername(user.email) ? '' : (user.email || ''),
+    username: emailToUsername(user.email) || '',
     lastSeen: serverTimestamp()
   }).catch(() => {});
 };

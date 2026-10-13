@@ -15,6 +15,7 @@ import StatusDialog from './components/StatusDialog';
 import { getGenderText } from './utils/genderText';
 import { categories, getEmptyCategoryStats, getDaysUntilExam, TARGET_PER_CATEGORY } from './data/categories';
 import { notifyLocalChange } from './services/cloudSync';
+import { emailToUsername } from './utils/username';
 import {
   Box,
   Text,
@@ -207,7 +208,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
   const renderGame = () => {
     if (currentGame === 'welcome') {
-      return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={(authUser?.displayName || '').split(' ')[0]} />;
+      return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={emailToUsername(authUser?.email) || (authUser?.displayName || '').split(' ')[0]} />;
     }
     if (currentGame === 'home') {
       return <HomePage
@@ -309,7 +310,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                     שלום {userData.name}! 👋
                   </Text>
                   {authUser && (
-                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${authUser.email})`}>☁️</Text>
+                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${emailToUsername(authUser.email) || authUser.email})`}>☁️</Text>
                   )}
                 </HStack>
               )}
@@ -412,7 +413,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                     שלום {userData.name}! 👋
                   </Text>
                   {authUser && (
-                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${authUser.email})`}>☁️</Text>
+                    <Text fontSize="lg" title={`ההתקדמות נשמרת בענן (${emailToUsername(authUser.email) || authUser.email})`}>☁️</Text>
                   )}
                 </HStack>
               )}

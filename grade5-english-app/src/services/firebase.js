@@ -1,9 +1,11 @@
-// חיבור ל-Firebase (התחברות עם Google + Realtime Database)
+// חיבור ל-Firebase (התחברות עם Google או שם משתמש וסיסמה + Realtime Database)
 // ההגדרות נקראות ממשתני סביבה בזמן הבנייה (ראו README). בלי הגדרות - האפליקציה עובדת כמו קודם, רק במכשיר.
 import { initializeApp } from 'firebase/app';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged
+  getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged,
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile
 } from 'firebase/auth';
+import { usernameToEmail, normalizeUsername } from '../utils/username';
 import { getDatabase } from 'firebase/database';
 
 // ערכים שהודבקו ב-Vercel עם רווח או ירידת שורה ישברו את החיבור - לכן trim
@@ -61,6 +63,18 @@ export const signInWithGoogle = async () => {
   return result.user;
 };
 
+// שם משתמש וסיסמה (בלי אימייל אמיתי - ראו utils/username.js)
+export const signUpWithUsername = async (username, password) => {
+  const result = await createUserWithEmailAndPassword(auth, usernameToEmail(username), password);
+  await updateProfile(result.user, { displayName: normalizeUsername(username) }).catch(() => {});
+  return result.user;
+};
+
+export const signInWithUsername = async (username, password) => {
+  const result = await signInWithEmailAndPassword(auth, usernameToEmail(username), password);
+  return result.user;
+};
+
 export const signOut = () => (auth ? fbSignOut(auth) : Promise.resolve());
 
 // הודעת שגיאה ידידותית בעברית
@@ -76,7 +90,19 @@ export const describeAuthError = (error) => {
     return 'הכתובת של האתר לא מאושרת ב-Firebase. צריך להוסיף אותה ב-Authentication ← Settings ← Authorized domains.';
   }
   if (code === 'auth/operation-not-allowed') {
-    return 'ההתחברות עם Google לא הופעלה ב-Firebase (Authentication ← Sign-in method).';
+    return 'שיטת ההתחברות הזו לא הופעלה ב-Firebase (Authentication ← Sign-in method).';
+  }
+  if (code === 'auth/email-already-in-use') {
+    return 'שם המשתמש הזה כבר תפוס - נסו שם אחר (אפשר להוסיף מספר).';
+  }
+  if (['auth/invalid-credential', 'auth/wrong-password', 'auth/user-not-found', 'auth/invalid-login-credentials'].includes(code)) {
+    return 'שם המשתמש או הסיסמה לא נכונים.';
+  }
+  if (code === 'auth/weak-password') {
+    return 'הסיסמה קצרה מדי - צריך לפחות 6 תווים.';
+  }
+  if (code === 'auth/too-many-requests') {
+    return 'יותר מדי ניסיונות. חכו כמה דקות ונסו שוב.';
   }
   if (code === 'auth/network-request-failed') {
     return 'אין חיבור לאינטרנט. אפשר לנסות שוב או להמשיך בלי התחברות.';
