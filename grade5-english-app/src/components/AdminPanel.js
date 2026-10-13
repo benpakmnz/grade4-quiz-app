@@ -6,6 +6,7 @@ import { addQuestion, deleteCustomQuestion, setBuiltinHidden } from '../services
 import './Game.css';
 import './EnglishGame.css';
 import UsersDashboard from './UsersDashboard';
+import UsageDashboard from './UsageDashboard';
 import './AdminPanel.css';
 
 const BLANK = '____';
@@ -254,11 +255,14 @@ const AdminPanel = ({ onBack }) => {
         <button className={`mode-tab ${view === 'users' ? 'active' : ''}`} onClick={() => setView('users')}>
           📊 משתמשים
         </button>
+        <button className={`mode-tab ${view === 'usage' ? 'active' : ''}`} onClick={() => setView('usage')}>
+          📈 שימוש
+        </button>
       </div>
 
-      {view === 'users' ? (
-        <div className="admin-card"><UsersDashboard /></div>
-      ) : (
+      {view === 'usage' && <div className="admin-card"><UsageDashboard /></div>}
+      {view === 'users' && <div className="admin-card"><UsersDashboard /></div>}
+      {view === 'questions' && (
       <div className="admin-card">
         <div className="admin-tabs">
           {sections.map(s => (

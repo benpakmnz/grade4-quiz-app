@@ -4,6 +4,7 @@ import LoginScreen from './LoginScreen';
 import { isCloudConfigured, onUserChanged } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { subscribeContent, checkIsAdmin } from '../services/contentSync';
+import { trackVisit } from '../services/analytics';
 import './LoginScreen.css';
 
 const readGuest = () => {
@@ -27,6 +28,7 @@ const AuthGate = () => {
   useEffect(() => {
     if (!isCloudConfigured) return undefined;
     return onUserChanged(async (u) => {
+      trackVisit(Boolean(u));
       if (!u) {
         stopSync();
         setUser(null);
