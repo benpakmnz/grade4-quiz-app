@@ -21,6 +21,7 @@ const AuthGate = () => {
   const [user, setUser] = useState(null);
   const [syncError, setSyncError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loginMode, setLoginMode] = useState(null); // 'signup' - כשמגיעים מתזכורת ההרשמה
 
   // שאלות שנוספו בממשק הניהול - נטענות לכולם (גם בלי התחברות)
   useEffect(() => (isCloudConfigured ? subscribeContent() : undefined), []);
@@ -68,6 +69,7 @@ const AuthGate = () => {
     return (
       <div className="App">
         <LoginScreen
+          initialMode={loginMode}
           onGuest={() => {
             try {
               localStorage.setItem(GUEST_KEY, '1');
@@ -88,6 +90,16 @@ const AuthGate = () => {
       cloudEnabled={isCloudConfigured}
       syncError={syncError}
       isAdmin={isAdmin}
+      isGuest={state === 'guest'}
+      onRequestSignup={() => {
+        try {
+          localStorage.removeItem(GUEST_KEY);
+        } catch {
+          // ignore
+        }
+        setLoginMode('signup');
+        setState('login');
+      }}
     />
   );
 };

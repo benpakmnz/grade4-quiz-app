@@ -12,6 +12,7 @@ import Achievements from './components/Achievements';
 import ProfileEditDialog from './components/ProfileEditDialog';
 import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
+import GuestReminderDialog from './components/GuestReminderDialog';
 import { getGenderText } from './utils/genderText';
 import { categories, getEmptyCategoryStats, getDaysUntilExam, TARGET_PER_CATEGORY } from './data/categories';
 import { notifyLocalChange } from './services/cloudSync';
@@ -25,7 +26,7 @@ import {
   Badge,
 } from '@chakra-ui/react';
 
-function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false }) {
+function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, isGuest = false, onRequestSignup }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -36,6 +37,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
+  const [showGuestReminder, setShowGuestReminder] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Track success per category
@@ -85,7 +87,16 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       setCurrentGame('home');
       
       // Show status dialog on app reload (but not on first visit)
-      if (hasSeenWelcome) {
+      // אורח/ת שחוזר/ת: קודם תזכורת להירשם (פעם אחת בכל כניסה), אחר כך מסך הסטטוס
+      let remindedThisVisit = false;
+      try {
+        remindedThisVisit = sessionStorage.getItem('english_guestReminded') === '1';
+      } catch {
+        // ignore
+      }
+      if (isGuest && onRequestSignup && !remindedThisVisit) {
+        setTimeout(() => setShowGuestReminder(true), 500);
+      } else if (hasSeenWelcome) {
         // Small delay to let the UI render first
         setTimeout(() => {
           setShowStatusDialog(true);
@@ -97,7 +108,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     
     // Mark initial load as complete
     setIsInitialLoad(false);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- טעינה פעם אחת (App נטען מחדש לכל משתמש)
 
   // Save data to localStorage whenever it changes (but not on initial load)
   useEffect(() => {
@@ -524,6 +535,29 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           <WelcomeDialog
             userData={userData}
             onClose={() => setShowWelcomeDialog(false)}
+          />
+        </AnimatePresence>
+      )}
+
+      {/* Guest Reminder - returning guests are invited to sign up */}
+      {showGuestReminder && userData && (
+        <AnimatePresence>
+          <GuestReminderDialog
+            userData={userData}
+            score={score}
+            onSignup={() => {
+              setShowGuestReminder(false);
+              onRequestSignup();
+            }}
+            onLater={() => {
+              try {
+                sessionStorage.setItem('english_guestReminded', '1');
+              } catch {
+                // ignore
+              }
+              setShowGuestReminder(false);
+              if (localStorage.getItem('english_hasSeenWelcome')) setShowStatusDialog(true);
+            }}
           />
         </AnimatePresence>
       )}

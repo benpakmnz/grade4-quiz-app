@@ -15,8 +15,8 @@ const GoogleLogo = () => (
 );
 
 // טופס שם משתמש + סיסמה (כניסה / הרשמה)
-const UsernameForm = ({ busy, setBusy, setError }) => {
-  const [mode, setMode] = useState('signin'); // signin | signup
+const UsernameForm = ({ busy, setBusy, setError, initialMode = 'signin' }) => {
+  const [mode, setMode] = useState(initialMode); // signin | signup
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -118,10 +118,10 @@ const UsernameForm = ({ busy, setBusy, setError }) => {
   );
 };
 
-const LoginScreen = ({ onGuest }) => {
+const LoginScreen = ({ onGuest, initialMode = null }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  const [showUsername, setShowUsername] = useState(false);
+  const [showUsername, setShowUsername] = useState(initialMode === 'signup');
 
   const google = async () => {
     setBusy(true);
@@ -151,6 +151,9 @@ const LoginScreen = ({ onGuest }) => {
         </motion.h1>
         <p className="welcome-subtitle">מתכוננים למבחן המיפוי באנגלית 📚</p>
 
+        {initialMode === 'signup' && (
+          <p className="login-carry">✅ כל מה שכבר תרגלת במכשיר הזה יעבור לחשבון החדש</p>
+        )}
         <p className="login-explain">
           מתחברים פעם אחת, וכל ההתקדמות נשמרת -
           <br />
@@ -177,7 +180,7 @@ const LoginScreen = ({ onGuest }) => {
         ) : (
           <AnimatePresence>
             <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
-              <UsernameForm busy={busy} setBusy={setBusy} setError={setError} />
+              <UsernameForm busy={busy} setBusy={setBusy} setError={setError} initialMode={initialMode || 'signin'} />
             </motion.div>
           </AnimatePresence>
         )}

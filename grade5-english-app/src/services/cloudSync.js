@@ -63,6 +63,73 @@ export const clearLocalProgress = () => {
 
 const hasLocalProgress = () => safeGet('english_userData') !== null;
 
+const parse = (value, fallback) => {
+  try {
+    return value ? JSON.parse(value) : fallback;
+  } catch {
+    return fallback;
+  }
+};
+
+/**
+ * מיזוג התקדמות של אורח/ת (במכשיר) לתוך חשבון שכבר יש לו נתונים בענן - כדי ששום דבר לא ילך לאיבוד.
+ * נקודות, ספירות וסטטיסטיקה מתחברות; הישגים / שיעורים / טעויות מתאחדים; הפרופיל של החשבון נשמר.
+ */
+export const mergeProgress = (cloud = {}, local = {}) => {
+  const num = (v) => Number(v) || 0;
+  const merged = { ...local, ...cloud };
+
+  merged.english_score = String(num(cloud.english_score) + num(local.english_score));
+  merged.english_questionCount = String(num(cloud.english_questionCount) + num(local.english_questionCount));
+  merged.english_streak = String(Math.max(num(cloud.english_streak), num(local.english_streak)));
+
+  const cs = parse(cloud.english_categoryStats, {});
+  const ls = parse(local.english_categoryStats, {});
+  const stats = {};
+  new Set([...Object.keys(cs), ...Object.keys(ls)]).forEach(id => {
+    stats[id] = {
+      correct: num(cs[id]?.correct) + num(ls[id]?.correct),
+      total: num(cs[id]?.total) + num(ls[id]?.total)
+    };
+  });
+  merged.english_categoryStats = JSON.stringify(stats);
+
+  const unionBy = (a, b, key) => {
+    const seen = new Set();
+    return [...a, ...b].filter(x => {
+      const k = key(x);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  };
+  merged.english_achievements = JSON.stringify(unionBy(
+    parse(cloud.english_achievements, []), parse(local.english_achievements, []), a => a?.id ?? JSON.stringify(a)
+  ));
+  merged.english_lessonsSeen = JSON.stringify(unionBy(
+    parse(cloud.english_lessonsSeen, []), parse(local.english_lessonsSeen, []), x => x
+  ));
+  merged.english_mistakes = JSON.stringify(
+    [...parse(cloud.english_mistakes, []), ...parse(local.english_mistakes, [])]
+      .sort((a, b) => (b?.ts || 0) - (a?.ts || 0))
+      .slice(0, 300)
+  );
+  merged.english_history = JSON.stringify(
+    [...parse(cloud.english_history, []), ...parse(local.english_history, [])].slice(0, 50)
+  );
+  // טיוטת כתיבה: שומרים את הארוכה מביניהן
+  const cw = cloud.english_writingDraft || '';
+  const lw = local.english_writingDraft || '';
+  merged.english_writingDraft = lw.length > cw.length ? lw : cw;
+
+  // הפרופיל (שם, דמות) של החשבון נשאר; אם לחשבון אין - לוקחים מהמכשיר
+  merged.english_userData = cloud.english_userData || local.english_userData;
+  Object.keys(merged).forEach(k => {
+    if (merged[k] === undefined || merged[k] === null || merged[k] === '') delete merged[k];
+  });
+  return merged;
+};
+
 /**
  * נקרא אחרי התחברות: מחליט מה נכון יותר - הענן או המכשיר, ומעדכן את המקומי בהתאם.
  * - יש נתונים בענן ← טוענים אותם (אלא אם יש במכשיר הזה שינויים חדשים יותר של אותו משתמש שעוד לא עלו).
@@ -76,7 +143,12 @@ export const startSync = async (user) => {
   const snap = await get(progressRef(user.uid));
   const cloud = snap.exists() ? snap.val() : null;
 
-  if (cloud && cloud.data) {
+  if (cloud && cloud.data && !owner && hasLocalProgress()) {
+    // אורח/ת שהתחבר/ה לחשבון קיים: ממזגים את מה שבמכשיר עם מה שבענן
+    applyToLocal(mergeProgress(cloud.data, snapshotLocal()));
+    localStorage.setItem(LOCAL_UPDATED_KEY, String(Date.now()));
+    await pushNow();
+  } else if (cloud && cloud.data) {
     const cloudUpdated = Number(cloud.clientUpdatedAt || 0);
     const localIsNewer = owner === user.uid && localUpdated > cloudUpdated && hasLocalProgress();
     if (localIsNewer) {
