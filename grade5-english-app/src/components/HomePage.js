@@ -140,6 +140,23 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           </SimpleGrid>
         </Box>
 
+        {/* Progress report for kids & parents */}
+        <Button
+          onClick={() => onSelectGame('myProgress')}
+          bg="white"
+          color="purple.700"
+          borderRadius="full"
+          boxShadow="lg"
+          px={6}
+          py={6}
+          mt={8}
+          fontSize="md"
+          fontWeight="bold"
+          _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
+        >
+          👨‍👩‍👧 להורים: 📒 ההתקדמות והטעויות - על מה כדאי לתרגל יחד
+        </Button>
+
         {/* Motivational Message */}
         <MotionBox
           initial={{ opacity: 0 }}
