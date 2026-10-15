@@ -7,7 +7,6 @@ import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import AdminPanel from './components/AdminPanel';
-import MyProgress from './components/MyProgress';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
 import ProfileEditDialog from './components/ProfileEditDialog';
@@ -35,6 +34,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const [userData, setUserData] = useState(null);
   const [gameHistory, setGameHistory] = useState([]);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [achievementsTab, setAchievementsTab] = useState('overview');
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -44,7 +44,10 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // Track success per category
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
   
-  const openAchievements = () => setShowAchievements(true);
+  const openAchievements = (tab = 'overview') => {
+    setAchievementsTab(typeof tab === 'string' ? tab : 'overview');
+    setShowAchievements(true);
+  };
   const closeAchievements = () => setShowAchievements(false);
   const openProfileEdit = () => setShowProfileEdit(true);
   const closeProfileEdit = () => setShowProfileEdit(false);
@@ -224,7 +227,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     }
     if (currentGame === 'home') {
       return <HomePage
-        onSelectGame={setCurrentGame}
+        onSelectGame={(id) => (id === 'myProgress' ? openAchievements('progress') : setCurrentGame(id))}
         score={score}
         streak={streak}
         questionCount={questionCount}
@@ -234,10 +237,6 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         calculateSuccessRate={calculateSuccessRate}
         getGenderText={getGenderText}
       />;
-    }
-
-    if (currentGame === 'myProgress') {
-      return <MyProgress userData={userData} onBack={() => setCurrentGame('home')} onPractice={setCurrentGame} />;
     }
 
     if (currentGame === 'admin' && isAdmin) {
@@ -368,18 +367,6 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   ההישגים שלי
                 </Button>
 
-                <Button
-                  size="sm"
-                  borderRadius="full"
-                  boxShadow="md"
-                  onClick={() => setCurrentGame('myProgress')}
-                  px={4}
-                  py={2}
-                  title="ההתקדמות שלי והטעויות - גם להורים"
-                >
-                  📒 ההתקדמות שלי
-                </Button>
-
                 {isAdmin && (
                   <Button
                     size="sm"
@@ -481,19 +468,6 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   title="ההישגים שלי"
                 >
                   <Text fontSize="xl">🏆</Text>
-                </Button>
-
-                <Button
-                  size="sm"
-                  borderRadius="full"
-                  boxShadow="md"
-                  onClick={() => setCurrentGame('myProgress')}
-                  px={3}
-                  py={2}
-                  minW="auto"
-                  title="ההתקדמות שלי"
-                >
-                  <Text fontSize="xl">📒</Text>
                 </Button>
 
                 {isAdmin && (
@@ -632,6 +606,11 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 onClose={closeAchievements}
                 categoryStats={categoryStats}
                 userData={userData}
+                initialTab={achievementsTab}
+                onPractice={(id) => {
+                  closeAchievements();
+                  setCurrentGame(id);
+                }}
               />
             </div>
           </motion.div>

@@ -3,12 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './Achievements.css';
 import { getGenderText } from '../utils/genderText';
 import { notifyLocalChange, pushNow } from '../services/cloudSync';
+import ProgressReport, { buildLocalReport } from './ProgressReport';
+import { LessonViewer } from './LessonViewer';
 import { categories, TARGET_PER_CATEGORY, getDaysUntilExam } from '../data/categories';
 
-const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData }) => {
+const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice }) => {
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [showNotification, setShowNotification] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'achievements', 'categories'
+  const [activeTab, setActiveTab] = useState(initialTab); // 'overview', 'categories', 'achievements', 'progress'
+  const [lesson, setLesson] = useState(null);
 
   // Calculate overall statistics
   const calculateOverallStats = () => {
@@ -289,7 +292,33 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
           >
             🏆 תגי הצטיינות
           </button>
+          <button 
+            className={`tab ${activeTab === 'progress' ? 'active' : ''}`}
+            onClick={() => setActiveTab('progress')}
+          >
+            📒 טעויות והורים
+          </button>
         </div>
+
+        {/* Progress report for kids & parents: mistakes + what to practise */}
+        {activeTab === 'progress' && (
+          <motion.div
+            className="tab-content"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <ProgressReport
+              user={buildLocalReport(userData)}
+              mode="self"
+              gender={userData?.gender}
+              onOpenLesson={setLesson}
+              onPractice={onPractice}
+            />
+            <AnimatePresence>
+              {lesson && <LessonViewer categoryId={lesson} userData={userData} onClose={() => setLesson(null)} />}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         {/* Overview Tab */}
         {activeTab === 'overview' && (

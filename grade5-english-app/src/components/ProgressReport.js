@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { rateColor, formatWhen } from '../data/userStats';
+import { rateColor, formatWhen, parseUser } from '../data/userStats';
+import { readLocalProgress } from '../services/cloudSync';
+import './AdminPanel.css';
+import './ProgressReport.css';
 import { categories, TARGET_PER_CATEGORY } from '../data/categories';
 import { hasLesson } from '../data/lessons';
 import { getGenderText } from '../utils/genderText';
@@ -14,6 +17,20 @@ const RateBadge = ({ rate }) => (
     {rate === null ? '—' : `${rate}%`}
   </span>
 );
+
+/** הדוח של המשתמש הנוכחי, מתוך הנתונים שבמכשיר (עובד גם לאורחים ובלי אינטרנט) */
+export const buildLocalReport = (userData) => {
+  let lastPractice = 0;
+  try {
+    lastPractice = Number(localStorage.getItem('english_localUpdatedAt')) || 0;
+  } catch {
+    // ignore
+  }
+  return parseUser('me', {
+    profile: { name: userData?.name },
+    progress: { data: readLocalProgress(), updatedAt: lastPractice }
+  });
+};
 
 // טיפ קצר להורה: איך לעזור בכל נושא
 export const PARENT_TIPS = {
