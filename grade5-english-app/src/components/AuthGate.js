@@ -5,6 +5,7 @@ import { isCloudConfigured, onUserChanged } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { subscribeContent, checkIsAdmin } from '../services/contentSync';
 import { trackVisit } from '../services/analytics';
+import { startSession, endSession } from '../services/sessions';
 import './LoginScreen.css';
 
 const readGuest = () => {
@@ -31,6 +32,7 @@ const AuthGate = () => {
     return onUserChanged(async (u) => {
       trackVisit(Boolean(u));
       if (!u) {
+        endSession();
         stopSync();
         setUser(null);
         setIsAdmin(false);
@@ -48,6 +50,7 @@ const AuthGate = () => {
           ? 'Firebase חוסם את השמירה - צריך לפרסם את כללי האבטחה (database.rules.json)'
           : 'לא הצלחנו להתחבר לענן - ההתקדמות נשמרת כרגע רק במכשיר');
       }
+      startSession(u.uid);
       setIsAdmin(await checkIsAdmin(u.uid));
       setUser(u);
       setState('ready');

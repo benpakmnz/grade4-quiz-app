@@ -600,3 +600,18 @@ textarea.admin-input {
 .usage-tooltip .muted {
   color: #6b7280;
 }
+
+/* ===== Sessions ===== */
+.dash-sessions td { white-space: nowrap; }
+
+.dash-live {
+  margin-inline-start: 6px;
+  color: #047857;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+  .dash-table.dash-sessions th:nth-child(4), .dash-table.dash-sessions td:nth-child(4) { display: table-cell; }
+  .dash-sessions { font-size: 0.85rem; }
+}
