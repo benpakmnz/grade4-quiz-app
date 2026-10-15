@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { ChakraProvider, defaultSystem } from '@chakra-ui/react';
 import './index.css';
 import AuthGate from './components/AuthGate';
+import EnvBanner from './components/EnvBanner';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
@@ -10,6 +11,7 @@ root.render(
   <React.StrictMode>
     <ChakraProvider value={defaultSystem}>
       <AuthGate />
+      <EnvBanner />
     </ChakraProvider>
   </React.StrictMode>
 );

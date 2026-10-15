@@ -1,9 +1,10 @@
 // טעינת השאלות שנוספו בממשק הניהול, ופעולות הניהול עצמן (הוספה / מחיקה / הסתרה)
 import { ref, onValue, get, push, set, remove, serverTimestamp, query, orderByKey, startAt } from 'firebase/database';
 import { db } from './firebase';
+import { DB_ROOT } from './env';
 import { setRemoteContent } from '../data/contentStore';
 
-const CONTENT_PATH = 'english/content';
+const CONTENT_PATH = `${DB_ROOT}/content`;
 
 /** מאזין לשינויים בשאלות (קריאה ציבורית - עובד גם בלי התחברות). מחזיר פונקציית ביטול. */
 export const subscribeContent = () => {
@@ -19,7 +20,7 @@ export const subscribeContent = () => {
 export const checkIsAdmin = async (uid) => {
   if (!db || !uid) return false;
   try {
-    const snap = await get(ref(db, `english/admins/${uid}`));
+    const snap = await get(ref(db, `${DB_ROOT}/admins/${uid}`));
     return snap.val() === true;
   } catch {
     return false;
@@ -39,20 +40,20 @@ export const setBuiltinHidden = (bank, id, isHidden) =>
 
 /** כל המשתמשים וההתקדמות שלהם - רק למנהלים (לפי כללי האבטחה) */
 export const fetchAllUsers = async () => {
-  const snap = await get(ref(db, 'english/users'));
+  const snap = await get(ref(db, `${DB_ROOT}/users`));
   return snap.val() || {};
 };
 
 /** ביקורים מהתאריך הנתון והלאה - רק למנהלים */
 export const fetchVisitsSince = async (fromDay) => {
-  const snap = await get(query(ref(db, 'english/visits'), orderByKey(), startAt(fromDay)));
+  const snap = await get(query(ref(db, `${DB_ROOT}/visits`), orderByKey(), startAt(fromDay)));
   return snap.val() || {};
 };
 
 /** מספר המבקרים שמחוברים עכשיו (מתעדכן בזמן אמת). מחזיר פונקציית ביטול. */
 export const subscribePresence = (callback) =>
   onValue(
-    ref(db, 'english/presence'),
+    ref(db, `${DB_ROOT}/presence`),
     (snap) => {
       const all = Object.values(snap.val() || {});
       callback({ total: all.length, signedIn: all.filter(p => p && p.s === true).length });

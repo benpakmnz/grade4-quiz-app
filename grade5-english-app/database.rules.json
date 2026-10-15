@@ -2,29 +2,29 @@
   "rules": {
     ".read": false,
     ".write": false,
-    "english": {
+    "$app": {
       "users": {
-        ".read": "auth != null && root.child('english/admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
-          ".write": "auth != null && auth.uid === $uid"
+          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          ".write": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid"
         }
       },
       "admins": {
         "$uid": {
-          ".read": "auth != null && auth.uid === $uid",
+          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
           ".write": false
         }
       },
       "content": {
-        ".read": true,
-        ".write": "auth != null && root.child('english/admins').child(auth.uid).val() === true"
+        ".read": "$app === 'english' || $app === 'english-test'",
+        ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true"
       },
       "visits": {
-        ".read": "auth != null && root.child('english/admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$day": {
           "$visitor": {
-            ".write": "$day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
+            ".write": "($app === 'english' || $app === 'english-test') && $day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
             ".validate": "newData.hasChildren(['t', 's'])",
             "t": {
               ".validate": "newData.isNumber() && newData.val() <= now"
@@ -42,9 +42,9 @@
         }
       },
       "presence": {
-        ".read": "auth != null && root.child('english/admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$visitor": {
-          ".write": "$visitor.matches(/^[a-z0-9]{8,24}$/)",
+          ".write": "($app === 'english' || $app === 'english-test') && $visitor.matches(/^[a-z0-9]{8,24}$/)",
           ".validate": "newData.hasChildren(['t', 's'])",
           "t": {
             ".validate": "newData.isNumber() && newData.val() <= now"

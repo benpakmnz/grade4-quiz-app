@@ -86,6 +86,20 @@ npm test
 ליצור פרויקט חדש ב-Vercel מאותו ריפו, ולהגדיר **Root Directory = `grade5-english-app`**.
 (קובץ `vercel.json` כבר נמצא בתיקייה.)
 
+## 🧪 סביבת בדיקות (staging)
+
+| | אתר אמיתי (production) | סביבת בדיקות |
+|---|---|---|
+| ענף | `main` | `staging` (וכל ענף / PR אחר) |
+| כתובת | https://grade5-english-app.vercel.app | https://grade5-english-app-git-staging-benny-s-projects3.vercel.app |
+| נתונים ב-Firebase | `english/...` | `english-test/...` |
+| מנהלים | `english/admins/<uid>` | `english-test/admins/<uid>` |
+
+- הסביבה נקבעת אוטומטית לפי `REACT_APP_VERCEL_ENV` ש-Vercel מעביר לבנייה (`preview` = בדיקות). אפשר לכפות עם `REACT_APP_DB_ROOT`.
+- בסביבת הבדיקות מופיעה תגית צהובה "🧪 סביבת בדיקות" בפינה, ו-🧪 בכותרת הלשונית.
+- `database.rules.json` מגדיר את אותם כללים לשני השורשים, ומנהל בבדיקות לא רואה נתונים אמיתיים.
+- **תהליך:** כל שינוי עולה קודם ל-`staging` ← בודקים בכתובת של הבדיקות ← רק אחרי אישור ממזגים ל-`main`.
+
 ## ✏️ הוספת תוכן
 
 כל השאלות נמצאות ב-`src/data/`:

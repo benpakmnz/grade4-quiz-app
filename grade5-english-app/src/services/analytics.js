@@ -4,6 +4,7 @@
 //   english/presence/<visitorId> = { t, s }  - מי מחובר עכשיו (נמחק אוטומטית כשסוגרים את האתר)
 import { ref, update, set, onValue, onDisconnect, serverTimestamp, increment } from 'firebase/database';
 import { db } from './firebase';
+import { DB_ROOT } from './env';
 
 const VISITOR_KEY = 'english_visitorId';
 
@@ -40,9 +41,9 @@ export const trackVisit = (signedIn) => {
     visit.n = increment(1);
     counted = true;
   }
-  update(ref(db, `english/visits/${dayKey()}/${id}`), visit).catch(() => {});
+  update(ref(db, `${DB_ROOT}/visits/${dayKey()}/${id}`), visit).catch(() => {});
 
-  const presenceRef = ref(db, `english/presence/${id}`);
+  const presenceRef = ref(db, `${DB_ROOT}/presence/${id}`);
   if (!presenceStarted) {
     presenceStarted = true;
     // בכל התחברות מחדש לרשת - נרשמים שוב, ומבקשים מהשרת למחוק אותנו כשהחיבור נסגר
