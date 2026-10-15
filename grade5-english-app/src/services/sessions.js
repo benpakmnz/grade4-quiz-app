@@ -5,6 +5,7 @@
 // פעילות אחרי סשן שנסגר בגלל חוסר פעילות פותחת סשן חדש.
 import { ref, push, update, get, onValue, onDisconnect, serverTimestamp } from 'firebase/database';
 import { db } from './firebase';
+import { DB_ROOT } from './env';
 import { currentDevice } from '../utils/device';
 import { SESSION_BEAT_MS, SESSION_IDLE_MS } from '../data/userStats';
 
@@ -17,18 +18,18 @@ const isVisible = () => typeof document === 'undefined' || document.visibilitySt
 
 // שומרים רק את הכניסות האחרונות כדי שהנתונים לא יגדלו בלי סוף
 const pruneOld = async (uid) => {
-  const snap = await get(ref(db, `english/users/${uid}/sessions`));
+  const snap = await get(ref(db, `${DB_ROOT}/users/${uid}/sessions`));
   const keys = Object.keys(snap.val() || {}).sort();
   if (keys.length <= KEEP_SESSIONS) return;
   const removals = {};
   keys.slice(0, keys.length - KEEP_SESSIONS).forEach(k => { removals[k] = null; });
-  await update(ref(db, `english/users/${uid}/sessions`), removals);
+  await update(ref(db, `${DB_ROOT}/users/${uid}/sessions`), removals);
 };
 
 const openSession = () => {
   const t = tracker;
   const device = currentDevice();
-  const sessionRef = push(ref(db, `english/users/${t.uid}/sessions`));
+  const sessionRef = push(ref(db, `${DB_ROOT}/users/${t.uid}/sessions`));
   t.sessionRef = sessionRef;
   t.dirty = false;
   update(sessionRef, { start: serverTimestamp(), last: serverTimestamp(), d: device.label, k: device.type })

@@ -2,6 +2,7 @@
 // localStorage נשאר "עותק העבודה" של האפליקציה; כאן מעתיקים אותו אל english/users/<uid> ובחזרה.
 import { ref, get, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from './firebase';
+import { DB_ROOT } from './env';
 import { emailToUsername } from '../utils/username';
 
 // כל המפתחות שמרכיבים את ההתקדמות של הילד/ה
@@ -28,8 +29,8 @@ const SAVE_DELAY_MS = 1500;
 let currentUid = null;
 let saveTimer = null;
 
-const progressRef = (uid) => ref(db, `english/users/${uid}/progress`);
-const profileRef = (uid) => ref(db, `english/users/${uid}/profile`);
+const progressRef = (uid) => ref(db, `${DB_ROOT}/users/${uid}/progress`);
+const profileRef = (uid) => ref(db, `${DB_ROOT}/users/${uid}/profile`);
 
 const safeGet = (key) => {
   try {
@@ -220,7 +221,7 @@ if (typeof window !== 'undefined') {
 
 export const deleteCloudProgress = async () => {
   if (!currentUid || !db) return;
-  await remove(ref(db, `english/users/${currentUid}`));
+  await remove(ref(db, `${DB_ROOT}/users/${currentUid}`));
 };
 
 export const isSignedIn = () => Boolean(currentUid);
