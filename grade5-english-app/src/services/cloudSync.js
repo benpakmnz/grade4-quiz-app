@@ -48,6 +48,9 @@ const snapshotLocal = () => {
   return data;
 };
 
+/** כל ההתקדמות ששמורה במכשיר (לדוח "ההתקדמות שלי") */
+export const readLocalProgress = () => snapshotLocal();
+
 const applyToLocal = (data) => {
   PROGRESS_KEYS.forEach(key => localStorage.removeItem(key));
   Object.entries(data || {}).forEach(([key, value]) => {

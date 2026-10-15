@@ -7,6 +7,7 @@ import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import AdminPanel from './components/AdminPanel';
+import MyProgress from './components/MyProgress';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
 import ProfileEditDialog from './components/ProfileEditDialog';
@@ -235,6 +236,10 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       />;
     }
 
+    if (currentGame === 'myProgress') {
+      return <MyProgress userData={userData} onBack={() => setCurrentGame('home')} onPractice={setCurrentGame} />;
+    }
+
     if (currentGame === 'admin' && isAdmin) {
       return <AdminPanel onBack={() => setCurrentGame('home')} />;
     }
@@ -363,6 +368,18 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   ההישגים שלי
                 </Button>
 
+                <Button
+                  size="sm"
+                  borderRadius="full"
+                  boxShadow="md"
+                  onClick={() => setCurrentGame('myProgress')}
+                  px={4}
+                  py={2}
+                  title="ההתקדמות שלי והטעויות - גם להורים"
+                >
+                  📒 ההתקדמות שלי
+                </Button>
+
                 {isAdmin && (
                   <Button
                     size="sm"
@@ -464,6 +481,19 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   title="ההישגים שלי"
                 >
                   <Text fontSize="xl">🏆</Text>
+                </Button>
+
+                <Button
+                  size="sm"
+                  borderRadius="full"
+                  boxShadow="md"
+                  onClick={() => setCurrentGame('myProgress')}
+                  px={3}
+                  py={2}
+                  minW="auto"
+                  title="ההתקדמות שלי"
+                >
+                  <Text fontSize="xl">📒</Text>
                 </Button>
 
                 {isAdmin && (
