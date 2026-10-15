@@ -15,17 +15,18 @@ const toNumber = (value) => {
   return Number.isFinite(n) ? n : 0;
 };
 
-const SESSION_BEAT_MS = 60 * 1000; // כמו ב-services/sessions.js
+export const SESSION_BEAT_MS = 60 * 1000; // כל כמה זמן נשמרת הדקה האחרונה של פעילות
+export const SESSION_IDLE_MS = 15 * 60 * 1000; // אחרי כמה זמן בלי פעילות הסשן נגמר
 
 /**
- * מסכם כניסה אחת לתצוגה. הסוף בפועל הוא הפעם האחרונה שהמסך היה פעיל -
- * זמן שבו הלשונית נשארה פתוחה ברקע לא נספר.
+ * מסכם כניסה אחת לתצוגה. הסוף בפועל הוא הדקה האחרונה שבה הייתה פעילות -
+ * זמן בלי נגיעה במסך (או עם הלשונית ברקע) לא נספר.
  */
 export const summarizeSession = (id, s, now = Date.now()) => {
   const start = toNumber(s?.start);
   const last = Math.max(toNumber(s?.last), start);
   const end = toNumber(s?.end);
-  const live = !end && now - last < 3 * SESSION_BEAT_MS;
+  const live = !end && now - last < SESSION_IDLE_MS + SESSION_BEAT_MS;
   const until = end ? Math.min(end, last + SESSION_BEAT_MS) : live ? now : last;
   return {
     id,
