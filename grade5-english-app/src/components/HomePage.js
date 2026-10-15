@@ -158,7 +158,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           fontWeight="bold"
           _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
         >
-          👨‍👩‍👧 להורים: הטעויות ועל מה לתרגל
+          🌱 לומדים מטעויות: מה כבר יודעים ועל מה לתרגל
         </Button>
 
         {/* Motivational Message */}
