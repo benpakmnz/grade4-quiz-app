@@ -1,6 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import ProgressReport from './ProgressReport';
+import ProgressReport, { PARENT_TIPS } from './ProgressReport';
+import { categories } from '../data/categories';
 import { parseUser } from '../data/userStats';
 
 const user = parseUser('u1', {
@@ -19,4 +20,8 @@ test('admins see the activity times with the device', () => {
 test('kids and parents do not see the activity log', () => {
   const html = renderToStaticMarkup(<ProgressReport user={user} mode="self" />);
   expect(html).not.toContain('זמני פעילות');
+});
+
+test('every topic has a parent tip', () => {
+  categories.forEach(c => expect([c.id, Boolean(PARENT_TIPS[c.id])]).toEqual([c.id, true]));
 });
