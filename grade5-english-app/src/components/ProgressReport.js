@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { rateColor, formatWhen, parseUser } from '../data/userStats';
+import { rateColor, formatWhen, parseUser, formatDuration, formatClock, formatDay } from '../data/userStats';
+import { DEVICE_ICONS } from '../utils/device';
 import { readLocalProgress } from '../services/cloudSync';
 import './AdminPanel.css';
 import './ProgressReport.css';
@@ -198,6 +199,42 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
               </li>
             ))}
           </ul>
+        </>
+      )}
+
+      {!self && (
+        <>
+          <h4>🕒 זמני פעילות</h4>
+          {user.sessions.length === 0 ? (
+            <p className="admin-hint">עדיין אין נתונים - נרשמים מעכשיו בכל כניסה עם חשבון.</p>
+          ) : (
+            <>
+              <p className="admin-hint">
+                כניסות אחרונות: {user.sessions.length} · סה"כ {formatDuration(user.sessions.reduce((sum, s) => sum + s.minutes, 0))}.
+                {' '}הסוף הוא הפעם האחרונה שהמסך היה פתוח (זמן ברקע לא נספר).
+              </p>
+              <div className="table-scroll">
+                <table className="dash-table dash-sessions">
+                  <thead>
+                    <tr><th>יום</th><th>שעות</th><th>משך</th><th>מכשיר</th></tr>
+                  </thead>
+                  <tbody>
+                    {user.sessions.map(s => (
+                      <tr key={s.id}>
+                        <td>{formatDay(s.start)}</td>
+                        <td>
+                          <bdi dir="ltr">{formatClock(s.start)} – {s.live ? '' : formatClock(s.end)}</bdi>
+                          {s.live && <span className="dash-live">🟢 עכשיו</span>}
+                        </td>
+                        <td>{formatDuration(s.minutes)}</td>
+                        <td>{DEVICE_ICONS[s.type] || '❔'} <bdi>{s.device || 'לא ידוע'}</bdi></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
         </>
       )}
 

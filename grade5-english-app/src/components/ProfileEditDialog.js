@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ProfileEditDialog.css';
 import { signOut } from '../services/firebase';
+import { endSession } from '../services/sessions';
 import { pushNow, clearLocalProgress, deleteCloudProgress, GUEST_KEY } from '../services/cloudSync';
 import { accountLabel, emailToUsername } from '../utils/username';
 
@@ -58,6 +59,7 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
     const where = authUser ? ' (גם מהענן)' : '';
     if (window.confirm(`האם למחוק את הפרופיל? כל הנתונים יימחקו לצמיתות${where}!`)) {
       if (authUser) {
+        await endSession();
         await deleteCloudProgress().catch(() => {});
       }
       clearLocalProgress();
@@ -79,6 +81,7 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
     if (!window.confirm('להתנתק? ההתקדמות שמורה בענן ותחזור בהתחברות הבאה.')) return;
     setAccountBusy(true);
     await pushNow().catch(() => {});
+    await endSession();
     await signOut();
     // לא להשאיר את הנתונים במכשיר - אולי ילד/ה אחר/ת יתחבר/ו כאן
     clearLocalProgress();

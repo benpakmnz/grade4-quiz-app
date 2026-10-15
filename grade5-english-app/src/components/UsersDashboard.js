@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { fetchAllUsers } from '../services/contentSync';
 import { parseAllUsers, rateColor, formatWhen } from '../data/userStats';
 import ProgressReport from './ProgressReport';
+import { DEVICE_ICONS } from '../utils/device';
 
 // ---------- רשימת משתמשים ----------
 const UsersDashboard = () => {
@@ -62,7 +63,10 @@ const UsersDashboard = () => {
                   <span className="rate-badge" style={{ background: rateColor(u.overall.rate) }}>
                     {u.overall.rate === null ? '—' : `${u.overall.rate}%`}
                   </span>
-                  <span className="dash-when">{formatWhen(Math.max(u.lastSeen, u.lastPractice))}</span>
+                  <span className="dash-when">
+                    {u.online ? '🟢 מחובר/ת עכשיו' : formatWhen(Math.max(u.lastSeen, u.lastPractice))}
+                    {u.sessions[0] && <> · {DEVICE_ICONS[u.sessions[0].type] || ''}</>}
+                  </span>
                 </span>
               </button>
             </li>

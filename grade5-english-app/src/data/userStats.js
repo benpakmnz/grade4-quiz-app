@@ -15,6 +15,35 @@ const toNumber = (value) => {
   return Number.isFinite(n) ? n : 0;
 };
 
+const SESSION_BEAT_MS = 60 * 1000; // כמו ב-services/sessions.js
+
+/**
+ * מסכם כניסה אחת לתצוגה. הסוף בפועל הוא הפעם האחרונה שהמסך היה פעיל -
+ * זמן שבו הלשונית נשארה פתוחה ברקע לא נספר.
+ */
+export const summarizeSession = (id, s, now = Date.now()) => {
+  const start = toNumber(s?.start);
+  const last = Math.max(toNumber(s?.last), start);
+  const end = toNumber(s?.end);
+  const live = !end && now - last < 3 * SESSION_BEAT_MS;
+  const until = end ? Math.min(end, last + SESSION_BEAT_MS) : live ? now : last;
+  return {
+    id,
+    start,
+    end: live ? null : until,
+    live,
+    minutes: Math.max(0, Math.round((until - start) / 60000)),
+    device: typeof s?.d === 'string' ? s.d : '',
+    type: typeof s?.k === 'string' ? s.k : ''
+  };
+};
+
+export const parseSessions = (node, now = Date.now()) =>
+  Object.entries(node && typeof node === 'object' ? node : {})
+    .map(([id, s]) => summarizeSession(id, s, now))
+    .filter(s => s.start > 0)
+    .sort((a, b) => b.start - a.start);
+
 export const parseUser = (uid, raw = {}) => {
   const profile = raw.profile || {};
   const data = raw.progress?.data || {};
@@ -37,6 +66,8 @@ export const parseUser = (uid, raw = {}) => {
     };
   });
 
+  const sessions = parseSessions(raw.sessions);
+
   const correct = perCategory.reduce((sum, c) => sum + c.correct, 0);
   const total = perCategory.reduce((sum, c) => sum + c.total, 0);
 
@@ -47,7 +78,9 @@ export const parseUser = (uid, raw = {}) => {
     email: profile.email || '',
     username: profile.username || '',
     character: userData.character?.emoji || '🙂',
-    lastSeen: toNumber(profile.lastSeen) || toNumber(raw.progress?.updatedAt) || 0,
+    lastSeen: Math.max(toNumber(profile.lastSeen), sessions[0] ? (sessions[0].end || Date.now()) : 0) || toNumber(raw.progress?.updatedAt) || 0,
+    sessions,
+    online: Boolean(sessions[0]?.live),
     lastPractice: toNumber(raw.progress?.updatedAt) || 0,
     score: toNumber(data.english_score),
     questionCount: toNumber(data.english_questionCount),
@@ -66,6 +99,22 @@ export const parseAllUsers = (usersNode) =>
 
 export const rateColor = (rate) =>
   rate === null ? '#9ca3af' : rate >= 80 ? '#10b981' : rate >= 60 ? '#f59e0b' : '#ef4444';
+
+export const formatDuration = (minutes) => {
+  if (minutes < 1) return 'פחות מדקה';
+  if (minutes < 60) return `${minutes} דק'`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h} שע' ${m} דק'` : `${h} שע'`;
+};
+
+const pad2 = (n) => String(n).padStart(2, '0');
+export const formatClock = (ts) => {
+  const d = new Date(ts);
+  return `${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+export const formatDay = (ts) =>
+  new Date(ts).toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric' });
 
 export const formatWhen = (ts) => {
   if (!ts) return '—';
