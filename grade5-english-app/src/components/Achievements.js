@@ -296,7 +296,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             className={`tab ${activeTab === 'progress' ? 'active' : ''}`}
             onClick={() => setActiveTab('progress')}
           >
-            🌱 לומדים מטעויות
+            🌱 ההתקדמות שלי
           </button>
         </div>
 
