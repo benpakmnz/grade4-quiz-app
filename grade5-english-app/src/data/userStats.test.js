@@ -58,7 +58,7 @@ describe('sessions', () => {
   const { parseSessions, summarizeSession, formatDuration } = require('./userStats');
   const MIN = 60000;
 
-  test('a closed session ends at the last active minute, not when the tab finally closed', () => {
+  test('a closed session ends at the last activity, not when the idle timeout or the tab closed it', () => {
     const s = summarizeSession('a', { start: 0, last: 20 * MIN, end: 90 * MIN, d: 'iPhone · Safari', k: 'mobile' }, 999 * MIN);
     expect(s).toMatchObject({ live: false, end: 21 * MIN, minutes: 21, device: 'iPhone · Safari', type: 'mobile' });
   });
@@ -66,6 +66,8 @@ describe('sessions', () => {
   test('a recent session without an end is live; a stale one is treated as ended', () => {
     expect(summarizeSession('b', { start: 0, last: 9 * MIN }, 10 * MIN)).toMatchObject({ live: true, end: null, minutes: 10 });
     expect(summarizeSession('c', { start: 0, last: 9 * MIN }, 60 * MIN)).toMatchObject({ live: false, end: 9 * MIN, minutes: 9 });
+    // 10 דקות בלי נגיעה (למשל קוראים קטע) - עדיין באמצע הסשן
+    expect(summarizeSession('d', { start: 0, last: 5 * MIN }, 15 * MIN)).toMatchObject({ live: true });
   });
 
   test('newest first, broken entries skipped, and attached to the parsed user', () => {

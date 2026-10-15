@@ -211,7 +211,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
             <>
               <p className="admin-hint">
                 כניסות אחרונות: {user.sessions.length} · סה"כ {formatDuration(user.sessions.reduce((sum, s) => sum + s.minutes, 0))}.
-                {' '}הסוף הוא הפעם האחרונה שהמסך היה פתוח (זמן ברקע לא נספר).
+                {' '}אחרי 15 דקות בלי נגיעה במסך הסשן נגמר, והסוף נרשם לפי הפעולה האחרונה.
               </p>
               <div className="table-scroll">
                 <table className="dash-table dash-sessions">
