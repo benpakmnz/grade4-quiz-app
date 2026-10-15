@@ -1,9 +1,3 @@
-.my-progress {
-  width: calc(100vw - 40px);
-  max-width: 1000px;
-  box-sizing: border-box;
-}
-
 .report-parents {
   background: #eef2ff;
   color: #3730a3;
@@ -65,10 +59,3 @@
   align-self: flex-start;
 }
 
-@media (max-width: 768px) {
-  .my-progress {
-    width: calc(100vw - 20px);
-    margin-top: 110px;
-    padding: 10px;
-  }
-}

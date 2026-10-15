@@ -140,7 +140,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           </SimpleGrid>
         </Box>
 
-        {/* Progress report for kids & parents */}
+        {/* Progress report for kids & parents (opens the "mistakes & parents" tab) */}
         <Button
           onClick={() => onSelectGame('myProgress')}
           bg="white"
@@ -148,13 +148,17 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           borderRadius="full"
           boxShadow="lg"
           px={6}
-          py={6}
+          py={3}
+          h="auto"
           mt={8}
+          maxW="100%"
+          whiteSpace="normal"
+          textAlign="center"
           fontSize="md"
           fontWeight="bold"
           _hover={{ transform: 'translateY(-2px)', boxShadow: 'xl' }}
         >
-          👨‍👩‍👧 להורים: 📒 ההתקדמות והטעויות - על מה כדאי לתרגל יחד
+          👨‍👩‍👧 להורים: הטעויות ועל מה לתרגל
         </Button>
 
         {/* Motivational Message */}
