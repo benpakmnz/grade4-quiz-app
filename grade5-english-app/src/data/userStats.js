@@ -1,5 +1,6 @@
 // הופך את הנתונים הגולמיים של משתמש מ-Firebase (english/users/<uid>) לנתונים לתצוגה בלוח הבקרה
-import { categories, TARGET_PER_CATEGORY } from './categories';
+import { TARGET_PER_CATEGORY } from './categories';
+import { allCategories } from './subjects';
 
 const parseJSON = (value, fallback) => {
   if (typeof value !== 'string') return fallback;
@@ -52,7 +53,7 @@ export const parseUser = (uid, raw = {}) => {
   const stats = parseJSON(data.english_categoryStats, {}) || {};
   const mistakes = parseJSON(data.english_mistakes, []);
 
-  const perCategory = categories.map(cat => {
+  const perCategory = allCategories.map(cat => {
     const s = stats[cat.id] || { correct: 0, total: 0 };
     const correct = toNumber(s.correct);
     const total = toNumber(s.total);
@@ -60,6 +61,7 @@ export const parseUser = (uid, raw = {}) => {
       id: cat.id,
       name: cat.name,
       emoji: cat.emoji,
+      subject: cat.subject,
       correct,
       total,
       rate: total > 0 ? Math.round((correct / total) * 100) : null,

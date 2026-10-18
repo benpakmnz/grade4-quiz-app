@@ -149,7 +149,7 @@ const LoginScreen = ({ onGuest, initialMode = null }) => {
         >
           🇬🇧 Welcome!
         </motion.h1>
-        <p className="welcome-subtitle">מתכוננים למבחן המיפוי באנגלית 📚</p>
+        <p className="welcome-subtitle">מתכוננים למבחנים באנגלית ובחשבון 📚</p>
 
         {initialMode === 'signup' && (
           <p className="login-carry">✅ כל מה שכבר תרגלת במכשיר הזה יעבור לחשבון החדש</p>

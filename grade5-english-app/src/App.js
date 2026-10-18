@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
+import MathGame from './components/MathGame';
 import AdminPanel from './components/AdminPanel';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
@@ -14,7 +15,10 @@ import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import GuestReminderDialog from './components/GuestReminderDialog';
 import { getGenderText } from './utils/genderText';
-import { categories, getEmptyCategoryStats, getDaysUntilExam, TARGET_PER_CATEGORY } from './data/categories';
+import { TARGET_PER_CATEGORY } from './data/categories';
+import {
+  SUBJECTS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText
+} from './data/subjects';
 import { notifyLocalChange } from './services/cloudSync';
 import { emailToUsername } from './utils/username';
 import {
@@ -25,6 +29,12 @@ import {
   VStack,
   Badge,
 } from '@chakra-ui/react';
+
+const getEmptyCategoryStats = () =>
+  allCategories.reduce((acc, cat) => {
+    acc[cat.id] = { correct: 0, total: 0 };
+    return acc;
+  }, {});
 
 function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, isGuest = false, onRequestSignup }) {
   const [currentGame, setCurrentGame] = useState('welcome');
@@ -43,7 +53,20 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   
   // Track success per category
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
+  // המקצוע שנבחר בדף הבית (אנגלית / חשבון)
+  const [subject, setSubject] = useState(() => readSubject());
+  const changeSubject = (id) => {
+    setSubject(id);
+    saveSubject(id);
+  };
   
+  // כניסה לנושא - וגם מעבר למקצוע שלו (כדי שהחזרה לדף הבית תהיה למקצוע הנכון)
+  const startGame = (id) => {
+    const cat = findCategory(id);
+    if (cat && cat.subject !== subject) changeSubject(cat.subject);
+    setCurrentGame(id);
+  };
+
   const openAchievements = (tab = 'overview') => {
     setAchievementsTab(typeof tab === 'string' ? tab : 'overview');
     setShowAchievements(true);
@@ -69,7 +92,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       .toString(16).slice(1);
   };
 
-  const daysUntilExam = getDaysUntilExam();
+  const daysUntilExam = getDaysUntilSubjectExam(subject);
+  const examBadgeText = `${SUBJECTS[subject].emoji} המבחן בעוד:`;
 
   // Load data from localStorage on mount
   useEffect(() => {
@@ -227,7 +251,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     }
     if (currentGame === 'home') {
       return <HomePage
-        onSelectGame={(id) => (id === 'myProgress' ? openAchievements('progress') : setCurrentGame(id))}
+        onSelectGame={(id) => (id === 'myProgress' ? openAchievements('progress') : startGame(id))}
+        subject={subject}
+        onSubjectChange={changeSubject}
         score={score}
         streak={streak}
         questionCount={questionCount}
@@ -243,7 +269,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       return <AdminPanel onBack={() => setCurrentGame('home')} />;
     }
 
-    const category = categories.find(c => c.id === currentGame);
+    const category = findCategory(currentGame);
     if (!category) return null;
 
     const gameProps = {
@@ -263,6 +289,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       onAddHistory: (result) => addToHistory(category.id, result)
     };
 
+    if (category.subject === 'math') {
+      return <MathGame {...gameProps} />;
+    }
     if (category.id === 'reading' || category.id === 'listening') {
       return <PassageGame {...gameProps} />;
     }
@@ -394,10 +423,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   alignItems="center"
                   gap={2}
                 >
-                  <Text fontSize="md">⏰</Text>
-                  <Text fontWeight="bold">המבחן בעוד:</Text>
+                  <Text fontWeight="bold">{examBadgeText}</Text>
                   <Text fontWeight="bold" fontSize="md">
-                    {daysUntilExam > 0 ? `${daysUntilExam} ימים` : 'היום!'}
+                    {examCountdownText(daysUntilExam)}
                   </Text>
                 </Badge>
               </HStack>
@@ -498,10 +526,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   alignItems="center"
                   gap={2}
                 >
-                  <Text fontSize="md">⏰</Text>
-                  <Text fontWeight="bold">המבחן בעוד:</Text>
+                  <Text fontWeight="bold">{examBadgeText}</Text>
                   <Text fontWeight="bold" fontSize="md">
-                    {daysUntilExam > 0 ? `${daysUntilExam} ימים` : 'היום!'}
+                    {examCountdownText(daysUntilExam)}
                   </Text>
                 </Badge>
               </HStack>
@@ -572,6 +599,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           <StatusDialog
             userData={userData}
             categoryStats={categoryStats}
+            subject={subject}
             onClose={() => setShowStatusDialog(false)}
           />
         </AnimatePresence>
@@ -606,10 +634,11 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 onClose={closeAchievements}
                 categoryStats={categoryStats}
                 userData={userData}
+                subject={subject}
                 initialTab={achievementsTab}
                 onPractice={(id) => {
                   closeAchievements();
-                  setCurrentGame(id);
+                  startGame(id);
                 }}
               />
             </div>

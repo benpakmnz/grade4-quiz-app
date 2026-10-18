@@ -10,12 +10,36 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import './HomePage.css';
-import { categories } from '../data/categories';
+import { SUBJECTS, SUBJECT_IDS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
 const MotionBox = motion(Box);
 
-const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText }) => {
-  const games = categories;
+// בחירת מקצוע: אנגלית / חשבון - עם הספירה לאחור עד כל מבחן
+const SubjectSwitcher = ({ subject, onChange }) => (
+  <div className="subject-switcher" role="tablist" aria-label="מקצוע">
+    {SUBJECT_IDS.map(id => {
+      const s = SUBJECTS[id];
+      const days = getDaysUntilSubjectExam(id);
+      return (
+        <button
+          key={id}
+          role="tab"
+          aria-selected={subject === id}
+          className={`subject-tab ${subject === id ? 'active' : ''}`}
+          onClick={() => onChange(id)}
+        >
+          <span className="subject-emoji">{s.emoji}</span>
+          <span className="subject-name">{s.name}</span>
+          <span className="subject-exam">⏰ מבחן: {examCountdownText(days)}</span>
+        </button>
+      );
+    })}
+  </div>
+);
+
+const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', onSubjectChange }) => {
+  const games = SUBJECTS[subject].categories;
+  const isMath = subject === 'math';
 
   return (
          <Container maxW="container.xl" pt="120px" pb={20}>
@@ -35,11 +59,12 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
             textShadow="3px 3px 6px rgba(0, 0, 0, 0.3)"
             mb={2}
           >
-            {getGenderText('בחרי נושא לתרגול', userData?.gender)} 🇬🇧
+            {getGenderText('בחרי נושא לתרגול', userData?.gender)} {SUBJECTS[subject].emoji}
           </Heading>
           <Text fontSize="lg" color="yellow.500" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)" mb={4}>
             {getGenderText('כל תרגול מקרב אותך להצלחה! 💪', userData?.gender)}
           </Text>
+          {onSubjectChange && <SubjectSwitcher subject={subject} onChange={onSubjectChange} />}
         </MotionBox>
 
         {/* Games Grid */}
@@ -176,9 +201,13 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           maxW="600px"
         >
           <Text color="white" fontSize="md" fontWeight="bold" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)">
-            {getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה במבחן המיפוי!', userData?.gender)}
+            {isMath
+              ? getGenderText('💪 את יכולה! כל תרגיל מקרב אותך להצלחה במבחן בחשבון!', userData?.gender)
+              : getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה במבחן המיפוי!', userData?.gender)}
             <br />
-            🔊 בכל מקום שיש כפתור רמקול - אפשר ללחוץ ולשמוע איך אומרים באנגלית
+            {isMath
+              ? '📘 לא בטוחים איך פותרים? בכל נושא יש כפתור "איך פותרים?" עם הסבר ודוגמה'
+              : '🔊 בכל מקום שיש כפתור רמקול - אפשר ללחוץ ולשמוע איך אומרים באנגלית'}
           </Text>
         </MotionBox>
       </VStack>

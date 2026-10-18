@@ -64,7 +64,7 @@ const WelcomeScreen = ({ onStart, defaultName = '' }) => {
           🇬🇧 Welcome! ברוכים הבאים
         </motion.h1>
         
-        <p className="welcome-subtitle">מתכוננים למבחן המיפוי באנגלית - בואו נכיר! 😊</p>
+        <p className="welcome-subtitle">מתכוננים למבחנים באנגלית ובחשבון - בואו נכיר! 😊</p>
 
         <div className="welcome-content-grid">
           {/* Right Column - Name & Gender */}

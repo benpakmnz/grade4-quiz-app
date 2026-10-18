@@ -2,7 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import './WelcomeDialog.css';
 import { getGenderText } from '../utils/genderText';
-import { getDaysUntilExam, TARGET_PER_CATEGORY } from '../data/categories';
+import { TARGET_PER_CATEGORY } from '../data/categories';
+import { SUBJECTS, SUBJECT_IDS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
 const WelcomeDialog = ({ onClose, userData }) => {
   console.log('WelcomeDialog - userData:', userData);
@@ -30,13 +31,14 @@ const WelcomeDialog = ({ onClose, userData }) => {
         <div className="welcome-dialog-body">
           <div className="welcome-section">
             <div className="welcome-icon">📝</div>
-            <h3>מבחן מיפוי באנגלית</h3>
+            <h3>אנגלית וחשבון</h3>
             <p>
-              אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
-              <br />
+              🇬🇧 <strong>אנגלית:</strong> אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
               🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
               <br />
-              <strong>היעד: 100% בכל נושא!</strong>
+              🔢 <strong>חשבון:</strong> מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.
+              <br />
+              {getGenderText('בחרי', userData?.gender)} מקצוע בראש דף הבית. <strong>היעד: 100% בכל נושא!</strong>
             </p>
           </div>
 
@@ -52,10 +54,14 @@ const WelcomeDialog = ({ onClose, userData }) => {
 
           <div className="welcome-section highlight">
             <div className="welcome-icon">⏰</div>
-            <h3>זמן עד המבחן</h3>
+            <h3>זמן עד המבחנים</h3>
             <p>
-              המבחן מתקיים ביום רביעי 21.10 - בעוד <strong>{getDaysUntilExam()} ימים</strong>.
-              <br />
+              {SUBJECT_IDS.filter(id => getDaysUntilSubjectExam(id) >= 0).map(id => (
+                <React.Fragment key={id}>
+                  {SUBJECTS[id].emoji} {SUBJECTS[id].examName}: <strong>{examCountdownText(getDaysUntilSubjectExam(id))}</strong>
+                  <br />
+                </React.Fragment>
+              ))}
               היעד: <strong>{TARGET_PER_CATEGORY} תשובות נכונות בכל נושא</strong> = 100% מוכנות!
             </p>
           </div>

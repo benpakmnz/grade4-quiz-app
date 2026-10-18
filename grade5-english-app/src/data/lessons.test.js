@@ -1,10 +1,11 @@
 import { lessons } from './lessons';
-import { categories } from './categories';
+import { allCategories as categories } from './subjects';
 
-const KNOWN = ['rules', 'howto', 'sort', 'check', 'tips'];
+const KNOWN = ['rules', 'howto', 'sort', 'check', 'tips', 'pictures'];
+const VISUALS = ['fraction', 'fractionPair', 'set', 'numberLine', 'sequence', 'polygon', 'angle', 'clock', 'rect'];
 
 test('every practice category except the mixed test has a lesson', () => {
-  categories.filter(c => c.id !== 'mixed').forEach(c => {
+  categories.filter(c => !['mixed', 'mTest'].includes(c.id)).forEach(c => {
     expect([c.id, Boolean(lessons[c.id])]).toEqual([c.id, true]);
   });
 });
@@ -25,6 +26,12 @@ Object.entries(lessons).forEach(([id, lesson]) => {
         });
       }
       if (step.type === 'howto') expect(step.steps.length).toBeGreaterThan(1);
+      if (step.type === 'pictures') {
+        step.cards.forEach(card => {
+          expect(VISUALS).toContain(card.visual.type);
+          expect(card.text.length).toBeGreaterThan(10);
+        });
+      }
     });
   });
 });

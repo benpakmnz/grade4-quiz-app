@@ -4,6 +4,8 @@ import { lessons } from '../data/lessons';
 import { getGenderText } from '../utils/genderText';
 import { notifyLocalChange } from '../services/cloudSync';
 import SpeakButton from './SpeakButton';
+import MathText from './MathText';
+import MathVisual from './MathVisual';
 import './LessonViewer.css';
 
 const SEEN_KEY = 'english_lessonsSeen';
@@ -28,14 +30,8 @@ const markSeen = (id) => {
   }
 };
 
-// "**מילה**" ← מילה מודגשת
-const Rich = ({ text }) => (
-  <>
-    {text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-      part.startsWith('**') ? <b key={i} className="hl">{part.slice(2, -2)}</b> : <React.Fragment key={i}>{part}</React.Fragment>
-    )}
-  </>
-);
+// "**מילה**" ← מילה מודגשת (ותרגילים נשארים משמאל לימין גם כשחלק מהם מודגש)
+const Rich = ({ text }) => <MathText text={text} rich />;
 const plain = (text) => text.replace(/\*\*/g, '');
 const isEnglish = (text) => /^[A-Za-z_'"(]/.test(plain(text).trim());
 
@@ -76,12 +72,12 @@ const RulesStep = ({ step, g }) => (
   </div>
 );
 
-const HowtoStep = ({ step, g }) => {
+const HowtoStep = ({ step, g, rtl }) => {
   const [shown, setShown] = useState(1);
   const all = shown >= step.steps.length;
   return (
     <div className="lesson-howto">
-      <div className="howto-sentence" dir="ltr">{step.sentence}</div>
+      <div className="howto-sentence" dir={rtl ? 'rtl' : 'ltr'}>{rtl ? <MathText text={step.sentence} /> : step.sentence}</div>
       <ol className="howto-steps">
         <AnimatePresence>
           {step.steps.slice(0, shown).map((s, i) => (
@@ -89,7 +85,7 @@ const HowtoStep = ({ step, g }) => {
               <span className="howto-num">{i + 1}</span>
               <div>
                 <div className="howto-he">{s.he}</div>
-                <div className="howto-show" dir="ltr"><Rich text={s.show} /></div>
+                <div className="howto-show" dir={rtl ? 'rtl' : 'ltr'}><Rich text={s.show} /></div>
               </div>
             </motion.li>
           ))}
@@ -102,7 +98,7 @@ const HowtoStep = ({ step, g }) => {
           <motion.div className="howto-extra" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
             <b>{g('עוד טיפים:')}</b>
             <ul>
-              {step.extra.map(t => <li key={t} dir={isEnglish(t) ? 'ltr' : 'rtl'}><Rich text={t} /></li>)}
+              {step.extra.map(t => <li key={t} dir={!rtl && isEnglish(t) ? 'ltr' : 'rtl'}><Rich text={t} /></li>)}
             </ul>
           </motion.div>
         )
@@ -167,7 +163,7 @@ const SortStep = ({ step, g }) => {
   );
 };
 
-const CheckStep = ({ step, g }) => {
+const CheckStep = ({ step, g, rtl }) => {
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState(null);
   const [score, setScore] = useState(0);
@@ -195,25 +191,30 @@ const CheckStep = ({ step, g }) => {
       ) : (
         <motion.div key={index} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
           <div className="sort-count">{index + 1} / {step.questions.length}</div>
-          <div className="check-sentence" dir="ltr">
-            {q.sentence}
-            <SpeakButton text={q.sentence.replace('____', picked || 'blank')} small />
-          </div>
-          <div className="check-options" dir="ltr">
+          {rtl ? (
+            <div className="check-sentence rtl" dir="rtl"><MathText text={q.sentence} /></div>
+          ) : (
+            <div className="check-sentence" dir="ltr">
+              {q.sentence}
+              <SpeakButton text={q.sentence.replace('____', picked || 'blank')} small />
+            </div>
+          )}
+          {q.visual && <MathVisual spec={q.visual} />}
+          <div className="check-options" dir={rtl ? 'rtl' : 'ltr'}>
             {q.options.map(opt => (
               <button
                 key={opt}
                 className={`check-option ${picked && opt === q.answer ? 'right' : ''} ${picked === opt && opt !== q.answer ? 'wrong' : ''}`}
                 onClick={() => pick(opt)}
               >
-                {opt}
+                {rtl ? <MathText text={opt} /> : opt}
               </button>
             ))}
           </div>
           {picked && (
             <motion.div className={`check-feedback ${picked === q.answer ? 'ok' : 'bad'}`} initial={{ scale: 0.8 }} animate={{ scale: 1 }}>
-              {picked === q.answer ? '✅ נכון! ' : `❌ התשובה: ${q.answer}. `}
-              <span>💡 {q.tip}</span>
+              {picked === q.answer ? '✅ נכון! ' : <>❌ התשובה: <MathText text={q.answer} />. </>}
+              <span>💡 <MathText text={q.tip} /></span>
               <button className="lesson-action small" onClick={() => { setIndex(index + 1); setPicked(null); }}>
                 {index + 1 < step.questions.length ? 'הבאה ←' : 'סיום ←'}
               </button>
@@ -227,7 +228,7 @@ const CheckStep = ({ step, g }) => {
 
 const TipsStep = ({ step }) => (
   <div className="lesson-tips">
-    {step.intro && <p className="lesson-intro">{step.intro}</p>}
+    {step.intro && <p className="lesson-intro"><Rich text={step.intro} /></p>}
     {step.pattern && (
       <div className="pattern-row" dir="ltr">
         {step.pattern.map((p, i) => (
@@ -250,7 +251,22 @@ const TipsStep = ({ step }) => (
   </div>
 );
 
-const STEP_COMPONENTS = { rules: RulesStep, howto: HowtoStep, sort: SortStep, check: CheckStep, tips: TipsStep };
+// כרטיסים עם ציור (בחשבון)
+const PicturesStep = ({ step }) => (
+  <div className="lesson-pictures">
+    {step.intro && <p className="lesson-intro"><Rich text={step.intro} /></p>}
+    <div className={`picture-cards ${step.cards.length > 2 ? 'many' : ''}`}>
+      {step.cards.map((card, i) => (
+        <motion.div key={i} className="picture-card" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.15 }}>
+          <MathVisual spec={card.visual} />
+          <p><Rich text={card.text} /></p>
+        </motion.div>
+      ))}
+    </div>
+  </div>
+);
+
+const STEP_COMPONENTS = { rules: RulesStep, howto: HowtoStep, sort: SortStep, check: CheckStep, tips: TipsStep, pictures: PicturesStep };
 
 // ---------- החלון ----------
 export const LessonViewer = ({ categoryId, onClose, userData }) => {
@@ -296,7 +312,7 @@ export const LessonViewer = ({ categoryId, onClose, userData }) => {
 
         <h3 className="lesson-step-title">{g(step.title)}</h3>
         <div className="lesson-body">
-          <StepComponent key={`${categoryId}-${stepIndex}`} step={step} g={g} />
+          <StepComponent key={`${categoryId}-${stepIndex}`} step={step} g={g} rtl={Boolean(lesson.rtl)} />
         </div>
 
         <div className="lesson-footer">

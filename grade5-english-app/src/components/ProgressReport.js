@@ -4,9 +4,11 @@ import { DEVICE_ICONS } from '../utils/device';
 import { readLocalProgress } from '../services/cloudSync';
 import './AdminPanel.css';
 import './ProgressReport.css';
-import { categories, TARGET_PER_CATEGORY } from '../data/categories';
+import { TARGET_PER_CATEGORY } from '../data/categories';
+import { allCategories as categories, SUBJECTS, SUBJECT_IDS } from '../data/subjects';
 import { hasLesson } from '../data/lessons';
 import { getGenderText } from '../utils/genderText';
+import MathText from './MathText';
 
 const categoryName = (id) => {
   const c = categories.find(x => x.id === id);
@@ -44,7 +46,23 @@ export const PARENT_TIPS = {
   reading: 'לקרוא קודם את השאלות, ואז לחפש בקטע את המילה מהשאלה. בשאלות Why התשובה מתחילה ב-because.',
   listening: 'לבחור מהירות 🐢 לאט, לקרוא את השאלה לפני ההשמעה, ולעצור ⏸️ אחרי כל כמה משפטים.',
   writing: 'לכתוב יחד 6 משפטים קצרים על עצמו/ה, ולבדוק עם רשימת הבדיקה: אות גדולה, נקודה, I גדולה.',
-  mixed: 'לחזור לנושא שבו היו הכי הרבה טעויות במבחן ולתרגל אותו לבד לפני מבחן נוסף.'
+  mixed: 'לחזור לנושא שבו היו הכי הרבה טעויות במבחן ולתרגל אותו לבד לפני מבחן נוסף.',
+  // חשבון
+  mPlaceValue: 'לכתוב יחד מספר גדול (למשל מחיר דירה במודעה) ולשאול: "כמה שווה כל ספרה?". אפשר לפרק לפילוג ולקרוא בקול.',
+  mNumberLine: 'לצייר ישר מספרים על דף, לסמן שני מספרים ולשאול כמה שווה כל קפיצה - ורק אז איפה החץ.',
+  mCompare: 'לבחור שני מספרים מחשבונית או משלט ולשאול מי גדול יותר ולמה. בסדרות - קודם למצוא את ההפרש בין שני מספרים סמוכים.',
+  mOperations: 'לפתור יחד תרגיל אחד במאונך, ולבקש לבדוק אותו בפעולה ההפוכה (חיסור בחיבור, חילוק בכפל).',
+  mOrderOps: 'לסמן בעיפרון את הפעולה הראשונה (סוגריים, אחר כך כפל וחילוק), לפתור אותה ולהעתיק מחדש את מה שנשאר.',
+  mEquations: 'לשאול: "מה עושה הריבוע?" ולפתור בפעולה ההפוכה. בסוף - להציב את המספר ולבדוק שהתרגיל נכון.',
+  mWordProblems: 'לקרוא יחד פעמיים, לסמן את המספרים ואת השאלה, ולהחליט ביחד איזו פעולה מתאימה לכל שלב.',
+  mFractionMeaning: 'לחלק פיצה, שוקולד או תפוח לחלקים שווים ולשאול "איזה חלק אכלנו?" ו"כמה הם שלושה רבעים מ-12?".',
+  mFractionAdd: 'לזכור יחד: המכנה לא משתנה! שלמים עם שלמים, שברים עם שברים. לצייר פסים מחולקים כדי לראות.',
+  mMixed: 'לצייר עיגולים מחולקים לרבעים, לצבוע 7 רבעים, ולראות יחד שזה שלם אחד ועוד 3 רבעים.',
+  mFractionWords: 'להפוך כל סיפור לציור (עוגה, פס, קבוצות) לפני שמחשבים. לשאול: "מה השלם כאן?".',
+  mPolygonSides: 'לחפש בבית צלעות מקבילות ומאונכות (בדלת, בחלון, בספר). לבדוק "מאונכות" עם פינה של דף.',
+  mAngles: 'להשתמש בפינה של דף כ"בודק זוויות": נכנסת בפנים - חדה, בדיוק - ישרה, יוצאת החוצה - קהה.',
+  mAreaPerimeter: 'למדוד יחד שולחן או ספר: מסביב (גדר) = היקף, הכיסוי (מפה) = שטח. לשים לב ליחידות (ס"מ מול סמ"ר).',
+  mTest: 'לחזור לנושא שבו היו הכי הרבה טעויות במבחן המסכם ולתרגל אותו לבד, ואז לנסות שוב את המבחן.'
 };
 
 /**
@@ -58,7 +76,8 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
 
   const practiced = user.perCategory.filter(c => c.total > 0);
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
-  const notStarted = user.perCategory.filter(c => c.total === 0);
+  const practicedSubjects = new Set(practiced.map(c => c.subject));
+  const notStarted = user.perCategory.filter(c => c.total === 0 && practicedSubjects.has(c.subject));
   const mistakes = user.mistakes.filter(m => mistakeFilter === 'all' || m.category === mistakeFilter);
   const mistakeCategories = [...new Set(user.mistakes.map(m => m.category))];
 
@@ -142,7 +161,9 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
             <tr><th>נושא</th><th>נכונות / סה"כ</th><th>הצלחה</th><th>התקדמות ליעד ({TARGET_PER_CATEGORY})</th></tr>
           </thead>
           <tbody>
-            {user.perCategory.map(c => (
+            {SUBJECT_IDS.flatMap(sid => [
+              <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
+              ...user.perCategory.filter(c => c.subject === sid).map(c => (
               <tr key={c.id} className={c.total === 0 ? 'muted' : ''}>
                 <td>{c.emoji} {c.name}</td>
                 <td><bdi dir="ltr">{c.correct} / {c.total}</bdi></td>
@@ -151,7 +172,8 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
                   <div className="dash-bar"><div style={{ width: `${c.progress}%`, background: rateColor(c.rate) }} /></div>
                 </td>
               </tr>
-            ))}
+              ))
+            ])}
           </tbody>
         </table>
       </div>
@@ -191,10 +213,10 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
                   </span>
                   <span className="dash-when">{formatWhen(m.ts)}</span>
                 </div>
-                <div className="dash-q" dir="auto">{m.question}</div>
+                <div className="dash-q" dir="auto"><MathText text={m.question} /></div>
                 <div className="dash-answers">
-                  <span className="given" dir="auto">❌ {m.given}</span>
-                  <span className="correct" dir="auto">✅ {m.correct}</span>
+                  <span className="given" dir="auto">❌ <MathText text={m.given} /></span>
+                  <span className="correct" dir="auto">✅ <MathText text={m.correct} /></span>
                 </div>
               </li>
             ))}

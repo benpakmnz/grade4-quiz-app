@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ProgressReport, { PARENT_TIPS } from './ProgressReport';
-import { categories } from '../data/categories';
+import { allCategories as categories } from '../data/subjects';
 import { parseUser } from '../data/userStats';
 
 const user = parseUser('u1', {

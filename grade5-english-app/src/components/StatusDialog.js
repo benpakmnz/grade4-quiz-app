@@ -2,16 +2,20 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import './StatusDialog.css';
 import { getGenderText } from '../utils/genderText';
-import { categories, TARGET_PER_CATEGORY, getDaysUntilExam } from '../data/categories';
+import { TARGET_PER_CATEGORY } from '../data/categories';
+import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
-const StatusDialog = ({ onClose, userData, categoryStats }) => {
+const StatusDialog = ({ onClose, userData, categoryStats, subject = 'english' }) => {
+  // הנתונים מוצגים לפי המקצוע שנבחר בדף הבית
+  const categories = SUBJECTS[subject].categories;
+  const subjectName = SUBJECTS[subject].name;
   
   // Calculate overall progress
   const calculateOverallStats = () => {
     let totalCorrect = 0;
     let totalQuestions = 0;
     
-    Object.values(categoryStats).forEach(stat => {
+    categories.map(c => categoryStats[c.id] || { correct: 0, total: 0 }).forEach(stat => {
       totalCorrect += stat.correct;
       totalQuestions += stat.total;
     });
@@ -51,7 +55,7 @@ const StatusDialog = ({ onClose, userData, categoryStats }) => {
   const recommendations = getCategoryRecommendations();
   
   // Calculate days until exam
-  const daysUntilExam = getDaysUntilExam();
+  const daysUntilExam = getDaysUntilSubjectExam(subject);
   
   // Calculate recommended daily practice
   const remainingToTarget = (TARGET_PER_CATEGORY * categories.length) - stats.totalCorrect;
@@ -107,8 +111,8 @@ const StatusDialog = ({ onClose, userData, categoryStats }) => {
             <div className="time-info">
               <div className="status-icon">⏰</div>
               <div>
-                <h4>זמן עד המבחן</h4>
-                <p className="time-value">{daysUntilExam} ימים</p>
+                <h4>זמן עד המבחן ב{subjectName}</h4>
+                <p className="time-value">{examCountdownText(daysUntilExam)}</p>
               </div>
             </div>
             {remainingToTarget > 0 && (

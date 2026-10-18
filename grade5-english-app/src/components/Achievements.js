@@ -5,9 +5,13 @@ import { getGenderText } from '../utils/genderText';
 import { notifyLocalChange, pushNow } from '../services/cloudSync';
 import ProgressReport, { buildLocalReport } from './ProgressReport';
 import { LessonViewer } from './LessonViewer';
-import { categories, TARGET_PER_CATEGORY, getDaysUntilExam } from '../data/categories';
+import { TARGET_PER_CATEGORY } from '../data/categories';
+import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
-const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice }) => {
+const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice, subject = 'english' }) => {
+  // הנתונים מוצגים לפי המקצוע שנבחר בדף הבית
+  const categories = SUBJECTS[subject].categories;
+  const subjectName = SUBJECTS[subject].name;
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [showNotification, setShowNotification] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab); // 'overview', 'categories', 'achievements', 'progress'
@@ -18,7 +22,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
     let totalCorrect = 0;
     let totalQuestions = 0;
     
-    Object.values(categoryStats).forEach(stat => {
+    categories.map(c => categoryStats[c.id] || { correct: 0, total: 0 }).forEach(stat => {
       totalCorrect += stat.correct;
       totalQuestions += stat.total;
     });
@@ -53,7 +57,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
   };
 
   // Calculate days until exam and progress
-  const daysUntilExam = getDaysUntilExam();
+  const daysUntilExam = getDaysUntilSubjectExam(subject);
   
   const totalTarget = TARGET_PER_CATEGORY * categories.length;
   const stats = calculateOverallStats();
@@ -393,8 +397,8 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
               <div className="exam-card">
                 <div className="exam-icon">⏰</div>
                 <div className="exam-content">
-                  <h4>זמן עד המבחן</h4>
-                  <div className="exam-days">{daysUntilExam} ימים</div>
+                  <h4>זמן עד המבחן ב{subjectName}</h4>
+                  <div className="exam-days">{examCountdownText(daysUntilExam)}</div>
                 </div>
               </div>
               
@@ -440,7 +444,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <h3 className="section-title">📚 פירוט לפי נושאים</h3>
+            <h3 className="section-title">📚 פירוט לפי נושאים - {subjectName}</h3>
             <div className="categories-list">
               {insights.allCategories.map((cat, index) => (
                 <motion.div
