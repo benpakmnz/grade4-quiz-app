@@ -1,6 +1,7 @@
 // מקצועות התרגול באפליקציה: אנגלית וחשבון. אותם משתמשים, אותן נקודות - נושאים ומבחן נפרדים.
 import { categories as englishCategories, EXAM_DATE as ENGLISH_EXAM_DATE } from './categories';
 import { mathCategories, MATH_EXAM_DATE } from './mathCategories';
+import { IS_TEST_ENV } from '../services/env';
 
 export const SUBJECTS = {
   english: {
@@ -42,9 +43,11 @@ export const daysUntil = (date, now = new Date()) => {
 export const getDaysUntilSubjectExam = (subjectId, now) =>
   daysUntil((SUBJECTS[subjectId] || SUBJECTS.english).examDate, now);
 
-// חשבון עדיין בבדיקה: זמין רק למנהלים (english/admins). כדי לפתוח לכולם - MATH_FOR_EVERYONE = true.
-// בבנייה מקומית אפשר להדליק עם REACT_APP_MATH_FOR_EVERYONE=true
-export const MATH_FOR_EVERYONE = (process.env.REACT_APP_MATH_FOR_EVERYONE || '').trim() === 'true';
+// חשבון עדיין בבדיקה:
+// - בסביבת הבדיקות (staging) - לכל המשתמשים
+// - באתר האמיתי - רק למנהלים (english/admins)
+// כדי לפתוח לכולם גם באתר האמיתי: REACT_APP_MATH_FOR_EVERYONE=true (או לשנות כאן ל-true)
+export const MATH_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_MATH_FOR_EVERYONE || '').trim() === 'true';
 
 /** המקצועות שהמשתמש/ת רואה */
 export const availableSubjects = (isAdmin) => (MATH_FOR_EVERYONE || isAdmin ? SUBJECT_IDS : ['english']);

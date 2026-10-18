@@ -17,3 +17,17 @@ test('with no saved choice - the subject whose exam is closest', () => {
   expect(readSubject(new Date('2026-10-18'), ['english', 'math'])).toBe('english');
   expect(readSubject(new Date('2026-10-25'), ['english', 'math'])).toBe('math');
 });
+
+test('on the test site (Vercel preview) everyone sees math; on the real site only admins', () => {
+  const load = (vercelEnv) => {
+    let mod;
+    const saved = process.env.REACT_APP_VERCEL_ENV;
+    process.env.REACT_APP_VERCEL_ENV = vercelEnv;
+    jest.isolateModules(() => { mod = require('./subjects'); });
+    process.env.REACT_APP_VERCEL_ENV = saved;
+    return mod;
+  };
+  expect(load('preview').availableSubjects(false)).toEqual(['english', 'math']);
+  expect(load('production').availableSubjects(false)).toEqual(['english']);
+  expect(load('production').availableSubjects(true)).toEqual(['english', 'math']);
+});
