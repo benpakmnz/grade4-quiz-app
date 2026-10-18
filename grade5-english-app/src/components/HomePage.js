@@ -10,14 +10,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import './HomePage.css';
-import { SUBJECTS, SUBJECT_IDS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
+import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
 const MotionBox = motion(Box);
 
 // בחירת מקצוע: אנגלית / חשבון - עם הספירה לאחור עד כל מבחן
-const SubjectSwitcher = ({ subject, onChange }) => (
+const SubjectSwitcher = ({ subject, subjects, onChange }) => (
   <div className="subject-switcher" role="tablist" aria-label="מקצוע">
-    {SUBJECT_IDS.map(id => {
+    {subjects.map(id => {
       const s = SUBJECTS[id];
       const days = getDaysUntilSubjectExam(id);
       return (
@@ -37,7 +37,7 @@ const SubjectSwitcher = ({ subject, onChange }) => (
   </div>
 );
 
-const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', onSubjectChange }) => {
+const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', subjects = ['english'], onSubjectChange }) => {
   const games = SUBJECTS[subject].categories;
   const isMath = subject === 'math';
 
@@ -64,7 +64,7 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           <Text fontSize="lg" color="yellow.500" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)" mb={4}>
             {getGenderText('כל תרגול מקרב אותך להצלחה! 💪', userData?.gender)}
           </Text>
-          {onSubjectChange && <SubjectSwitcher subject={subject} onChange={onSubjectChange} />}
+          {onSubjectChange && subjects.length > 1 && <SubjectSwitcher subject={subject} subjects={subjects} onChange={onSubjectChange} />}
         </MotionBox>
 
         {/* Games Grid */}

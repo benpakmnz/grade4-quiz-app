@@ -69,15 +69,17 @@ export const PARENT_TIPS = {
  * דוח התקדמות של משתמש אחד.
  * mode='admin' - מתוך ממשק הניהול; mode='self' - התלמיד/ההורה רואים את הדוח של עצמם
  */
-const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice }) => {
+const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS }) => {
   const [mistakeFilter, setMistakeFilter] = useState('all');
   const g = (t) => getGenderText(t, gender);
   const self = mode === 'self';
 
-  const practiced = user.perCategory.filter(c => c.total > 0);
+  // מקצועות שהמשתמש/ת לא רואה (חשבון בזמן הבדיקה) לא מופיעים בדוח שלו/ה
+  const perCategory = user.perCategory.filter(c => subjects.includes(c.subject));
+  const practiced = perCategory.filter(c => c.total > 0);
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
   const practicedSubjects = new Set(practiced.map(c => c.subject));
-  const notStarted = user.perCategory.filter(c => c.total === 0 && practicedSubjects.has(c.subject));
+  const notStarted = perCategory.filter(c => c.total === 0 && practicedSubjects.has(c.subject));
   const mistakes = user.mistakes.filter(m => mistakeFilter === 'all' || m.category === mistakeFilter);
   const mistakeCategories = [...new Set(user.mistakes.map(m => m.category))];
 
@@ -161,9 +163,9 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
             <tr><th>נושא</th><th>נכונות / סה"כ</th><th>הצלחה</th><th>התקדמות ליעד ({TARGET_PER_CATEGORY})</th></tr>
           </thead>
           <tbody>
-            {SUBJECT_IDS.flatMap(sid => [
-              <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
-              ...user.perCategory.filter(c => c.subject === sid).map(c => (
+            {subjects.flatMap(sid => [
+              subjects.length > 1 && <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
+              ...perCategory.filter(c => c.subject === sid).map(c => (
               <tr key={c.id} className={c.total === 0 ? 'muted' : ''}>
                 <td>{c.emoji} {c.name}</td>
                 <td><bdi dir="ltr">{c.correct} / {c.total}</bdi></td>

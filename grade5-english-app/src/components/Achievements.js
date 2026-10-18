@@ -8,7 +8,7 @@ import { LessonViewer } from './LessonViewer';
 import { TARGET_PER_CATEGORY } from '../data/categories';
 import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
-const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice, subject = 'english' }) => {
+const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice, subject = 'english', subjects = ['english'] }) => {
   // הנתונים מוצגים לפי המקצוע שנבחר בדף הבית
   const categories = SUBJECTS[subject].categories;
   const subjectName = SUBJECTS[subject].name;
@@ -313,6 +313,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
           >
             <ProgressReport
               user={buildLocalReport(userData)}
+              subjects={subjects}
               mode="self"
               gender={userData?.gender}
               onOpenLesson={setLesson}

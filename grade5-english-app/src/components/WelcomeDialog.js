@@ -3,9 +3,10 @@ import { motion } from 'framer-motion';
 import './WelcomeDialog.css';
 import { getGenderText } from '../utils/genderText';
 import { TARGET_PER_CATEGORY } from '../data/categories';
-import { SUBJECTS, SUBJECT_IDS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
+import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
-const WelcomeDialog = ({ onClose, userData }) => {
+const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
+  const hasMath = subjects.includes('math');
   console.log('WelcomeDialog - userData:', userData);
   
   return (
@@ -31,14 +32,19 @@ const WelcomeDialog = ({ onClose, userData }) => {
         <div className="welcome-dialog-body">
           <div className="welcome-section">
             <div className="welcome-icon">📝</div>
-            <h3>אנגלית וחשבון</h3>
+            <h3>{hasMath ? 'אנגלית וחשבון' : 'מבחן מיפוי באנגלית'}</h3>
             <p>
-              🇬🇧 <strong>אנגלית:</strong> אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
-              🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
+              {hasMath && <>🇬🇧 <strong>אנגלית:</strong> </>}אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
+              {' '}🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
               <br />
-              🔢 <strong>חשבון:</strong> מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.
-              <br />
-              {getGenderText('בחרי', userData?.gender)} מקצוע בראש דף הבית. <strong>היעד: 100% בכל נושא!</strong>
+              {hasMath && (
+                <>
+                  🔢 <strong>חשבון:</strong> מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.
+                  <br />
+                  {getGenderText('בחרי', userData?.gender)} מקצוע בראש דף הבית.{' '}
+                </>
+              )}
+              <strong>היעד: 100% בכל נושא!</strong>
             </p>
           </div>
 
@@ -56,7 +62,7 @@ const WelcomeDialog = ({ onClose, userData }) => {
             <div className="welcome-icon">⏰</div>
             <h3>זמן עד המבחנים</h3>
             <p>
-              {SUBJECT_IDS.filter(id => getDaysUntilSubjectExam(id) >= 0).map(id => (
+              {subjects.filter(id => getDaysUntilSubjectExam(id) >= 0).map(id => (
                 <React.Fragment key={id}>
                   {SUBJECTS[id].emoji} {SUBJECTS[id].examName}: <strong>{examCountdownText(getDaysUntilSubjectExam(id))}</strong>
                   <br />

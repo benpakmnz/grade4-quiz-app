@@ -42,17 +42,24 @@ export const daysUntil = (date, now = new Date()) => {
 export const getDaysUntilSubjectExam = (subjectId, now) =>
   daysUntil((SUBJECTS[subjectId] || SUBJECTS.english).examDate, now);
 
+// חשבון עדיין בבדיקה: זמין רק למנהלים (english/admins). כדי לפתוח לכולם - MATH_FOR_EVERYONE = true.
+// בבנייה מקומית אפשר להדליק עם REACT_APP_MATH_FOR_EVERYONE=true
+export const MATH_FOR_EVERYONE = (process.env.REACT_APP_MATH_FOR_EVERYONE || '').trim() === 'true';
+
+/** המקצועות שהמשתמש/ת רואה */
+export const availableSubjects = (isAdmin) => (MATH_FOR_EVERYONE || isAdmin ? SUBJECT_IDS : ['english']);
+
 const SUBJECT_KEY = 'english_subject';
 
 /** המקצוע שנבחר לאחרונה; אם עוד לא נבחר - זה שהמבחן שלו הכי קרוב (ועוד לא עבר) */
-export const readSubject = (now) => {
+export const readSubject = (now, allowed = SUBJECT_IDS) => {
   try {
     const saved = localStorage.getItem(SUBJECT_KEY);
-    if (SUBJECTS[saved]) return saved;
+    if (allowed.includes(saved)) return saved;
   } catch {
     // ignore
   }
-  const upcoming = SUBJECT_IDS
+  const upcoming = allowed
     .map(id => ({ id, days: getDaysUntilSubjectExam(id, now) }))
     .filter(s => s.days >= 0)
     .sort((a, b) => a.days - b.days);

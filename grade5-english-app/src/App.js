@@ -17,7 +17,7 @@ import GuestReminderDialog from './components/GuestReminderDialog';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
-  SUBJECTS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText
+  SUBJECTS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects
 } from './data/subjects';
 import { notifyLocalChange } from './services/cloudSync';
 import { emailToUsername } from './utils/username';
@@ -54,8 +54,12 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // Track success per category
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
   // המקצוע שנבחר בדף הבית (אנגלית / חשבון)
-  const [subject, setSubject] = useState(() => readSubject());
+  const allowedSubjects = availableSubjects(isAdmin);
+  const [chosenSubject, setSubject] = useState(() => readSubject(undefined, allowedSubjects));
+  // מי שאין לו גישה לחשבון (עדיין) - תמיד אנגלית
+  const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
   const changeSubject = (id) => {
+    if (!allowedSubjects.includes(id)) return;
     setSubject(id);
     saveSubject(id);
   };
@@ -63,6 +67,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // כניסה לנושא - וגם מעבר למקצוע שלו (כדי שהחזרה לדף הבית תהיה למקצוע הנכון)
   const startGame = (id) => {
     const cat = findCategory(id);
+    if (cat && !allowedSubjects.includes(cat.subject)) return;
     if (cat && cat.subject !== subject) changeSubject(cat.subject);
     setCurrentGame(id);
   };
@@ -253,6 +258,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       return <HomePage
         onSelectGame={(id) => (id === 'myProgress' ? openAchievements('progress') : startGame(id))}
         subject={subject}
+        subjects={allowedSubjects}
         onSubjectChange={changeSubject}
         score={score}
         streak={streak}
@@ -270,7 +276,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     }
 
     const category = findCategory(currentGame);
-    if (!category) return null;
+    if (!category || !allowedSubjects.includes(category.subject)) return null;
 
     const gameProps = {
       key: category.id,
@@ -565,6 +571,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         <AnimatePresence>
           <WelcomeDialog
             userData={userData}
+            subjects={allowedSubjects}
             onClose={() => setShowWelcomeDialog(false)}
           />
         </AnimatePresence>
@@ -635,6 +642,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 categoryStats={categoryStats}
                 userData={userData}
                 subject={subject}
+                subjects={allowedSubjects}
                 initialTab={achievementsTab}
                 onPractice={(id) => {
                   closeAchievements();
