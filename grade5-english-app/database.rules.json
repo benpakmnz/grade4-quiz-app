@@ -7,7 +7,65 @@
         ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$uid": {
           ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
-          ".write": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid"
+          ".write": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          "profile": {
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 100"
+            },
+            "email": {
+              ".validate": "newData.isString() && newData.val().length <= 200"
+            },
+            "username": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "lastSeen": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "progress": {
+            "data": {
+              "$key": {
+                ".validate": "$key.matches(/^english_(userData|score|streak|questionCount|history|categoryStats|achievements|writingDraft|hasSeenWelcome|lessonsSeen|mistakes|resetBackup)$/) && newData.isString() && (newData.val().length <= 200000 || (($key === 'english_mistakes' || $key === 'english_resetBackup') && newData.val().length <= 800000))"
+              }
+            },
+            "clientUpdatedAt": {
+              ".validate": "newData.isNumber()"
+            },
+            "updatedAt": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          },
+          "sessions": {
+            "$sid": {
+              "start": {
+                ".validate": "newData.isNumber() && newData.val() <= now"
+              },
+              "last": {
+                ".validate": "newData.isNumber() && newData.val() <= now"
+              },
+              "end": {
+                ".validate": "newData.isNumber() && newData.val() <= now"
+              },
+              "d": {
+                ".validate": "newData.isString() && newData.val().length <= 60"
+              },
+              "k": {
+                ".validate": "newData.isString() && newData.val().length <= 12"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
         }
       },
       "admins": {
@@ -24,7 +82,7 @@
         ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$day": {
           "$visitor": {
-            ".write": "($app === 'english' || $app === 'english-test') && $day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
+            ".write": "($app === 'english' || $app === 'english-test') && newData.exists() && $day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
             ".validate": "newData.hasChildren(['t', 's'])",
             "t": {
               ".validate": "newData.isNumber() && newData.val() <= now"
@@ -33,7 +91,7 @@
               ".validate": "newData.isBoolean()"
             },
             "n": {
-              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000"
+              ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 1000 && (!data.exists() || newData.val() <= data.val() + 1)"
             },
             "$other": {
               ".validate": false

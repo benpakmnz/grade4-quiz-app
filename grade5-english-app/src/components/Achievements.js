@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import './Achievements.css';
 import { getGenderText } from '../utils/genderText';
 import { notifyLocalChange, pushNow } from '../services/cloudSync';
+import { resetWithBackup, readBackup, undoReset } from '../utils/resetBackup';
 import ProgressReport, { buildLocalReport } from './ProgressReport';
 import { LessonViewer } from './LessonViewer';
 import { TARGET_PER_CATEGORY } from '../data/categories';
@@ -17,6 +18,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
   const [showNotification, setShowNotification] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab); // 'overview', 'categories', 'achievements', 'progress'
   const [lesson, setLesson] = useState(null);
+  const [backup] = useState(() => readBackup());
 
   // Calculate overall statistics
   const calculateOverallStats = () => {
@@ -233,7 +235,22 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
       >
         <div className="achievements-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
           <h2 className="achievements-title" style={{ margin: 0 }}>🏆 ההישגים שלי</h2>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            {backup && (
+              <button
+                className="undo-reset-button"
+                title={`האיפוס בוצע ב-${new Date(backup.ts).toLocaleDateString('he-IL')}`}
+                onClick={async () => {
+                  if (!window.confirm('להחזיר את הנקודות, ההישגים וההתקדמות מלפני האיפוס?')) return;
+                  if (undoReset()) {
+                    await pushNow().catch(() => {});
+                    window.location.reload();
+                  }
+                }}
+              >
+                ↩️ ביטול האיפוס
+              </button>
+            )}
             <button 
               style={{
                 background: '#ef4444',
@@ -257,14 +274,9 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
                 e.target.style.boxShadow = '0 2px 8px rgba(239, 68, 68, 0.3)';
               }}
               onClick={async () => {
-                if (window.confirm(getGenderText('האם את בטוחה שברצונך לאפס את כל הנתונים?', userData?.gender))) {
-                  localStorage.removeItem('english_categoryStats');
-                  localStorage.removeItem('english_score');
-                  localStorage.removeItem('english_streak');
-                  localStorage.removeItem('english_questionCount');
-                  localStorage.removeItem('english_history');
-                  localStorage.removeItem('english_achievements');
-                  localStorage.setItem('english_localUpdatedAt', String(Date.now()));
+                if (window.confirm(getGenderText('האם את בטוחה שברצונך לאפס את כל הנתונים? (אפשר יהיה לבטל את האיפוס במשך 7 ימים)', userData?.gender))) {
+                  // שומרים גיבוי לפני המחיקה - אפשר לבטל עד 7 ימים
+                  resetWithBackup();
                   // לעדכן גם את הענן לפני הטעינה מחדש, אחרת הנתונים הישנים יחזרו
                   await pushNow().catch(() => {});
                   window.location.reload();

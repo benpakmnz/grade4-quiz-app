@@ -1044,3 +1044,17 @@
   font-weight: 600;
   text-align: center;
 }
+
+.undo-reset-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+  font-family: inherit;
+}
