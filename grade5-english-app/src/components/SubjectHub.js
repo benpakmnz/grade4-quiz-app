@@ -95,7 +95,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
               {locked ? (
                 <>
                   <span className="hub-soon">בקרוב! 🚧</span>
-                  <span className="hub-soon-text">{g('אנחנו מכינים לך תרגולים חדשים - עוד מעט זה פה')}</span>
+                  <span className="hub-soon-text">תרגולים חדשים בדרך - עוד מעט זה פה ✨</span>
                 </>
               ) : (
                 <>
