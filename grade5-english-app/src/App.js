@@ -8,6 +8,7 @@ import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import MathGame from './components/MathGame';
 import SubjectHub from './components/SubjectHub';
+import HamburgerMenu from './components/HamburgerMenu';
 import AdminPanel from './components/AdminPanel';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
@@ -25,7 +26,6 @@ import { emailToUsername } from './utils/username';
 import {
   Box,
   Text,
-  Button,
   HStack,
   VStack,
   Badge,
@@ -375,6 +375,24 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           borderColor="purple.500"
           w="100vw"
         >
+          {userData && (
+            <HamburgerMenu
+              userData={userData}
+              authUser={authUser}
+              isGuest={isGuest}
+              cloudEnabled={cloudEnabled}
+              isAdmin={isAdmin}
+              subjects={allowedSubjects}
+              subject={currentGame === 'hub' ? null : subject}
+              onPickSubject={pickSubject}
+              onOpenHub={hasHub ? () => setCurrentGame('hub') : null}
+              onAchievements={() => openAchievements('overview')}
+              onProgress={() => openAchievements('progress')}
+              onEditProfile={openProfileEdit}
+              onAdmin={() => setCurrentGame('admin')}
+              onSignUp={onRequestSignup}
+            />
+          )}
           <Box maxW="100%" px={8}>
             {/* Desktop: Single row with name on right, stats on left */}
             <HStack 
@@ -385,7 +403,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
             >
               {/* Right Side - Greeting with Character */}
               {userData && (
-                <HStack spacing={2}>
+                <HStack spacing={2} style={{ marginRight: 48 }}>
                   <Text fontSize="3xl" className="character-buddy">
                     {userData.character.emoji}
                   </Text>
@@ -427,36 +445,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   <Text fontSize="lg">⭐</Text>
                 </Badge>
   
-                <Button
-                  size="sm"
-                  colorScheme="yellow"
-                  borderRadius="full"
-                  boxShadow="md"
-                  onClick={() => {
-                    openAchievements();
-                  }}
-                  leftIcon={<span>🏆</span>}
-                  px={4}
-                  py={2}
-                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-                  transition="all 0.3s"
-                >
-                  ההישגים שלי
-                </Button>
 
-                {isAdmin && (
-                  <Button
-                    size="sm"
-                    borderRadius="full"
-                    boxShadow="md"
-                    onClick={() => setCurrentGame('admin')}
-                    px={4}
-                    py={2}
-                    title="ניהול שאלות"
-                  >
-                    ⚙️ ניהול
-                  </Button>
-                )}
 
                 {/* Exam Countdown */}
                 {currentGame !== 'hub' && (
@@ -489,7 +478,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
             >
               {/* Top Row - Greeting with Character */}
               {userData && (
-                <HStack spacing={2} w="full" justify="center">
+                <HStack spacing={2} w="full" justify="center" px="52px">
                   <Text fontSize="3xl" className="character-buddy">
                     {userData.character.emoji}
                   </Text>
@@ -530,38 +519,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   <Text fontSize="xl">⭐</Text>
                 </Badge>
   
-                <Button
-                  size="sm"
-                  colorScheme="yellow"
-                  borderRadius="full"
-                  boxShadow="md"
-                  onClick={() => {
-                    openAchievements();
-                  }}
-                  px={3}
-                  py={2}
-                  minW="auto"
-                  _hover={{ transform: 'translateY(-2px)', boxShadow: 'lg' }}
-                  transition="all 0.3s"
-                  title="ההישגים שלי"
-                >
-                  <Text fontSize="xl">🏆</Text>
-                </Button>
 
-                {isAdmin && (
-                  <Button
-                    size="sm"
-                    borderRadius="full"
-                    boxShadow="md"
-                    onClick={() => setCurrentGame('admin')}
-                    px={3}
-                    py={2}
-                    minW="auto"
-                    title="ניהול שאלות"
-                  >
-                    <Text fontSize="xl">⚙️</Text>
-                  </Button>
-                )}
 
                 {/* Exam Countdown - Compact */}
                 {currentGame !== 'hub' && (
