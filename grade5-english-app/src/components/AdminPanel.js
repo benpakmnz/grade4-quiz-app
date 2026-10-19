@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { categories } from '../data/categories';
-import { ADMIN_SECTIONS, emptyItem, emptyPassageQuestion, cleanItem } from '../data/adminSchemas';
+import { allCategories as categories } from '../data/subjects';
+import { ADMIN_SECTIONS, MATH_ADMIN_SECTIONS, emptyItem, emptyPassageQuestion, cleanItem } from '../data/adminSchemas';
+import MathText from './MathText';
 import { listBank, onContentChange } from '../data/contentStore';
 import { addQuestion, deleteCustomQuestion, setBuiltinHidden } from '../services/contentSync';
 import './Game.css';
@@ -23,7 +24,7 @@ const Field = ({ field, value, onChange }) => {
   }
   if (field.type === 'textarea') {
     return (
-      <textarea className="admin-input" rows={7} dir={dir} value={value} placeholder={field.placeholder}
+      <textarea className="admin-input" rows={field.rows || 7} dir={dir} value={value} placeholder={field.placeholder}
         onChange={e => onChange(e.target.value)} />
     );
   }
@@ -146,8 +147,9 @@ const AddForm = ({ bankDef, onDone }) => {
   const [saving, setSaving] = useState(false);
 
   const save = async () => {
-    const clean = cleanItem(item);
-    const problem = bankDef.validate(clean);
+    const cleaned = cleanItem(item);
+    const problem = bankDef.validate(cleaned);
+    const clean = bankDef.prepare ? bankDef.prepare(cleaned) : cleaned;
     if (problem) {
       setError(problem);
       return;
@@ -168,7 +170,7 @@ const AddForm = ({ bankDef, onDone }) => {
 
   return (
     <div className="admin-form">
-      {bankDef.fields.map(f => (
+      {bankDef.fields.filter(f => !f.showIf || f.showIf(item)).map(f => (
         <div key={f.name} className="admin-field">
           <label>{f.label}</label>
           <Field field={f} value={item[f.name]} onChange={v => setItem({ ...item, [f.name]: v })} />
@@ -186,8 +188,11 @@ const AddForm = ({ bankDef, onDone }) => {
 // ---------- המסך הראשי ----------
 const AdminPanel = ({ onBack }) => {
   const [view, setView] = useState('questions'); // questions | users
-  const sections = ADMIN_SECTIONS.map(s => ({ ...s, category: categories.find(c => c.id === s.id) }));
+  const [subject, setSubject] = useState('english');
+  const sections = (subject === 'math' ? MATH_ADMIN_SECTIONS : ADMIN_SECTIONS)
+    .map(s => ({ ...s, category: categories.find(c => c.id === s.id) }));
   const [sectionId, setSectionId] = useState(sections[0].id);
+  const isMath = subject === 'math';
   const [bankIndex, setBankIndex] = useState(0);
   const [adding, setAdding] = useState(false);
   const [message, setMessage] = useState(null);
@@ -198,7 +203,7 @@ const AdminPanel = ({ onBack }) => {
   // רענון כשהתוכן ב-Firebase משתנה
   useEffect(() => onContentChange(() => setVersion(v => v + 1)), []);
 
-  const section = sections.find(s => s.id === sectionId);
+  const section = sections.find(s => s.id === sectionId) || sections[0];
   const bankDef = section.banks[Math.min(bankIndex, section.banks.length - 1)];
   const entries = listBank(bankDef.bank);
 
@@ -264,6 +269,27 @@ const AdminPanel = ({ onBack }) => {
       {view === 'users' && <div className="admin-card"><UsersDashboard /></div>}
       {view === 'questions' && (
       <div className="admin-card">
+        <div className="report-subjects" role="tablist" aria-label="מקצוע">
+          {[['english', '🇬🇧 אנגלית'], ['math', '🔢 חשבון']].map(([id, label]) => (
+            <button key={id} role="tab" aria-selected={subject === id}
+              className={`report-subject ${subject === id ? 'active' : ''}`}
+              onClick={() => {
+                setSubject(id);
+                setSectionId((id === 'math' ? MATH_ADMIN_SECTIONS : ADMIN_SECTIONS)[0].id);
+                setBankIndex(0); setAdding(false); setSearch('');
+              }}>
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {isMath && (
+          <p className="admin-hint math-admin-hint">
+            בחשבון השאלות נוצרות אוטומטית עם מספרים חדשים בכל פעם. כאן אפשר להוסיף שאלות משלך לכל נושא
+            (למשל בנוסח של המורה) - הן יתערבבו בתרגול, ובנושא שיש בו יותר שאלות שלך הן יופיעו לעתים קרובות יותר (עד כ-40%).
+          </p>
+        )}
+
         <div className="admin-tabs">
           {sections.map(s => (
             <button key={s.id} className={`admin-tab ${s.id === sectionId ? 'active' : ''}`}
@@ -285,7 +311,9 @@ const AdminPanel = ({ onBack }) => {
         )}
 
         <div className="admin-stats">
-          {activeCount} שאלות פעילות · {customCount} נוספו על ידך · {hiddenCount} מובנות מוסתרות
+          {isMath
+            ? <>{customCount} שאלות שהוספת · בנוסף לשאלות שנוצרות אוטומטית</>
+            : <>{activeCount} שאלות פעילות · {customCount} נוספו על ידך · {hiddenCount} מובנות מוסתרות</>}
           {sectionId === 'isAre' || sectionId === 'hasHave' || sectionId === 'canCant' || sectionId === 'becauseWhy'
             ? <span className="admin-hint"> (משמשות גם ב"מבחן מסכם")</span> : null}
         </div>
@@ -315,7 +343,9 @@ const AdminPanel = ({ onBack }) => {
               <span className={`admin-badge ${entry.source}`}>
                 {entry.source === 'custom' ? 'חדשה' : entry.hidden ? 'מוסתרת' : 'מובנית'}
               </span>
-              <span className="admin-item-text" dir="auto">{bankDef.summary(entry.item)}</span>
+              <span className="admin-item-text" dir="auto">
+                {isMath ? <MathText text={bankDef.summary(entry.item)} /> : bankDef.summary(entry.item)}
+              </span>
               {entry.hidden ? (
                 <button className="admin-small-btn" onClick={() => onRestore(entry)}>↩️ החזרה</button>
               ) : (
@@ -325,7 +355,9 @@ const AdminPanel = ({ onBack }) => {
               )}
             </li>
           ))}
-          {visible.length === 0 && <li className="admin-empty">אין שאלות להצגה</li>}
+          {visible.length === 0 && (
+            <li className="admin-empty">{isMath ? 'עוד לא הוספת שאלות לנושא הזה - התרגול משתמש בשאלות האוטומטיות' : 'אין שאלות להצגה'}</li>
+          )}
         </ul>
       </div>
       )}

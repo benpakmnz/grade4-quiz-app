@@ -11,6 +11,7 @@
 //   unit    - יחידה ליד שדה ההקלדה
 //   explanation - הסבר (שורות מופרדות ב-\n)
 import { numberToHebrew, formatNumber as fmt } from '../utils/hebrewNumbers';
+import { getBank } from './contentStore';
 
 // ---------- עזרים ----------
 export const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
@@ -1353,11 +1354,50 @@ const GENERATORS = {
 
 export const MATH_TOPIC_IDS = Object.keys(GENERATORS);
 
+// ---------- שאלות שנוספו בממשק הניהול ----------
+// ככל שיש יותר שאלות שלך בנושא - הן מופיעות לעתים קרובות יותר (8% לכל שאלה, עד 40%)
+export const customShare = (count) => Math.min(0.4, count * 0.08);
+
+const usedCustom = {};
+const pickCustom = (topic, list) => {
+  if (!usedCustom[topic]) usedCustom[topic] = new Set();
+  let fresh = list.filter((_, i) => !usedCustom[topic].has(i));
+  if (!fresh.length) {
+    usedCustom[topic].clear();
+    fresh = list;
+  }
+  const item = pick(fresh);
+  usedCustom[topic].add(list.indexOf(item));
+  return item;
+};
+
+export const fromCustom = (item) => {
+  const isInput = item.kind === 'input';
+  const answer = isInput ? String(item.answer).replace(/,/g, '') : String(item.answer);
+  return {
+    kind: isInput ? 'input' : 'mc',
+    label: 'שאלה נוספת',
+    prompt: item.prompt,
+    expr: item.expr || undefined,
+    options: isInput ? undefined : shuffle([answer, ...(item.distractors || []).map(String)]),
+    answer,
+    unit: isInput ? item.unit || undefined : undefined,
+    optionsHebrew: !isInput && /[\u05D0-\u05EA]/.test([answer, ...(item.distractors || [])].join('')),
+    long: (item.prompt || '').length > 60,
+    custom: true,
+    explanation: item.explanation || `התשובה הנכונה: ${isInput ? fmt(answer) : answer}`
+  };
+};
+
 /** שאלה חדשה בנושא. במבחן המסכם - מנושא אקראי (ושומרים מאיזה נושא באה) */
 export const generateMathQuestion = (categoryId) => {
   const topic = categoryId === 'mTest' ? pick(MATH_TOPIC_IDS) : categoryId;
   const gen = GENERATORS[topic];
   if (!gen) throw new Error(`Unknown math category: ${categoryId}`);
+  const custom = getBank(topic);
+  if (custom.length && Math.random() < customShare(custom.length)) {
+    return { ...fromCustom(pickCustom(topic, custom)), topic };
+  }
   return { ...gen(), topic };
 };
 
