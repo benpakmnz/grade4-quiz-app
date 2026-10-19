@@ -5,7 +5,8 @@ import { readLocalProgress } from '../services/cloudSync';
 import './AdminPanel.css';
 import './ProgressReport.css';
 import { TARGET_PER_CATEGORY } from '../data/categories';
-import { allCategories as categories, SUBJECTS, SUBJECT_IDS, subjectOf } from '../data/subjects';
+import { allCategories as categories, SUBJECTS, SUBJECT_IDS } from '../data/subjects';
+import { mistakeSubject } from '../utils/mistakeLimits';
 import { hasLesson } from '../data/lessons';
 import { getGenderText } from '../utils/genderText';
 import MathText from './MathText';
@@ -88,7 +89,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
   const practicedSubjects = new Set(practiced.map(c => c.subject));
   const notStarted = perCategory.filter(c => c.total === 0 && practicedSubjects.has(c.subject));
-  const subjectMistakes = user.mistakes.filter(m => shownSubjects.includes(subjectOf(m.category)));
+  const subjectMistakes = user.mistakes.filter(m => shownSubjects.includes(mistakeSubject(m)));
   const mistakes = subjectMistakes.filter(m => mistakeFilter === 'all' || m.category === mistakeFilter);
   const mistakeCategories = [...new Set(subjectMistakes.map(m => m.category))];
   const correct = perCategory.reduce((s, c) => s + c.correct, 0);
