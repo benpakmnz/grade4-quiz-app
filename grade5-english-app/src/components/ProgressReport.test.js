@@ -25,3 +25,30 @@ test('kids and parents do not see the activity log', () => {
 test('every topic has a parent tip', () => {
   categories.forEach(c => expect([c.id, Boolean(PARENT_TIPS[c.id])]).toEqual([c.id, true]));
 });
+
+test('with two subjects the report opens on the current subject and filters everything by it', () => {
+  const both = parseUser('u2', {
+    profile: { name: 'Noa' },
+    progress: {
+      data: {
+        english_categoryStats: JSON.stringify({ isAre: { correct: 3, total: 4 }, mFractionAdd: { correct: 1, total: 4 } }),
+        english_mistakes: JSON.stringify([
+          { ts: 1, category: 'mFractionAdd', question: '2 3/5 + 1 4/5 = ?', given: '3 7/5', correct: '4 2/5' },
+          { ts: 2, category: 'isAre', question: 'The cats ____ hungry.', given: 'is', correct: 'are' }
+        ])
+      },
+      updatedAt: 1
+    }
+  });
+  const math = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} defaultSubject="math" />);
+  expect(math).toContain('חיבור וחיסור שברים');
+  expect(math).not.toContain('The cats');
+  expect(math).not.toContain('am / is / are');
+  const english = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} defaultSubject="english" />);
+  expect(english).toContain('The cats');
+  expect(english).not.toContain('חיבור וחיסור שברים');
+  // משתמש/ת בלי חשבון - אין סינון ואין זכר לחשבון
+  const englishOnly = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english']} />);
+  expect(englishOnly).not.toContain('report-subjects');
+  expect(englishOnly).not.toContain('חיבור וחיסור שברים');
+});

@@ -5,7 +5,7 @@ import { readLocalProgress } from '../services/cloudSync';
 import './AdminPanel.css';
 import './ProgressReport.css';
 import { TARGET_PER_CATEGORY } from '../data/categories';
-import { allCategories as categories, SUBJECTS, SUBJECT_IDS } from '../data/subjects';
+import { allCategories as categories, SUBJECTS, SUBJECT_IDS, subjectOf } from '../data/subjects';
 import { hasLesson } from '../data/lessons';
 import { getGenderText } from '../utils/genderText';
 import MathText from './MathText';
@@ -69,19 +69,29 @@ export const PARENT_TIPS = {
  * דוח התקדמות של משתמש אחד.
  * mode='admin' - מתוך ממשק הניהול; mode='self' - התלמיד/ההורה רואים את הדוח של עצמם
  */
-const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS }) => {
+const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS, defaultSubject }) => {
   const [mistakeFilter, setMistakeFilter] = useState('all');
+  // סינון לפי מקצוע (כשיש יותר מאחד): נפתח על המקצוע הנוכחי; בממשק הניהול - על "הכל"
+  const [subjectFilter, setSubjectFilter] = useState(
+    subjects.length > 1 && subjects.includes(defaultSubject) && mode === 'self' ? defaultSubject : 'all'
+  );
   const g = (t) => getGenderText(t, gender);
   const self = mode === 'self';
 
   // מקצועות שהמשתמש/ת לא רואה (חשבון בזמן הבדיקה) לא מופיעים בדוח שלו/ה
-  const perCategory = user.perCategory.filter(c => subjects.includes(c.subject));
+  const shownSubjects = subjectFilter === 'all' ? subjects : [subjectFilter];
+  const perCategory = user.perCategory.filter(c => shownSubjects.includes(c.subject));
   const practiced = perCategory.filter(c => c.total > 0);
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
   const practicedSubjects = new Set(practiced.map(c => c.subject));
   const notStarted = perCategory.filter(c => c.total === 0 && practicedSubjects.has(c.subject));
-  const mistakes = user.mistakes.filter(m => mistakeFilter === 'all' || m.category === mistakeFilter);
-  const mistakeCategories = [...new Set(user.mistakes.map(m => m.category))];
+  const subjectMistakes = user.mistakes.filter(m => shownSubjects.includes(subjectOf(m.category)));
+  const mistakes = subjectMistakes.filter(m => mistakeFilter === 'all' || m.category === mistakeFilter);
+  const mistakeCategories = [...new Set(subjectMistakes.map(m => m.category))];
+  const correct = perCategory.reduce((s, c) => s + c.correct, 0);
+  const total = perCategory.reduce((s, c) => s + c.total, 0);
+  const rate = total > 0 ? Math.round((correct / total) * 100) : null;
+  const subjectTag = (c) => (shownSubjects.length > 1 ? `${SUBJECTS[c.subject].emoji} ` : '');
 
   return (
     <div className="dash-details">
@@ -105,11 +115,27 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
         </div>
       )}
 
+      {subjects.length > 1 && (
+        <div className="report-subjects" role="tablist" aria-label="מקצוע">
+          {[...subjects, 'all'].map(id => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={subjectFilter === id}
+              className={`report-subject ${subjectFilter === id ? 'active' : ''}`}
+              onClick={() => { setSubjectFilter(id); setMistakeFilter('all'); }}
+            >
+              {id === 'all' ? '📚 הכל' : `${SUBJECTS[id].emoji} ${SUBJECTS[id].name}`}
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="dash-kpis">
         <div className="dash-kpi"><b>{user.score}</b><span>נקודות</span></div>
-        <div className="dash-kpi"><b>{user.overall.total}</b><span>תשובות</span></div>
-        <div className="dash-kpi"><b>{user.overall.rate === null ? '—' : `${user.overall.rate}%`}</b><span>הצלחה</span></div>
-        <div className="dash-kpi"><b>{user.mistakes.length}</b><span>טעויות ביומן</span></div>
+        <div className="dash-kpi"><b>{total}</b><span>תשובות</span></div>
+        <div className="dash-kpi"><b>{rate === null ? '—' : `${rate}%`}</b><span>הצלחה</span></div>
+        <div className="dash-kpi"><b>{subjectMistakes.length}</b><span>טעויות ביומן</span></div>
       </div>
 
       {weakest.length > 0 && !self && (
@@ -132,7 +158,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
               {weakest.map(c => (
                 <div key={c.id} className="report-focus-card">
                   <div className="report-focus-head">
-                    <span>{c.emoji} <b>{c.name}</b></span>
+                    <span>{subjectTag(c)}{c.emoji} <b>{c.name}</b></span>
                     <RateBadge rate={c.rate} />
                   </div>
                   <p>💡 {PARENT_TIPS[c.id]}</p>
@@ -163,8 +189,8 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
             <tr><th>נושא</th><th>נכונות / סה"כ</th><th>הצלחה</th><th>התקדמות ליעד ({TARGET_PER_CATEGORY})</th></tr>
           </thead>
           <tbody>
-            {subjects.flatMap(sid => [
-              subjects.length > 1 && <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
+            {shownSubjects.flatMap(sid => [
+              shownSubjects.length > 1 && <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
               ...perCategory.filter(c => c.subject === sid).map(c => (
               <tr key={c.id} className={c.total === 0 ? 'muted' : ''}>
                 <td>{c.emoji} {c.name}</td>
@@ -181,7 +207,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
       </div>
 
       <h4>📝 יומן טעויות</h4>
-      {user.mistakes.length === 0 ? (
+      {subjectMistakes.length === 0 ? (
         <p className="admin-hint">
           {self
             ? g('אין עדיין טעויות ביומן. כל שאלה שבה התשובה הראשונה לא הייתה נכונה תופיע כאן, עם התשובה הנכונה.')
@@ -197,10 +223,10 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
           <div className="admin-row">
             <select className="admin-input narrow" value={mistakeFilter} onChange={e => setMistakeFilter(e.target.value)}
               aria-label="סינון לפי נושא">
-              <option value="all">כל הנושאים ({user.mistakes.length})</option>
+              <option value="all">כל הנושאים ({subjectMistakes.length})</option>
               {mistakeCategories.map(id => (
                 <option key={id} value={id}>
-                  {categoryName(id)} ({user.mistakes.filter(m => m.category === id).length})
+                  {categoryName(id)} ({subjectMistakes.filter(m => m.category === id).length})
                 </option>
               ))}
             </select>

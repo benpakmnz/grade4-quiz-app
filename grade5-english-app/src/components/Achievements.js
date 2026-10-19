@@ -314,6 +314,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             <ProgressReport
               user={buildLocalReport(userData)}
               subjects={subjects}
+              defaultSubject={subject}
               mode="self"
               gender={userData?.gender}
               onOpenLesson={setLesson}
