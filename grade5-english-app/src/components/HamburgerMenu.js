@@ -6,8 +6,13 @@ import { getGenderText } from '../utils/genderText';
 import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
 import './HamburgerMenu.css';
 
-const Item = ({ icon, label, hint, onClick, active, danger }) => (
-  <button className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''}`} onClick={onClick} aria-current={active ? 'true' : undefined}>
+const Item = ({ icon, label, hint, onClick, active, danger, disabled }) => (
+  <button
+    className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''} ${disabled ? 'disabled' : ''}`}
+    onClick={disabled ? undefined : onClick}
+    disabled={disabled}
+    aria-current={active ? 'true' : undefined}
+  >
     <span className="hm-icon" aria-hidden="true">{icon}</span>
     <span className="hm-label">
       {label}
@@ -23,7 +28,7 @@ const Item = ({ icon, label, hint, onClick, active, danger }) => (
  */
 const HamburgerMenu = ({
   userData, authUser, isGuest, cloudEnabled, isAdmin,
-  subjects, subject, onPickSubject, onOpenHub,
+  subjects, enabled = subjects, subject, onPickSubject, onOpenHub,
   onAchievements, onProgress, onEditProfile, onAdmin, onSignUp
 }) => {
   const [open, setOpen] = useState(false);
@@ -95,6 +100,8 @@ const HamburgerMenu = ({
                       key={id}
                       icon={SUBJECTS[id].emoji}
                       label={SUBJECTS[id].name}
+                      hint={enabled.includes(id) ? undefined : '🔒 בקרוב'}
+                      disabled={!enabled.includes(id)}
                       active={subject === id}
                       onClick={run(() => onPickSubject(id))}
                     />

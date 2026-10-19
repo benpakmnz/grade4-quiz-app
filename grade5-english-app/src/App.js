@@ -19,7 +19,7 @@ import GuestReminderDialog from './components/GuestReminderDialog';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
-  SUBJECTS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects
+  SUBJECTS, SUBJECT_IDS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects
 } from './data/subjects';
 import { notifyLocalChange } from './services/cloudSync';
 import { emailToUsername } from './utils/username';
@@ -59,8 +59,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const [chosenSubject, setSubject] = useState(() => readSubject(undefined, allowedSubjects));
   // מי שאין לו גישה לחשבון (עדיין) - תמיד אנגלית
   const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
-  // יותר ממקצוע אחד? מתחילים בדף הבחירה (אנגלית / חשבון)
-  const hasHub = allowedSubjects.length > 1;
+  // כולם מתחילים בדף הבחירה (אנגלית / חשבון). מקצוע שעוד לא פתוח למשתמש/ת מוצג אפור עם "בקרוב"
+  const hasHub = SUBJECT_IDS.length > 1;
   const startPage = hasHub ? 'hub' : 'home';
   const [lastSubject] = useState(() => {
     try {
@@ -72,6 +72,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
   // בחירת מקצוע בדף הבחירה. מסך "איפה את עומדת" נפתח פעם אחת בכל כניסה לכל מקצוע
   const pickSubject = (id) => {
+    if (!allowedSubjects.includes(id)) return;
     changeSubject(id);
     setCurrentGame('home');
     let shown = true;
@@ -289,7 +290,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     if (currentGame === 'hub' && hasHub) {
       return (
         <SubjectHub
-          subjects={allowedSubjects}
+          subjects={SUBJECT_IDS}
+          enabled={allowedSubjects}
           userData={userData}
           categoryStats={categoryStats}
           lastSubject={lastSubject}
@@ -382,7 +384,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               isGuest={isGuest}
               cloudEnabled={cloudEnabled}
               isAdmin={isAdmin}
-              subjects={allowedSubjects}
+              subjects={SUBJECT_IDS}
+              enabled={allowedSubjects}
               subject={currentGame === 'hub' ? null : subject}
               onPickSubject={pickSubject}
               onOpenHub={hasHub ? () => setCurrentGame('hub') : null}

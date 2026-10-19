@@ -178,3 +178,13 @@
   color: #7c3aed;
   font-weight: 900;
 }
+
+.hm-item.disabled {
+  cursor: default;
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.hm-item.disabled:hover {
+  background: transparent;
+}

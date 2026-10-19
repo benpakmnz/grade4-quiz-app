@@ -29,7 +29,7 @@ export const subjectReadiness = (subjectId, categoryStats = {}) => {
 const examDateText = (date) => `${date.getDate()}.${date.getMonth() + 1}`;
 
 // דף הבחירה: לאן הולכים היום - אנגלית או חשבון?
-const SubjectHub = ({ subjects, userData, categoryStats, onPick, lastSubject }) => {
+const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject }) => {
   const g = (t) => getGenderText(t, userData?.gender);
 
   return (
@@ -54,27 +54,30 @@ const SubjectHub = ({ subjects, userData, categoryStats, onPick, lastSubject }) 
         {subjects.map((id, i) => {
           const s = SUBJECTS[id];
           const look = LOOK[id];
+          const locked = !enabled.includes(id);
           const days = getDaysUntilSubjectExam(id);
           const ready = subjectReadiness(id, categoryStats);
           const topics = s.categories.filter(c => !c.testLength).length;
           return (
             <motion.button
               key={id}
-              className={`hub-card ${look.className} ${lastSubject === id ? 'last' : ''}`}
-              onClick={() => onPick(id)}
+              className={`hub-card ${look.className} ${!locked && lastSubject === id ? 'last' : ''} ${locked ? 'locked' : ''}`}
+              onClick={() => !locked && onPick(id)}
+              disabled={locked}
+              aria-disabled={locked}
               initial={{ opacity: 0, y: 40, rotate: i % 2 ? 2 : -2 }}
               animate={{ opacity: 1, y: 0, rotate: 0 }}
               transition={{ delay: 0.15 + i * 0.15, type: 'spring', stiffness: 140, damping: 14 }}
-              whileHover={{ y: -6, scale: 1.02 }}
-              whileTap={{ scale: 0.97 }}
-              aria-label={`${s.name} - ${s.examName}`}
+              whileHover={locked ? {} : { y: -6, scale: 1.02 }}
+              whileTap={locked ? {} : { scale: 0.97 }}
+              aria-label={locked ? `${s.name} - בקרוב` : `${s.name} - ${s.examName}`}
             >
               <span className="hub-floaters" aria-hidden="true">
                 {look.floaters.map((f, k) => (
                   <motion.span
                     key={k}
                     className={`hub-floater f${k}`}
-                    animate={{ y: [0, k % 2 ? 10 : -10, 0], rotate: [0, k % 2 ? -12 : 12, 0] }}
+                    animate={locked ? {} : { y: [0, k % 2 ? 10 : -10, 0], rotate: [0, k % 2 ? -12 : 12, 0] }}
                     transition={{ repeat: Infinity, duration: 3 + k * 0.4, ease: 'easeInOut' }}
                   >
                     {f}
@@ -82,26 +85,36 @@ const SubjectHub = ({ subjects, userData, categoryStats, onPick, lastSubject }) 
                 ))}
               </span>
 
-              {lastSubject === id && <span className="hub-last">{g('המשיכי מכאן')} ✨</span>}
+              {!locked && lastSubject === id && <span className="hub-last">{g('המשיכי מכאן')} ✨</span>}
+              {locked && <span className="hub-soon-badge">🔒 בקרוב</span>}
 
               <span className="hub-emoji">{s.emoji}</span>
               <span className="hub-name">{s.name}</span>
               <span className="hub-tagline">{look.tagline}</span>
 
-              <span className="hub-meta">
-                <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(s.examDate)}: <b>{examCountdownText(days)}</b></span>
-                <span className="hub-pill">📚 {topics} נושאים</span>
-              </span>
+              {locked ? (
+                <>
+                  <span className="hub-soon">בקרוב! 🚧</span>
+                  <span className="hub-soon-text">{g('אנחנו מכינים לך תרגולים חדשים - עוד מעט זה פה')}</span>
+                </>
+              ) : (
+                <>
+                  <span className="hub-meta">
+                    <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(s.examDate)}: <b>{examCountdownText(days)}</b></span>
+                    <span className="hub-pill">📚 {topics} נושאים</span>
+                  </span>
 
-              <span className="hub-progress" aria-label={`מוכנות ${ready}%`}>
-                <span className="hub-progress-label">
-                  <span>מוכנות למבחן</span>
-                  <b>{ready}%</b>
-                </span>
-                <span className="hub-bar"><span style={{ width: `${Math.max(ready, 3)}%` }} /></span>
-              </span>
+                  <span className="hub-progress" aria-label={`מוכנות ${ready}%`}>
+                    <span className="hub-progress-label">
+                      <span>מוכנות למבחן</span>
+                      <b>{ready}%</b>
+                    </span>
+                    <span className="hub-bar"><span style={{ width: `${Math.max(ready, 3)}%` }} /></span>
+                  </span>
 
-              <span className="hub-go">{g('יאללה, בואי! 🚀')}</span>
+                  <span className="hub-go">{g('יאללה, בואי! 🚀')}</span>
+                </>
+              )}
             </motion.button>
           );
         })}
