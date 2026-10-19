@@ -191,3 +191,13 @@
   padding: 10px 14px;
   margin: 6px 0 0;
 }
+
+.login-test-note {
+  margin: 14px 0 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fef9c3;
+  color: #854d0e;
+  font-size: 0.85rem;
+  font-weight: 600;
+}

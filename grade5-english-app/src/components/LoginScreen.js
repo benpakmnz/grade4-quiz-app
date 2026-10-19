@@ -118,7 +118,7 @@ const UsernameForm = ({ busy, setBusy, setError, initialMode = 'signin' }) => {
   );
 };
 
-const LoginScreen = ({ onGuest, initialMode = null }) => {
+const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [showUsername, setShowUsername] = useState(initialMode === 'signup');
@@ -187,9 +187,13 @@ const LoginScreen = ({ onGuest, initialMode = null }) => {
 
         {error && <div className="login-error">⚠️ {error}</div>}
 
-        <button className="guest-link" onClick={onGuest} disabled={busy}>
-          להמשיך בלי התחברות (ההתקדמות תישמר רק במכשיר הזה)
-        </button>
+        {allowGuest ? (
+          <button className="guest-link" onClick={onGuest} disabled={busy}>
+            להמשיך בלי התחברות (ההתקדמות תישמר רק במכשיר הזה)
+          </button>
+        ) : (
+          <p className="login-test-note">🧪 בסביבת הבדיקות נכנסים רק עם חשבון (Google או שם משתמש וסיסמה)</p>
+        )}
       </motion.div>
     </div>
   );
