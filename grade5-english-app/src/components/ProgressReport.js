@@ -71,15 +71,17 @@ export const PARENT_TIPS = {
  */
 const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS, defaultSubject }) => {
   const [mistakeFilter, setMistakeFilter] = useState('all');
-  // סינון לפי מקצוע (כשיש יותר מאחד): נפתח על המקצוע הנוכחי; בממשק הניהול - על "הכל"
-  const [subjectFilter, setSubjectFilter] = useState(
-    subjects.length > 1 && subjects.includes(defaultSubject) && mode === 'self' ? defaultSubject : 'all'
-  );
+  // מקצוע אחד בכל פעם: נפתח על המקצוע הנוכחי; בממשק הניהול - על המקצוע שתורגל הכי הרבה
+  const [subjectFilter, setSubjectFilter] = useState(() => {
+    if (subjects.includes(defaultSubject)) return defaultSubject;
+    const answers = (sid) => user.perCategory.filter(c => c.subject === sid).reduce((s, c) => s + c.total, 0);
+    return [...subjects].sort((a, b) => answers(b) - answers(a))[0];
+  });
   const g = (t) => getGenderText(t, gender);
   const self = mode === 'self';
 
   // מקצועות שהמשתמש/ת לא רואה (חשבון בזמן הבדיקה) לא מופיעים בדוח שלו/ה
-  const shownSubjects = subjectFilter === 'all' ? subjects : [subjectFilter];
+  const shownSubjects = [subjectFilter];
   const perCategory = user.perCategory.filter(c => shownSubjects.includes(c.subject));
   const practiced = perCategory.filter(c => c.total > 0);
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
@@ -91,7 +93,6 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
   const correct = perCategory.reduce((s, c) => s + c.correct, 0);
   const total = perCategory.reduce((s, c) => s + c.total, 0);
   const rate = total > 0 ? Math.round((correct / total) * 100) : null;
-  const subjectTag = (c) => (shownSubjects.length > 1 ? `${SUBJECTS[c.subject].emoji} ` : '');
 
   return (
     <div className="dash-details">
@@ -117,7 +118,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
 
       {subjects.length > 1 && (
         <div className="report-subjects" role="tablist" aria-label="מקצוע">
-          {[...subjects, 'all'].map(id => (
+          {subjects.map(id => (
             <button
               key={id}
               role="tab"
@@ -125,7 +126,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
               className={`report-subject ${subjectFilter === id ? 'active' : ''}`}
               onClick={() => { setSubjectFilter(id); setMistakeFilter('all'); }}
             >
-              {id === 'all' ? '📚 הכל' : `${SUBJECTS[id].emoji} ${SUBJECTS[id].name}`}
+              {SUBJECTS[id].emoji} {SUBJECTS[id].name}
             </button>
           ))}
         </div>
@@ -158,7 +159,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
               {weakest.map(c => (
                 <div key={c.id} className="report-focus-card">
                   <div className="report-focus-head">
-                    <span>{subjectTag(c)}{c.emoji} <b>{c.name}</b></span>
+                    <span>{c.emoji} <b>{c.name}</b></span>
                     <RateBadge rate={c.rate} />
                   </div>
                   <p>💡 {PARENT_TIPS[c.id]}</p>
@@ -189,9 +190,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
             <tr><th>נושא</th><th>נכונות / סה"כ</th><th>הצלחה</th><th>התקדמות ליעד ({TARGET_PER_CATEGORY})</th></tr>
           </thead>
           <tbody>
-            {shownSubjects.flatMap(sid => [
-              shownSubjects.length > 1 && <tr key={`h-${sid}`} className="subject-row"><td colSpan={4}>{SUBJECTS[sid].emoji} {SUBJECTS[sid].name}</td></tr>,
-              ...perCategory.filter(c => c.subject === sid).map(c => (
+            {perCategory.map(c => (
               <tr key={c.id} className={c.total === 0 ? 'muted' : ''}>
                 <td>{c.emoji} {c.name}</td>
                 <td><bdi dir="ltr">{c.correct} / {c.total}</bdi></td>
@@ -200,8 +199,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
                   <div className="dash-bar"><div style={{ width: `${c.progress}%`, background: rateColor(c.rate) }} /></div>
                 </td>
               </tr>
-              ))
-            ])}
+            ))}
           </tbody>
         </table>
       </div>
