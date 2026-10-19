@@ -7,6 +7,7 @@ import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import MathGame from './components/MathGame';
+import SubjectHub from './components/SubjectHub';
 import AdminPanel from './components/AdminPanel';
 import BackgroundElements from './components/BackgroundElements';
 import Achievements from './components/Achievements';
@@ -58,6 +59,32 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const [chosenSubject, setSubject] = useState(() => readSubject(undefined, allowedSubjects));
   // מי שאין לו גישה לחשבון (עדיין) - תמיד אנגלית
   const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
+  // יותר ממקצוע אחד? מתחילים בדף הבחירה (אנגלית / חשבון)
+  const hasHub = allowedSubjects.length > 1;
+  const startPage = hasHub ? 'hub' : 'home';
+  const [lastSubject] = useState(() => {
+    try {
+      return localStorage.getItem('english_subject');
+    } catch {
+      return null;
+    }
+  });
+
+  // בחירת מקצוע בדף הבחירה. מסך "איפה את עומדת" נפתח פעם אחת בכל כניסה לכל מקצוע
+  const pickSubject = (id) => {
+    changeSubject(id);
+    setCurrentGame('home');
+    let shown = true;
+    try {
+      shown = sessionStorage.getItem(`english_statusShown_${id}`) === '1';
+      sessionStorage.setItem(`english_statusShown_${id}`, '1');
+    } catch {
+      // ignore
+    }
+    if (!shown && localStorage.getItem('english_hasSeenWelcome')) {
+      setTimeout(() => setShowStatusDialog(true), 450);
+    }
+  };
   const changeSubject = (id) => {
     if (!allowedSubjects.includes(id)) return;
     setSubject(id);
@@ -117,7 +144,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     if (savedUserData) {
       const parsedUserData = JSON.parse(savedUserData);
       setUserData(parsedUserData);
-      setCurrentGame('home');
+      setCurrentGame(startPage);
       
       // Show status dialog on app reload (but not on first visit)
       // אורח/ת שחוזר/ת: קודם תזכורת להירשם (פעם אחת בכל כניסה), אחר כך מסך הסטטוס
@@ -129,8 +156,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       }
       if (isGuest && onRequestSignup && !remindedThisVisit) {
         setTimeout(() => setShowGuestReminder(true), 500);
-      } else if (hasSeenWelcome) {
-        // Small delay to let the UI render first
+      } else if (hasSeenWelcome && !hasHub) {
+        // Small delay to let the UI render first (עם דף בחירה - המסך נפתח אחרי בחירת המקצוע)
         setTimeout(() => {
           setShowStatusDialog(true);
         }, 500);
@@ -142,6 +169,11 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     // Mark initial load as complete
     setIsInitialLoad(false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps -- טעינה פעם אחת (App נטען מחדש לכל משתמש)
+
+  // כל מעבר מסך מתחיל מראש העמוד (אחרת בטלפון נשארים גלולים באמצע, למשל אחרי מסך הפתיחה)
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentGame]);
 
   // Save data to localStorage whenever it changes (but not on initial load)
   useEffect(() => {
@@ -191,7 +223,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       themeColor: data.themeColor || '#667eea'
     };
     setUserData(completeData);
-    setCurrentGame('home');
+    setCurrentGame(startPage);
     
     // Check if this is the first time
     const isFirstTime = !localStorage.getItem('english_hasSeenWelcome');
@@ -254,12 +286,22 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     if (currentGame === 'welcome') {
       return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={emailToUsername(authUser?.email) || (authUser?.displayName || '').split(' ')[0]} />;
     }
-    if (currentGame === 'home') {
+    if (currentGame === 'hub' && hasHub) {
+      return (
+        <SubjectHub
+          subjects={allowedSubjects}
+          userData={userData}
+          categoryStats={categoryStats}
+          lastSubject={lastSubject}
+          onPick={pickSubject}
+        />
+      );
+    }
+    if (currentGame === 'home' || currentGame === 'hub') {
       return <HomePage
         onSelectGame={(id) => (id === 'myProgress' ? openAchievements('progress') : startGame(id))}
         subject={subject}
-        subjects={allowedSubjects}
-        onSubjectChange={changeSubject}
+        onOpenHub={hasHub ? () => setCurrentGame('hub') : null}
         score={score}
         streak={streak}
         questionCount={questionCount}
@@ -417,7 +459,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 )}
 
                 {/* Exam Countdown */}
-                <Badge
+                {currentGame !== 'hub' && (
+<Badge
                   fontSize="sm"
                   px={3}
                   py={2}
@@ -434,6 +477,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                     {examCountdownText(daysUntilExam)}
                   </Text>
                 </Badge>
+                )}
               </HStack>
             </HStack>
 
@@ -520,7 +564,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 )}
 
                 {/* Exam Countdown - Compact */}
-                <Badge
+                {currentGame !== 'hub' && (
+<Badge
                   fontSize="sm"
                   px={3}
                   py={2}
@@ -537,6 +582,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                     {examCountdownText(daysUntilExam)}
                   </Text>
                 </Badge>
+                )}
               </HStack>
             </VStack>
           </Box>
@@ -594,7 +640,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                 // ignore
               }
               setShowGuestReminder(false);
-              if (localStorage.getItem('english_hasSeenWelcome')) setShowStatusDialog(true);
+              if (localStorage.getItem('english_hasSeenWelcome') && !hasHub) setShowStatusDialog(true);
             }}
           />
         </AnimatePresence>

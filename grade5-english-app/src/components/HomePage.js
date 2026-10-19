@@ -10,34 +10,12 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import './HomePage.css';
-import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
+import { SUBJECTS } from '../data/subjects';
+import './SubjectHub.css';
 
 const MotionBox = motion(Box);
 
-// בחירת מקצוע: אנגלית / חשבון - עם הספירה לאחור עד כל מבחן
-const SubjectSwitcher = ({ subject, subjects, onChange }) => (
-  <div className="subject-switcher" role="tablist" aria-label="מקצוע">
-    {subjects.map(id => {
-      const s = SUBJECTS[id];
-      const days = getDaysUntilSubjectExam(id);
-      return (
-        <button
-          key={id}
-          role="tab"
-          aria-selected={subject === id}
-          className={`subject-tab ${subject === id ? 'active' : ''}`}
-          onClick={() => onChange(id)}
-        >
-          <span className="subject-emoji">{s.emoji}</span>
-          <span className="subject-name">{s.name}</span>
-          <span className="subject-exam">⏰ מבחן: {examCountdownText(days)}</span>
-        </button>
-      );
-    })}
-  </div>
-);
-
-const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', subjects = ['english'], onSubjectChange }) => {
+const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', onOpenHub }) => {
   const games = SUBJECTS[subject].categories;
   const isMath = subject === 'math';
 
@@ -59,12 +37,16 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
             textShadow="3px 3px 6px rgba(0, 0, 0, 0.3)"
             mb={2}
           >
-            {getGenderText('בחרי נושא לתרגול', userData?.gender)} {SUBJECTS[subject].emoji}
+            {getGenderText(onOpenHub ? `בחרי נושא ב${SUBJECTS[subject].name}` : 'בחרי נושא לתרגול', userData?.gender)} {SUBJECTS[subject].emoji}
           </Heading>
           <Text fontSize="lg" color="yellow.500" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)" mb={4}>
             {getGenderText('כל תרגול מקרב אותך להצלחה! 💪', userData?.gender)}
           </Text>
-          {onSubjectChange && subjects.length > 1 && <SubjectSwitcher subject={subject} subjects={subjects} onChange={onSubjectChange} />}
+          {onOpenHub && (
+            <button className="hub-back" onClick={onOpenHub}>
+              🔄 החלפת מקצוע
+            </button>
+          )}
         </MotionBox>
 
         {/* Games Grid */}
