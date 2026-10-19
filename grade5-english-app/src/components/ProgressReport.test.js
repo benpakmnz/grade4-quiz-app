@@ -56,3 +56,11 @@ test('with two subjects the report shows one subject at a time (no "all"), start
   expect(englishOnly).not.toContain('report-subjects');
   expect(englishOnly).not.toContain('חיבור וחיסור שברים');
 });
+
+test('inside the achievements window the subject comes from outside (no second filter)', () => {
+  const both = parseUser('u3', { progress: { data: { english_categoryStats: JSON.stringify({ mAngles: { correct: 1, total: 2 } }) }, updatedAt: 1 } });
+  const html = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} fixedSubject="math" />);
+  expect(html).not.toContain('report-subjects');
+  expect(html).toContain('סוגי זוויות');
+  expect(html).not.toContain('am / is / are');
+});

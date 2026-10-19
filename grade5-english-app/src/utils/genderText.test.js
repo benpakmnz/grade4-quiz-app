@@ -11,3 +11,8 @@ test('words that only contain a form are not broken', () => {
   expect(getGenderText('מחשבים את ההפרש', 'male')).toBe('מחשבים את ההפרש');
   expect(getGenderText('חשבי:', 'female')).toBe('חשבי:');
 });
+
+test('renamed badges have masculine forms', () => {
+  expect(getGenderText('מלכת התרגול', 'male')).toBe('מלך התרגול');
+  expect(getGenderText('אלופת הנקודות', 'male')).toBe('אלוף הנקודות');
+});

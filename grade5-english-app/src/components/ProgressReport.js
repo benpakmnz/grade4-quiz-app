@@ -69,7 +69,7 @@ export const PARENT_TIPS = {
  * דוח התקדמות של משתמש אחד.
  * mode='admin' - מתוך ממשק הניהול; mode='self' - התלמיד/ההורה רואים את הדוח של עצמם
  */
-const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS, defaultSubject }) => {
+const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS, defaultSubject, fixedSubject }) => {
   const [mistakeFilter, setMistakeFilter] = useState('all');
   // מקצוע אחד בכל פעם: נפתח על המקצוע הנוכחי; בממשק הניהול - על המקצוע שתורגל הכי הרבה
   const [subjectFilter, setSubjectFilter] = useState(() => {
@@ -81,7 +81,8 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
   const self = mode === 'self';
 
   // מקצועות שהמשתמש/ת לא רואה (חשבון בזמן הבדיקה) לא מופיעים בדוח שלו/ה
-  const shownSubjects = [subjectFilter];
+  // fixedSubject - המקצוע נבחר מבחוץ (בחלון ההישגים), ואז אין כאן בחירה נוספת
+  const shownSubjects = [fixedSubject || subjectFilter];
   const perCategory = user.perCategory.filter(c => shownSubjects.includes(c.subject));
   const practiced = perCategory.filter(c => c.total > 0);
   const weakest = [...practiced].sort((a, b) => a.rate - b.rate).slice(0, 3).filter(c => c.rate < 80);
@@ -116,7 +117,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
         </div>
       )}
 
-      {subjects.length > 1 && (
+      {subjects.length > 1 && !fixedSubject && (
         <div className="report-subjects" role="tablist" aria-label="מקצוע">
           {subjects.map(id => (
             <button

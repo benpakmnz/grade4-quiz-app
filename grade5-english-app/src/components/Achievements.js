@@ -9,9 +9,10 @@ import { TARGET_PER_CATEGORY } from '../data/categories';
 import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
 const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice, subject = 'english', subjects = ['english'] }) => {
-  // הנתונים מוצגים לפי המקצוע שנבחר בדף הבית
-  const categories = SUBJECTS[subject].categories;
-  const subjectName = SUBJECTS[subject].name;
+  // מקצוע אחד בכל פעם (סקירה, פירוט נושאים והתקדמות). נפתח על המקצוע שנבחר בדף הבית
+  const [viewSubject, setViewSubject] = useState(subjects.includes(subject) ? subject : subjects[0]);
+  const categories = SUBJECTS[viewSubject].categories;
+  const subjectName = SUBJECTS[viewSubject].name;
   const [unlockedAchievements, setUnlockedAchievements] = useState([]);
   const [showNotification, setShowNotification] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab); // 'overview', 'categories', 'achievements', 'progress'
@@ -57,7 +58,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
   };
 
   // Calculate days until exam and progress
-  const daysUntilExam = getDaysUntilSubjectExam(subject);
+  const daysUntilExam = getDaysUntilSubjectExam(viewSubject);
   
   const totalTarget = TARGET_PER_CATEGORY * categories.length;
   const stats = calculateOverallStats();
@@ -94,7 +95,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
     },
     {
       id: 'english_master',
-      title: getGenderText('מלכת האנגלית', userData?.gender),
+      title: getGenderText('מלכת התרגול', userData?.gender),
       description: 'פתרת 20 שאלות!',
       emoji: '👑',
       condition: (s, st, q) => q >= 20,
@@ -150,7 +151,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
     },
     {
       id: 'score_500',
-      title: getGenderText('אלופת המילים', userData?.gender),
+      title: getGenderText('אלופת הנקודות', userData?.gender),
       description: 'צברת 500 נקודות!',
       emoji: '🌈',
       condition: (s, st, q) => s >= 500,
@@ -276,6 +277,23 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
           </div>
         </div>
 
+        {/* בחירת מקצוע - לכל הלשוניות חוץ מהתגים (התגים משותפים) */}
+        {subjects.length > 1 && activeTab !== 'achievements' && (
+          <div className="report-subjects achievements-subjects" role="tablist" aria-label="מקצוע">
+            {subjects.map(id => (
+              <button
+                key={id}
+                role="tab"
+                aria-selected={viewSubject === id}
+                className={`report-subject ${viewSubject === id ? 'active' : ''}`}
+                onClick={() => setViewSubject(id)}
+              >
+                {SUBJECTS[id].emoji} {SUBJECTS[id].name}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Tabs */}
         <div className="achievements-tabs">
           <button 
@@ -314,7 +332,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             <ProgressReport
               user={buildLocalReport(userData)}
               subjects={subjects}
-              defaultSubject={subject}
+              fixedSubject={viewSubject}
               mode="self"
               gender={userData?.gender}
               onOpenLesson={setLesson}
@@ -511,6 +529,9 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
+            {subjects.length > 1 && (
+              <p className="badges-shared-note">✨ התגים נצברים מכל המקצועות יחד - כל תרגול, באנגלית או בחשבון, מקרב לתג הבא!</p>
+            )}
             <div className="achievements-progress">
               <div className="progress-text">
                 <span className="progress-label">התקדמות:</span>
