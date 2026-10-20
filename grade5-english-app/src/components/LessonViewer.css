@@ -542,3 +542,33 @@
   .sort-item { font-size: 1.6rem; }
   .howto-sentence { font-size: 1.3rem; }
 }
+
+/* ===== חשבון ===== */
+.picture-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.picture-cards.many {
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.picture-card {
+  background: #f8fafc;
+  border: 2px solid #e0e7ff;
+  border-radius: 18px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.picture-card p {
+  margin: 6px 0 0;
+  line-height: 1.6;
+  font-size: 1rem;
+}
+
+.check-sentence.rtl {
+  font-family: inherit;
+  text-align: center;
+}

@@ -1,0 +1,102 @@
+.math-subject .math-prompt {
+  line-height: 1.6;
+}
+
+.math-subject .math-prompt.long {
+  font-size: 1.25rem;
+  text-align: right;
+  font-weight: 600;
+}
+
+.math-expr {
+  font-size: 2.1rem;
+  font-weight: bold;
+  color: #1e1b4b;
+  text-align: center;
+  margin: 10px 0 6px;
+  overflow-wrap: anywhere;
+}
+
+.math-options {
+  margin-top: 18px;
+}
+
+.math-options .option-button {
+  font-size: 1.35rem;
+}
+
+.math-options.long {
+  grid-template-columns: 1fr;
+}
+
+.math-options.long .option-button {
+  font-size: 1.05rem;
+  padding: 14px;
+}
+
+.math-options.visual {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.math-options.visual .option-button {
+  background: #fff;
+  border: 3px solid #c4b5fd;
+  padding: 10px 6px;
+  box-shadow: none;
+}
+
+.math-options.visual .option-button.wrong {
+  border-color: #fca5a5;
+  opacity: 0.55;
+}
+
+.math-options.visual .option-button.right {
+  border-color: #10b981;
+  background: #ecfdf5;
+}
+
+.math-input-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.math-input {
+  max-width: 200px;
+  padding: 12px;
+  font-size: 1.8rem;
+}
+
+.math-unit {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #4338ca;
+}
+
+.math-steps p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+}
+
+@media (max-width: 768px) {
+  .math-expr {
+    font-size: 1.6rem;
+  }
+
+  .math-options .option-button {
+    font-size: 1.15rem;
+  }
+
+  .math-input {
+    max-width: 150px;
+    font-size: 1.5rem;
+  }
+
+  .math-input-row .submit-button {
+    padding: 12px 26px;
+    font-size: 1.1rem;
+  }
+}

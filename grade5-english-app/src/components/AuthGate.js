@@ -5,10 +5,15 @@ import { isCloudConfigured, onUserChanged } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { subscribeContent, checkIsAdmin } from '../services/contentSync';
 import { trackVisit } from '../services/analytics';
+import { IS_TEST_ENV } from '../services/env';
 import { startSession, endSession } from '../services/sessions';
 import './LoginScreen.css';
 
+// בסביבת הבדיקות אין מצב אורח - נכנסים רק עם חשבון
+const ALLOW_GUEST = !IS_TEST_ENV;
+
 const readGuest = () => {
+  if (!ALLOW_GUEST) return false;
   try {
     return localStorage.getItem(GUEST_KEY) === '1';
   } catch {
@@ -73,6 +78,7 @@ const AuthGate = () => {
       <div className="App">
         <LoginScreen
           initialMode={loginMode}
+          allowGuest={ALLOW_GUEST}
           onGuest={() => {
             try {
               localStorage.setItem(GUEST_KEY, '1');

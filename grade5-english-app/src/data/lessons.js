@@ -6,7 +6,9 @@
 //   check - בדיקה קצרה עם הסבר מיד אחרי כל תשובה
 //   tips  - טיפים
 
-export const lessons = {
+import { mathLessons } from './mathLessons';
+
+const englishLessons = {
   isAre: {
     title: 'AM / IS / ARE',
     steps: [
@@ -353,5 +355,7 @@ export const lessons = {
     ]
   }
 };
+
+export const lessons = { ...englishLessons, ...mathLessons };
 
 export const hasLesson = (categoryId) => Boolean(lessons[categoryId]);

@@ -2,6 +2,7 @@
 // localStorage נשאר "עותק העבודה" של האפליקציה; כאן מעתיקים אותו אל english/users/<uid> ובחזרה.
 import { ref, get, set, remove, serverTimestamp } from 'firebase/database';
 import { db } from './firebase';
+import { capMistakes } from '../utils/mistakeLimits';
 import { DB_ROOT } from './env';
 import { emailToUsername } from '../utils/username';
 
@@ -17,7 +18,8 @@ export const PROGRESS_KEYS = [
   'english_writingDraft',
   'english_hasSeenWelcome',
   'english_lessonsSeen',
-  'english_mistakes'
+  'english_mistakes',
+  'english_resetBackup'
 ];
 
 const OWNER_KEY = 'english_owner';         // ה-uid שהנתונים המקומיים שייכים לו
@@ -114,9 +116,7 @@ export const mergeProgress = (cloud = {}, local = {}) => {
     parse(cloud.english_lessonsSeen, []), parse(local.english_lessonsSeen, []), x => x
   ));
   merged.english_mistakes = JSON.stringify(
-    [...parse(cloud.english_mistakes, []), ...parse(local.english_mistakes, [])]
-      .sort((a, b) => (b?.ts || 0) - (a?.ts || 0))
-      .slice(0, 300)
+    capMistakes([...parse(cloud.english_mistakes, []), ...parse(local.english_mistakes, [])])
   );
   merged.english_history = JSON.stringify(
     [...parse(cloud.english_history, []), ...parse(local.english_history, [])].slice(0, 50)

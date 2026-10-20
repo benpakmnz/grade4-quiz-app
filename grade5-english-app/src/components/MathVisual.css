@@ -1,0 +1,168 @@
+.math-visual {
+  display: flex;
+  justify-content: center;
+  margin: 10px auto 4px;
+  max-width: 100%;
+}
+
+.mv-fraction {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.mv-whole {
+  max-width: 100%;
+  height: auto;
+}
+
+.mv-pair {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.mv-pair-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #334155;
+}
+
+.mv-set {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 420px;
+}
+
+.mv-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 96px;
+  padding: 5px 7px;
+  border: 2px dashed #94a3b8;
+  border-radius: 14px;
+  font-size: 1.25rem;
+  background: #f8fafc;
+}
+
+.mv-group.on {
+  border: 2px solid #f97316;
+  background: #ffedd5;
+}
+
+.mv-numberline {
+  width: 100%;
+  max-width: 460px;
+  height: auto;
+  font-family: inherit;
+}
+
+.mv-nl-label {
+  font-size: 12px;
+  font-weight: bold;
+  fill: #1e293b;
+}
+
+.mv-nl-q {
+  font-size: 15px;
+  font-weight: bold;
+  fill: #e11d48;
+}
+
+.mv-sequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.mv-seq-item {
+  min-width: 52px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #eef2ff;
+  border: 2px solid #c7d2fe;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #3730a3;
+  text-align: center;
+}
+
+.mv-seq-item.q {
+  background: #fff1f2;
+  border-color: #fb7185;
+  color: #e11d48;
+}
+
+.mv-seq-arrow {
+  color: #94a3b8;
+  font-weight: bold;
+}
+
+.mv-polygon {
+  width: 220px;
+  max-width: 70vw;
+  height: auto;
+}
+
+.mv-vertex {
+  font-size: 10px;
+  font-weight: bold;
+  fill: #0f172a;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+}
+
+.mv-angle {
+  width: 240px;
+  max-width: 75vw;
+  height: auto;
+}
+
+.mv-clock {
+  width: 170px;
+  height: auto;
+}
+
+.mv-clock-num {
+  font-size: 11px;
+  font-weight: bold;
+  fill: #1e293b;
+}
+
+.mv-rect {
+  width: 100%;
+  max-width: 320px;
+  height: auto;
+}
+
+.mv-rect-label {
+  font-size: 14px;
+  font-weight: bold;
+  fill: #14532d;
+}
+
+.math-visual.small .mv-polygon,
+.math-visual.small .mv-angle {
+  width: 120px;
+}
+
+.mv-seq-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ציורים תמיד משמאל לימין (אחרת text-anchor="start" מתהפך בעמוד עברי) */
+.math-visual svg {
+  direction: ltr;
+}

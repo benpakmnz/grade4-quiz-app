@@ -1,4 +1,5 @@
 // הגדרות הטפסים בממשק הניהול: לכל נושא - אילו מאגרים יש בו, אילו שדות, איך בודקים ואיך מציגים בשורה
+import { mathCategories } from './mathCategories';
 
 const WORD_GROUPS = [
   ['family', 'משפחה ואנשים'], ['jobs', 'מקצועות'], ['animals', 'חיות'], ['food', 'אוכל'],
@@ -152,6 +153,53 @@ export const ADMIN_SECTIONS = [
     }]
   }
 ];
+
+// ---------- חשבון ----------
+// השאלות בחשבון נוצרות אוטומטית; כאן מוסיפים שאלות משלך לכל נושא, והן מתערבבות בתרגול.
+// מאגר לכל נושא בשם הנושא (למשל mFractionAdd).
+const NUMBER = /^\d{1,3}(,\d{3})*$|^\d+$/;
+
+export const mathBank = (topicId) => ({
+  bank: topicId,
+  title: 'שאלות שהוספת',
+  subject: 'math',
+  fields: [
+    { name: 'kind', label: 'סוג השאלה', type: 'select', options: [['mc', 'בחירה מתוך 4 תשובות'], ['input', 'הקלדת מספר']] },
+    { name: 'prompt', label: 'השאלה (בעברית)', type: 'textarea', rows: 3, placeholder: 'כמה הם 3/4 מ-20 תפוחים?' },
+    { name: 'expr', label: 'תרגיל להצגה גדולה (לא חובה). שבר: 3/4 · מספר מעורב: 2 1/4 · כפל: × · חילוק: 12 : 3', type: 'text', ltr: true, placeholder: '2 3/5 + 1 4/5 = ?' },
+    { name: 'answer', label: 'התשובה הנכונה', type: 'text', placeholder: '15' },
+    { name: 'distractors', label: '3 תשובות לא נכונות', type: 'list', count: 3, showIf: (it) => it.kind === 'mc' },
+    { name: 'unit', label: 'יחידה ליד התשובה (לא חובה), למשל ס"מ או ₪', type: 'text', showIf: (it) => it.kind === 'input' },
+    { name: 'explanation', label: 'הסבר "איך פותרים" (כל שלב בשורה נפרדת)', type: 'textarea', rows: 4 }
+  ],
+  validate: (it) => {
+    if (!trim(it.prompt)) return 'צריך לכתוב את השאלה';
+    if (!trim(it.answer)) return 'צריך לכתוב את התשובה הנכונה';
+    if (it.kind === 'input' && !NUMBER.test(trim(it.answer))) return 'בהקלדת מספר - התשובה חייבת להיות מספר שלם (למשל 1250 או 1,250)';
+    if (it.kind === 'mc') {
+      if (!filled(it.distractors)) return 'צריך למלא 3 תשובות לא נכונות';
+      if (new Set([it.answer, ...it.distractors].map(trim)).size !== 4) return 'יש תשובות כפולות';
+    }
+    return null;
+  },
+  // שומרים רק את השדות שמתאימים לסוג השאלה
+  prepare: (it) => {
+    const out = { ...it };
+    if (out.kind === 'input') {
+      delete out.distractors;
+      out.answer = out.answer.replace(/,/g, '');
+    } else {
+      delete out.unit;
+    }
+    Object.keys(out).forEach(k => { if (out[k] === '') delete out[k]; });
+    return out;
+  },
+  summary: (it) => `${[it.prompt, it.expr].filter(Boolean).join('  ')}  ← ${it.answer}${it.unit ? ` ${it.unit}` : ''}`
+});
+
+export const MATH_ADMIN_SECTIONS = mathCategories
+  .filter(c => !c.testLength)
+  .map(c => ({ id: c.id, subject: 'math', banks: [mathBank(c.id)] }));
 
 // ערכים התחלתיים לטופס ריק
 export const emptyItem = (bankDef) => {

@@ -1,7 +1,7 @@
 import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import ProgressReport, { PARENT_TIPS } from './ProgressReport';
-import { categories } from '../data/categories';
+import { allCategories as categories } from '../data/subjects';
 import { parseUser } from '../data/userStats';
 
 const user = parseUser('u1', {
@@ -24,4 +24,43 @@ test('kids and parents do not see the activity log', () => {
 
 test('every topic has a parent tip', () => {
   categories.forEach(c => expect([c.id, Boolean(PARENT_TIPS[c.id])]).toEqual([c.id, true]));
+});
+
+test('with two subjects the report shows one subject at a time (no "all"), starting with the current one', () => {
+  const both = parseUser('u2', {
+    profile: { name: 'Noa' },
+    progress: {
+      data: {
+        english_categoryStats: JSON.stringify({ isAre: { correct: 3, total: 4 }, mFractionAdd: { correct: 1, total: 4 } }),
+        english_mistakes: JSON.stringify([
+          { ts: 1, category: 'mFractionAdd', question: '2 3/5 + 1 4/5 = ?', given: '3 7/5', correct: '4 2/5' },
+          { ts: 2, category: 'isAre', question: 'The cats ____ hungry.', given: 'is', correct: 'are' }
+        ])
+      },
+      updatedAt: 1
+    }
+  });
+  const math = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} defaultSubject="math" />);
+  expect(math).toContain('חיבור וחיסור שברים');
+  expect(math).not.toContain('The cats');
+  expect(math).not.toContain('am / is / are');
+  const english = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} defaultSubject="english" />);
+  expect(english).toContain('The cats');
+  expect(english).not.toContain('חיבור וחיסור שברים');
+  expect(math).not.toContain('הכל');
+  // בממשק הניהול - נפתח על המקצוע שתורגל הכי הרבה (כאן שניהם 4 תשובות - הראשון)
+  const admin = renderToStaticMarkup(<ProgressReport user={both} mode="admin" subjects={['english', 'math']} />);
+  expect(admin).toContain('report-subjects');
+  // משתמש/ת בלי חשבון - אין סינון ואין זכר לחשבון
+  const englishOnly = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english']} />);
+  expect(englishOnly).not.toContain('report-subjects');
+  expect(englishOnly).not.toContain('חיבור וחיסור שברים');
+});
+
+test('inside the achievements window the subject comes from outside (no second filter)', () => {
+  const both = parseUser('u3', { progress: { data: { english_categoryStats: JSON.stringify({ mAngles: { correct: 1, total: 2 } }) }, updatedAt: 1 } });
+  const html = renderToStaticMarkup(<ProgressReport user={both} mode="self" subjects={['english', 'math']} fixedSubject="math" />);
+  expect(html).not.toContain('report-subjects');
+  expect(html).toContain('סוגי זוויות');
+  expect(html).not.toContain('am / is / are');
 });

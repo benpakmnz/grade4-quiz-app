@@ -9,7 +9,7 @@ import { logMistake } from '../utils/mistakes';
 import './Game.css';
 import './EnglishGame.css';
 
-const TestSummary = ({ results, onRestart, onBack, g }) => {
+export const TestSummary = ({ results, onRestart, onBack, g }) => {
   const correct = results.filter(Boolean).length;
   const pct = Math.round((correct / results.length) * 100);
   return (

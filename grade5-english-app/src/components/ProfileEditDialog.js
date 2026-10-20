@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import './ProfileEditDialog.css';
-import { signOut } from '../services/firebase';
 import { endSession } from '../services/sessions';
-import { pushNow, clearLocalProgress, deleteCloudProgress, GUEST_KEY } from '../services/cloudSync';
+import { clearLocalProgress, deleteCloudProgress } from '../services/cloudSync';
+import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
 import { accountLabel, emailToUsername } from '../utils/username';
 
 const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEnabled = false }) => {
@@ -67,25 +67,12 @@ const ProfileEditDialog = ({ userData, onSave, onClose, authUser = null, cloudEn
     }
   };
 
-  // אורח/ת שרוצה להתחבר: חוזרים למסך ההתחברות. ההתקדמות מהמכשיר עולה לחשבון אחרי ההתחברות.
-  const handleSignIn = () => {
-    try {
-      localStorage.removeItem(GUEST_KEY);
-    } catch {
-      // ignore
-    }
-    window.location.reload();
-  };
+  const handleSignIn = goToSignIn;
 
   const handleSignOut = async () => {
-    if (!window.confirm('להתנתק? ההתקדמות שמורה בענן ותחזור בהתחברות הבאה.')) return;
+    if (!window.confirm(SIGN_OUT_CONFIRM)) return;
     setAccountBusy(true);
-    await pushNow().catch(() => {});
-    await endSession();
-    await signOut();
-    // לא להשאיר את הנתונים במכשיר - אולי ילד/ה אחר/ת יתחבר/ו כאן
-    clearLocalProgress();
-    window.location.reload();
+    await signOutAndClear();
   };
 
   return (
