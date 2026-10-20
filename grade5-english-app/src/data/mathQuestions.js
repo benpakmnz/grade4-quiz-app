@@ -393,11 +393,12 @@ const multiplyExplanation = (a, b) => {
 };
 
 const operationsQuestion = () => {
-  const type = pick(['add', 'sub', 'mul1', 'mul2', 'mul10', 'div', 'div', 'divRemainder']);
+  // רמה של כיתה ה': מספרים עד 100,000, כפל עד דו-ספרתי × דו-ספרתי, ורוב החילוק בלי שארית
+  const type = pick(['add', 'sub', 'mul1', 'mul1', 'mul2', 'mul10', 'div', 'div', 'div', 'divRemainder']);
 
   if (type === 'add') {
-    const a = rnd(1000, 600000);
-    const b = rnd(1000, Math.min(399999, 999999 - a));
+    const a = rnd(100, 60000);
+    const b = rnd(100, Math.min(39999, 99999 - a));
     return {
       kind: 'input',
       label: 'חיבור',
@@ -409,10 +410,10 @@ const operationsQuestion = () => {
   }
 
   if (type === 'sub') {
-    const a = rnd(10000, 999999);
+    const a = rnd(1000, 99999);
     // הרבה פעמים - עם אפסים באמצע (פריטה!)
-    const top = Math.random() < 0.4 ? Number(String(a).replace(/\d(?=\d{2}$)/, '0').replace(/\d(?=\d{3}$)/, '0')) : a;
-    const b = rnd(1000, top - 1);
+    const top = a >= 10000 && Math.random() < 0.4 ? Number(String(a).replace(/\d(?=\d{2}$)/, '0').replace(/\d(?=\d{3}$)/, '0')) : a;
+    const b = rnd(100, top - 1);
     return {
       kind: 'input',
       label: 'חיסור',
@@ -424,8 +425,8 @@ const operationsQuestion = () => {
   }
 
   if (type === 'mul1' || type === 'mul2') {
-    const a = type === 'mul1' ? rnd(105, 9999) : rnd(12, 450);
-    const b = type === 'mul1' ? rnd(3, 9) : rnd(12, 48);
+    const a = type === 'mul1' ? (Math.random() < 0.6 ? rnd(12, 99) : rnd(101, 999)) : rnd(11, 99);
+    const b = type === 'mul1' ? rnd(2, 9) : rnd(11, 25);
     return {
       kind: 'input',
       label: 'כפל',
@@ -437,9 +438,8 @@ const operationsQuestion = () => {
   }
 
   if (type === 'mul10') {
-    const a = rnd(3, 999);
+    const a = rnd(2, 99);
     const b = pick([10, 100, 1000]);
-    if (a * b > 1000000) return operationsQuestion();
     const zeros = String(b).length - 1;
     return {
       kind: 'input',
@@ -453,7 +453,7 @@ const operationsQuestion = () => {
 
   if (type === 'div') {
     const b = rnd(2, 9);
-    const q = rnd(12, 1500);
+    const q = Math.random() < 0.6 ? rnd(3, 30) : rnd(31, 150);
     const a = b * q;
     return {
       kind: 'input',
@@ -466,8 +466,8 @@ const operationsQuestion = () => {
   }
 
   // divRemainder
-  const b = rnd(3, 9);
-  const q = rnd(11, 150);
+  const b = rnd(3, 6);
+  const q = rnd(4, 20);
   const r = rnd(1, b - 1);
   const a = b * q + r;
   const answer = `${q} ושארית ${r}`;
@@ -539,8 +539,8 @@ const equationsQuestion = () => {
   let explanation;
   if (type === 'x+a' || type === 'a+x' || type === 'big+') {
     const big = type === 'big+';
-    x = big ? rnd(1000, 90000) : rnd(5, 400);
-    const a = big ? rnd(1000, 90000) : rnd(5, 400);
+    x = big ? rnd(1000, 9000) : rnd(5, 400);
+    const a = big ? rnd(1000, 9000) : rnd(5, 400);
     expr = type === 'a+x' ? `${fmt(a)} + □ = ${fmt(a + x)}` : `□ + ${fmt(a)} = ${fmt(a + x)}`;
     explanation = `חסר מחובר? מחסרים: ${fmt(a + x)} - ${fmt(a)} = ${fmt(x)}\nבדיקה: ${fmt(x)} + ${fmt(a)} = ${fmt(a + x)} ✓`;
   } else if (type === 'x-a') {
@@ -595,13 +595,13 @@ const WORD_PROBLEMS = [
   () => { const g = rnd(4, 8), n = rnd(12, 40); return { text: `${g * n} תלמידים התחלקו לקבוצות של ${g} תלמידים בכל קבוצה. כמה קבוצות יש?`, value: n, unit: 'קבוצות', steps: [`${g * n} : ${g} = ${n}`] }; },
   () => { const p = rnd(6, 15), n = rnd(3, 8), pen = rnd(4, 12), paid = 100; if (p * n + pen >= paid) return null; const name = pick(NAMES_F); return { text: `${name} קנתה ${n} מחברות במחיר ${p} ₪ כל אחת, ועט ב-${pen} ₪. היא שילמה בשטר של ${paid} ₪. כמה עודף קיבלה?`, value: paid - p * n - pen, unit: '₪', steps: [`${n} × ${p} = ${n * p} ₪ על מחברות`, `${n * p} + ${pen} = ${n * p + pen} ₪ בסך הכול`, `${paid} - ${n * p + pen} = ${paid - n * p - pen} ₪ עודף`] }; },
   () => { const s = pick([15, 20, 25, 30, 35, 40]), w = rnd(4, 12), price = s * w + rnd(20, 200); const name = pick(NAMES_M); return { text: `${name} חוסך ${s} ₪ בכל שבוע. אחרי ${w} שבועות הוא רוצה לקנות אופניים שעולים ${price} ₪. כמה כסף עוד חסר לו?`, value: price - s * w, unit: '₪', steps: [`${s} × ${w} = ${s * w} ₪ חסך`, `${price} - ${s * w} = ${price - s * w} ₪ חסרים`] }; },
-  () => { const perDay = rnd(1200, 4800), days = rnd(5, 9); return { text: `מפעל מייצר ${fmt(perDay)} בקבוקים ביום. כמה בקבוקים ייצר המפעל ב-${days} ימים?`, value: perDay * days, unit: 'בקבוקים', steps: [multiplyExplanation(perDay, days)] }; },
-  () => { const total = rnd(200000, 600000), kids = rnd(50000, total - 50000); return { text: `בעיר גרים ${fmt(total)} תושבים. ${fmt(kids)} מהם ילדים. כמה מבוגרים גרים בעיר?`, value: total - kids, unit: 'מבוגרים', steps: [`${fmt(total)} - ${fmt(kids)} = ${fmt(total - kids)}`] }; },
+  () => { const perDay = rnd(120, 480), days = rnd(3, 7); return { text: `מפעל מייצר ${fmt(perDay)} בקבוקים ביום. כמה בקבוקים ייצר המפעל ב-${days} ימים?`, value: perDay * days, unit: 'בקבוקים', steps: [multiplyExplanation(perDay, days)] }; },
+  () => { const total = rnd(20000, 60000), kids = rnd(5000, total - 5000); return { text: `בעיר גרים ${fmt(total)} תושבים. ${fmt(kids)} מהם ילדים. כמה מבוגרים גרים בעיר?`, value: total - kids, unit: 'מבוגרים', steps: [`${fmt(total)} - ${fmt(kids)} = ${fmt(total - kids)}`] }; },
   () => { const boxes = rnd(12, 40), broken = rnd(3, 15); return { text: `בכל תבנית יש 12 ביצים. בחנות יש ${boxes} תבניות. ${broken} ביצים נשברו. כמה ביצים שלמות נשארו?`, value: boxes * 12 - broken, unit: 'ביצים', steps: [`${boxes} × 12 = ${boxes * 12} ביצים`, `${boxes * 12} - ${broken} = ${boxes * 12 - broken}`] }; },
   () => { const f = rnd(3, 6), each = rnd(12, 30), give = rnd(2, 8); return { text: `${f} חברים חילקו ביניהם ${f * each} סוכריות שווה בשווה. כל אחד נתן ${give} סוכריות לאח הקטן שלו. כמה סוכריות נשארו לכל אחד?`, value: each - give, unit: 'סוכריות', steps: [`${f * each} : ${f} = ${each} סוכריות לכל אחד`, `${each} - ${give} = ${each - give}`] }; },
   () => { const y = rnd(12, 45), times = rnd(2, 4); const name = pick(NAMES_F), name2 = pick(NAMES_M); return { text: `ל${name2} יש ${y} מדבקות. ל${name} יש פי ${times} יותר מדבקות. כמה מדבקות יש לשניהם יחד?`, value: y + y * times, unit: 'מדבקות', steps: [`ל${name}: ${y} × ${times} = ${y * times}`, `יחד: ${y} + ${y * times} = ${y + y * times}`] }; },
   () => { const price = rnd(35, 65), n = rnd(2, 4), paid = 200; if (price * n >= paid) return null; return { text: `אמא קנתה ${n} חולצות במחיר ${price} ₪ כל אחת, ושילמה ב-${paid} ₪. כמה עודף קיבלה?`, value: paid - price * n, unit: '₪', steps: [`${n} × ${price} = ${n * price} ₪`, `${paid} - ${n * price} = ${paid - n * price} ₪`] }; },
-  () => { const rows = rnd(12, 30), seats = rnd(15, 28), taken = rnd(50, rows * seats - 10); return { text: `באולם ${rows} שורות, ובכל שורה ${seats} כיסאות. ${taken} כיסאות כבר תפוסים. כמה כיסאות פנויים?`, value: rows * seats - taken, unit: 'כיסאות', steps: [`${rows} × ${seats} = ${rows * seats} כיסאות`, `${rows * seats} - ${taken} = ${rows * seats - taken}`] }; },
+  () => { const rows = rnd(10, 20), seats = rnd(11, 20), taken = rnd(50, rows * seats - 10); return { text: `באולם ${rows} שורות, ובכל שורה ${seats} כיסאות. ${taken} כיסאות כבר תפוסים. כמה כיסאות פנויים?`, value: rows * seats - taken, unit: 'כיסאות', steps: [`${rows} × ${seats} = ${rows * seats} כיסאות`, `${rows * seats} - ${taken} = ${rows * seats - taken}`] }; },
   () => { const a = rnd(120, 480), diff = rnd(30, 150); const n1 = pick(NAMES_F), n2 = pick(NAMES_M); return { text: `${n1} קראה ${a} עמודים. ${n2} קרא ${diff} עמודים פחות ממנה. כמה עמודים קראו שניהם יחד?`, value: a + a - diff, unit: 'עמודים', steps: [`${n2}: ${a} - ${diff} = ${a - diff}`, `יחד: ${a} + ${a - diff} = ${2 * a - diff}`] }; },
   () => { const km = rnd(120, 380), d = rnd(3, 7); return { text: `משאית נסעה ${km} ק"מ בכל יום, במשך ${d} ימים. כמה ק"מ נסעה בסך הכול?`, value: km * d, unit: 'ק"מ', steps: [`${km} × ${d} = ${fmt(km * d)}`] }; }
 ];
