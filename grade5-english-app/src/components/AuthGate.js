@@ -66,7 +66,7 @@ const AuthGate = () => {
     return (
       <div className="App">
         <div className="auth-loading">
-          <div className="spinner">🇬🇧</div>
+          <div className="spinner">⭐</div>
           {state === 'syncing' ? 'טוענים את ההתקדמות שלך...' : 'רגע...'}
         </div>
       </div>

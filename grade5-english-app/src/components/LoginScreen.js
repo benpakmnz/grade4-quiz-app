@@ -147,9 +147,9 @@ const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
           animate={{ y: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          🇬🇧 Welcome!
+          👋 ברוכים הבאים!
         </motion.h1>
-        <p className="welcome-subtitle">מתכוננים למבחן המיפוי באנגלית 📚</p>
+        <p className="welcome-subtitle">מתכוננים למבחני המיפוי - אנגלית וחשבון 📚</p>
 
         {initialMode === 'signup' && (
           <p className="login-carry">✅ כל מה שכבר תרגלת במכשיר הזה יעבור לחשבון החדש</p>

@@ -270,7 +270,7 @@ const AdminPanel = ({ onBack }) => {
       {view === 'questions' && (
       <div className="admin-card">
         <div className="report-subjects" role="tablist" aria-label="מקצוע">
-          {[['english', '🇬🇧 אנגלית'], ['math', '🔢 חשבון']].map(([id, label]) => (
+          {[['english', '🔤 אנגלית'], ['math', '🔢 חשבון']].map(([id, label]) => (
             <button key={id} role="tab" aria-selected={subject === id}
               className={`report-subject ${subject === id ? 'active' : ''}`}
               onClick={() => {

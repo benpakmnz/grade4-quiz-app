@@ -61,10 +61,10 @@ const WelcomeScreen = ({ onStart, defaultName = '' }) => {
           animate={{ y: [0, -10, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
         >
-          🇬🇧 Welcome! ברוכים הבאים
+          👋 ברוכים הבאים!
         </motion.h1>
         
-        <p className="welcome-subtitle">מתכוננים למבחן המיפוי באנגלית - בואו נכיר! 😊</p>
+        <p className="welcome-subtitle">מתכוננים למבחני המיפוי - בואו נכיר! 😊</p>
 
         <div className="welcome-content-grid">
           {/* Right Column - Name & Gender */}
