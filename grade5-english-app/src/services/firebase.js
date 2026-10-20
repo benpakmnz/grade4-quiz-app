@@ -7,7 +7,7 @@ import {
 } from 'firebase/auth';
 import { usernameToEmail, normalizeUsername } from '../utils/username';
 import { getDatabase } from 'firebase/database';
-import { initializeAppCheck, ReCaptchaV3Provider } from 'firebase/app-check';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
 // ערכים שהודבקו ב-Vercel עם רווח או ירידת שורה ישברו את החיבור - לכן trim
 const env = (value) => (value || '').trim() || undefined;
@@ -42,7 +42,8 @@ let auth = null;
 let db = null;
 
 // App Check: רק האפליקציה שלנו (מהדומיינים שלנו) יכולה לדבר עם מסד הנתונים.
-// מופעל כשיש מפתח reCAPTCHA v3 (REACT_APP_RECAPTCHA_SITE_KEY ב-Vercel). המפתח ציבורי - זה בסדר.
+// מופעל כשיש מפתח Fraud Defense / reCAPTCHA Enterprise מסוג Website (REACT_APP_RECAPTCHA_SITE_KEY ב-Vercel).
+// המפתח ציבורי - זה בסדר.
 const recaptchaSiteKey = env(process.env.REACT_APP_RECAPTCHA_SITE_KEY);
 export const isAppCheckOn = Boolean(recaptchaSiteKey);
 
@@ -54,7 +55,7 @@ if (isCloudConfigured) {
       window.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
     }
     try {
-      initializeAppCheck(app, { provider: new ReCaptchaV3Provider(recaptchaSiteKey), isTokenAutoRefreshEnabled: true });
+      initializeAppCheck(app, { provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey), isTokenAutoRefreshEnabled: true });
     } catch (err) {
       console.warn('App Check could not start', err);
     }
