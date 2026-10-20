@@ -7,7 +7,7 @@ export const SUBJECTS = {
   english: {
     id: 'english',
     name: 'אנגלית',
-    emoji: '🇬🇧',
+    emoji: '🔤',
     examName: 'מבחן מיפוי באנגלית',
     examDate: ENGLISH_EXAM_DATE,
     categories: englishCategories

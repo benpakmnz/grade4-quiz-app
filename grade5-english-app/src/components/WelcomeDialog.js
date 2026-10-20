@@ -34,7 +34,7 @@ const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
             <div className="welcome-icon">📝</div>
             <h3>{hasMath ? 'אנגלית וחשבון' : 'מבחן מיפוי באנגלית'}</h3>
             <p>
-              {hasMath && <>🇬🇧 <strong>אנגלית:</strong> </>}אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
+              {hasMath && <>🔤 <strong>אנגלית:</strong> </>}אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
               {' '}🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
               <br />
               {hasMath && (
