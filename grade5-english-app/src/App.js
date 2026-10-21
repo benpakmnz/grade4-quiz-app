@@ -16,6 +16,8 @@ import ProfileEditDialog from './components/ProfileEditDialog';
 import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import GuestReminderDialog from './components/GuestReminderDialog';
+import EscapeRoom from './components/EscapeRoom';
+import { readRoomParam, escapeRoomAvailable } from './data/escapeRoom';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
@@ -61,7 +63,11 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
   // כולם מתחילים בדף הבחירה (אנגלית / חשבון). מקצוע שעוד לא פתוח למשתמש/ת מוצג אפור עם "בקרוב"
   const hasHub = SUBJECT_IDS.length > 1;
-  const startPage = hasHub ? 'hub' : 'home';
+  // קישור הזמנה לחדר בריחה (?room=123456) - נכנסים ישר לחדר
+  const [roomInvite] = useState(() => readRoomParam());
+  const escapeOn = escapeRoomAvailable(isAdmin) || Boolean(roomInvite);
+  const startPage = roomInvite ? 'escape' : hasHub ? 'hub' : 'home';
+  const homePage = hasHub ? 'hub' : 'home';
   const [lastSubject] = useState(() => {
     try {
       return localStorage.getItem('english_subject');
@@ -296,6 +302,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           categoryStats={categoryStats}
           lastSubject={lastSubject}
           onPick={pickSubject}
+          onEscapeRoom={escapeOn ? () => setCurrentGame('escape') : null}
         />
       );
     }
@@ -313,6 +320,23 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         calculateSuccessRate={calculateSuccessRate}
         getGenderText={getGenderText}
       />;
+    }
+
+    if (currentGame === 'escape' && escapeOn) {
+      return (
+        <EscapeRoom
+          authUser={authUser}
+          userData={userData}
+          categoryStats={categoryStats}
+          subjects={allowedSubjects}
+          defaultSubject={subject}
+          initialCode={roomInvite}
+          onExit={() => setCurrentGame(homePage)}
+          onAnswer={(topic, ok) => updateCategoryStats(topic, ok)}
+          onReward={(points) => setScore(s => s + points)}
+          onSignUp={onRequestSignup}
+        />
+      );
     }
 
     if (currentGame === 'admin' && isAdmin) {
@@ -393,6 +417,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               onProgress={() => openAchievements('progress')}
               onEditProfile={openProfileEdit}
               onAdmin={() => setCurrentGame('admin')}
+              onEscapeRoom={escapeOn ? () => setCurrentGame('escape') : null}
               onSignUp={onRequestSignup}
             />
           )}
@@ -553,6 +578,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       <AnimatePresence mode="wait">
         <motion.div
           key={currentGame}
+          // בחדר הבריחה התוכן מעל כוכבי הרקע (שלא יסתירו כפתורים)
+          style={currentGame === 'escape' ? { position: 'relative', zIndex: 2 } : undefined}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}

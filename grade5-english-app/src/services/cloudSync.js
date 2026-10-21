@@ -19,7 +19,8 @@ export const PROGRESS_KEYS = [
   'english_hasSeenWelcome',
   'english_lessonsSeen',
   'english_mistakes',
-  'english_resetBackup'
+  'english_resetBackup',
+  'english_escapeRooms'
 ];
 
 const OWNER_KEY = 'english_owner';         // ה-uid שהנתונים המקומיים שייכים לו

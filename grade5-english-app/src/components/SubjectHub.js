@@ -29,7 +29,7 @@ export const subjectReadiness = (subjectId, categoryStats = {}) => {
 const examDateText = (date) => `${date.getDate()}.${date.getMonth() + 1}`;
 
 // דף הבחירה: לאן הולכים היום - אנגלית או חשבון?
-const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject }) => {
+const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject, onEscapeRoom }) => {
   const g = (t) => getGenderText(t, userData?.gender);
 
   return (
@@ -119,6 +119,25 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
           );
         })}
       </div>
+
+      {onEscapeRoom && (
+        <motion.button
+          className="hub-escape"
+          onClick={onEscapeRoom}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          whileHover={{ y: -3 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <span className="hub-escape-icon" aria-hidden="true">🔐</span>
+          <span className="hub-escape-text">
+            <b>חדר בריחה עם חברים</b>
+            <span>פותרים יחד ופותחים את הכספת</span>
+          </span>
+          <span className="hub-escape-go" aria-hidden="true">←</span>
+        </motion.button>
+      )}
     </div>
   );
 };
