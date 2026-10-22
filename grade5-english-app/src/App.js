@@ -505,7 +505,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
 
                 {/* Exam Countdown */}
-                {currentGame !== 'hub' && (
+                {currentGame !== 'hub' && daysUntilExam >= 0 && (
 <Badge
                   fontSize="sm"
                   px={3}
@@ -589,7 +589,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
 
                 {/* Exam Countdown - Compact */}
-                {currentGame !== 'hub' && (
+                {currentGame !== 'hub' && daysUntilExam >= 0 && (
 <Badge
                   fontSize="sm"
                   px={3}

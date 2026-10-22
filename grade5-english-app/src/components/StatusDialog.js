@@ -108,14 +108,16 @@ const StatusDialog = ({ onClose, userData, categoryStats, subject = 'english' })
 
           {/* Time & Recommendation */}
           <div className="status-section time-section">
-            <div className="time-info">
-              <div className="status-icon">⏰</div>
-              <div>
-                <h4>זמן עד המבחן ב{subjectName}</h4>
-                <p className="time-value">{examCountdownText(daysUntilExam)}</p>
+            {daysUntilExam >= 0 && (
+              <div className="time-info">
+                <div className="status-icon">⏰</div>
+                <div>
+                  <h4>זמן עד המבחן ב{subjectName}</h4>
+                  <p className="time-value">{examCountdownText(daysUntilExam)}</p>
+                </div>
               </div>
-            </div>
-            {remainingToTarget > 0 && (
+            )}
+            {remainingToTarget > 0 && daysUntilExam > 0 && (
               <div className="recommendation-info">
                 <div className="status-icon">💡</div>
                 <div>

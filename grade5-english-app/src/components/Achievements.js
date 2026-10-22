@@ -458,15 +458,17 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
 
             {/* Exam Countdown & Recommendation */}
             <div className="exam-section">
-              <div className="exam-card">
-                <div className="exam-icon">⏰</div>
-                <div className="exam-content">
-                  <h4>זמן עד המבחן ב{subjectName}</h4>
-                  <div className="exam-days">{examCountdownText(daysUntilExam)}</div>
+              {daysUntilExam >= 0 && (
+                <div className="exam-card">
+                  <div className="exam-icon">⏰</div>
+                  <div className="exam-content">
+                    <h4>זמן עד המבחן ב{subjectName}</h4>
+                    <div className="exam-days">{examCountdownText(daysUntilExam)}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {remainingToTarget > 0 && (
+              {remainingToTarget > 0 && daysUntilExam > 0 && (
                 <div className="recommendation-card">
                   <div className="recommendation-icon">💡</div>
                   <div className="recommendation-content">

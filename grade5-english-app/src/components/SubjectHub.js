@@ -114,7 +114,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
               ) : (
                 <>
                   <span className="hub-meta">
-                    <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(s.examDate)}: <b>{examCountdownText(days)}</b></span>
+                    {days >= 0 && <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(s.examDate)}: <b>{examCountdownText(days)}</b></span>}
                     <span className="hub-pill">📚 {topics} נושאים</span>
                   </span>
 
