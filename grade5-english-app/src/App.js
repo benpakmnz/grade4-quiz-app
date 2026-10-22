@@ -19,6 +19,7 @@ import GuestReminderDialog from './components/GuestReminderDialog';
 import EscapeRoom, { EscapeRoomBoundary } from './components/EscapeRoom';
 import { readRoomParam, escapeRoomAvailable, readEscapeStats } from './data/escapeRoom';
 import EscapeHistoryDialog from './components/EscapeHistory';
+import FxLayer from './components/FxLayer';
 import { watchInvites } from './services/rooms';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
@@ -401,6 +402,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
       <BackgroundElements />
+      <FxLayer />
 
       {syncError && currentGame !== 'welcome' && (
         <div className="sync-error-banner">⚠️ {syncError}</div>
@@ -488,9 +490,24 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   gap={2}
                 >
                   <Text fontWeight="bold">נקודות:</Text>
-                  <Text fontWeight="bold" fontSize="lg">{score}</Text>
+                  <motion.span key={score} className="score-bump" initial={{ scale: 1.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                    <Text as="span" fontWeight="bold" fontSize="lg">{score}</Text>
+                  </motion.span>
                   <Text fontSize="lg">⭐</Text>
                 </Badge>
+                {streak >= 3 && (
+                  <motion.span
+                    key={`streak-${streak}`}
+                    className="streak-pill"
+                    dir="ltr"
+                    title="רצף תשובות נכונות"
+                    initial={{ scale: 1.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                  >
+                    🔥 {streak}
+                  </motion.span>
+                )}
                 {escapeStats.played > 0 && (
                   <button
                     className="key-badge"
@@ -572,9 +589,24 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   alignItems="center"
                   gap={2}
                 >
-                  <Text fontWeight="bold" fontSize="xl">{score}</Text>
+                  <motion.span key={score} className="score-bump" initial={{ scale: 1.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                    <Text as="span" fontWeight="bold" fontSize="xl">{score}</Text>
+                  </motion.span>
                   <Text fontSize="xl">⭐</Text>
                 </Badge>
+                {streak >= 3 && (
+                  <motion.span
+                    key={`streak-${streak}`}
+                    className="streak-pill"
+                    dir="ltr"
+                    title="רצף תשובות נכונות"
+                    initial={{ scale: 1.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                  >
+                    🔥 {streak}
+                  </motion.span>
+                )}
                 {escapeStats.played > 0 && (
                   <button
                     className="key-badge"

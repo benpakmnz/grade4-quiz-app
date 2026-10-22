@@ -15,6 +15,7 @@ import {
 import { logMistake } from '../utils/mistakes';
 import { saveTeamCard } from '../utils/teamCard';
 import { getGenderText } from '../utils/genderText';
+import { fxCorrect, fxWrong } from '../utils/fx';
 import MathText from './MathText';
 import MathVisual from './MathVisual';
 import SpeakButton from './SpeakButton';
@@ -406,6 +407,8 @@ const EscapeRoom = ({
     if (given === null || String(given).trim() === '') return;
     const ok = checkRoomAnswer(question, given);
     setResult(ok ? 'right' : 'wrong');
+    if (ok) fxCorrect();
+    else fxWrong();
     onAnswer(question.from || question.topic, ok);
     if (!ok) {
       logMistake({

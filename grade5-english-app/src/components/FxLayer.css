@@ -1,0 +1,45 @@
+.fx-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 99990;
+  overflow: hidden;
+}
+
+.fx-burst {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  width: 0;
+  height: 0;
+}
+
+.fx-spark,
+.fx-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.fx-spark {
+  font-size: 1.6rem;
+  margin: -0.8rem 0 0 -0.8rem;
+}
+
+.fx-dot {
+  border-radius: 3px;
+}
+
+.fx-points {
+  position: absolute;
+  top: -20px;
+  left: -80px;
+  width: 160px;
+  text-align: center;
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fde047;
+  text-shadow: 0 3px 0 #92400e, 0 0 18px rgba(253, 224, 71, 0.8);
+  white-space: nowrap;
+}
+
