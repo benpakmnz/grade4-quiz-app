@@ -1435,3 +1435,29 @@
 .er-invite-actions button {
   flex: 1;
 }
+
+.er-explain {
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: white;
+  border: 2px solid #c7d2fe;
+  color: #1e1b4b;
+  line-height: 1.5;
+  text-align: right;
+}
+
+.er-explain-answer {
+  font-weight: 700;
+  color: #047857;
+}
+
+.er-explain-answer b {
+  font-size: 1.1rem;
+}
+
+.er-explain p {
+  margin: 6px 0 0;
+  font-size: 0.92rem;
+  color: #334155;
+  overflow-wrap: anywhere;
+}

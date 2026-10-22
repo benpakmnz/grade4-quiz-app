@@ -14,6 +14,7 @@ import {
 } from '../services/rooms';
 import { logMistake } from '../utils/mistakes';
 import { saveTeamCard } from '../utils/teamCard';
+import { getGenderText } from '../utils/genderText';
 import MathText from './MathText';
 import MathVisual from './MathVisual';
 import SpeakButton from './SpeakButton';
@@ -92,13 +93,13 @@ const copy = async (text) => {
 };
 
 // ---------------- שאלה ----------------
-const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, locked, result }) => {
+const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, locked, result, gender }) => {
   const isMath = question.subject === 'math';
   const options = (question.options || []).filter(o => !removed.includes(o));
   return (
     <div className="er-question">
       <div className="er-chip">{topicName(question.from || question.topic)}</div>
-      <div className="er-prompt">{isMath ? <MathText text={question.prompt} /> : question.prompt}</div>
+      <div className="er-prompt">{isMath ? <MathText text={getGenderText(question.prompt, gender)} /> : getGenderText(question.prompt, gender)}</div>
       {question.passage && (
         <div className="er-passage" dir="ltr">
           <b>{question.passage.title}</b>
@@ -108,7 +109,9 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
       {question.emoji && <div className="er-emoji">{question.emoji}</div>}
       {question.english && (
         <div className="er-english" dir="ltr">
-          {question.english}
+          {result === 'wrong' && question.kind === 'mc' && question.english.includes('____')
+            ? question.english.replace('____', question.answer)
+            : question.english}
           {!question.passage && <SpeakButton text={question.english} small />}
         </div>
       )}
@@ -119,7 +122,8 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
         <div className={`er-options ${question.optionVisuals ? 'visual' : ''} ${options.some(o => String(o).length > 18) ? 'long' : ''}`}>
           {options.map(o => {
             const sel = picked === o;
-            const state = result && sel ? (result === 'right' ? 'right' : 'wrong') : sel ? 'picked' : '';
+            // אחרי טעות: התשובה הנכונה מסומנת בירוק (ומה שנבחר - באדום)
+            const state = result && sel ? (result === 'right' ? 'right' : 'wrong') : result === 'wrong' && o === question.answer ? 'right' : sel ? 'picked' : '';
             return (
               <button
                 key={o}
@@ -927,6 +931,7 @@ const EscapeRoom = ({
           setInput={setInput}
           locked={Boolean(result)}
           result={result}
+          gender={userData?.gender}
         />
         {hint?.text && <div className="er-hint">💡 רמז: {hint.text} אף אחד בצוות לא רואה מי לקח רמז.</div>}
       </div>
@@ -941,7 +946,23 @@ const EscapeRoom = ({
       )}
       {result === 'wrong' && (
         <div className="er-feedback wrong">
-          <span>כמעט! 💪 {support ? 'הנה עוד שאלת בונוס.' : 'הנה עוד שאלה מאותו נושא.'}</span>
+          <div className="er-explain">
+            <div className="er-explain-answer">
+              ✅ התשובה הנכונה:{' '}
+              <b dir="auto">
+                {question.subject === 'math'
+                  ? <MathText text={`${question.answer}${question.unit ? ` ${question.unit}` : ''}`} />
+                  : question.answer}
+              </b>
+            </div>
+            {String(question.explanation || (question.passage ? 'אפשר למצוא את התשובה בקטע 📖 כדאי לקרוא שוב את המשפט שמדבר על זה.' : ''))
+              .split('\n')
+              .filter(Boolean)
+              .map((line, i) => (
+                <p key={i}>{question.subject === 'math' ? <MathText text={line} /> : line}</p>
+              ))}
+          </div>
+          <span>💪 {support ? 'עכשיו עוד שאלת בונוס.' : 'עכשיו עוד שאלה מאותו נושא - הפעם תצליחו!'}</span>
           <button className="er-cta" onClick={afterResult}>לשאלה הבאה</button>
         </div>
       )}
