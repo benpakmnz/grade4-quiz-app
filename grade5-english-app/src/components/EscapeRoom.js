@@ -341,7 +341,9 @@ const EscapeRoom = ({
   });
 
   // ---------------- משחק: הסט האישי ----------------
-  const [progress, setProgress] = useState(null); // { topics, done, inserted }
+  // { code, topics, done, inserted } - שייך לחדר אחד בלבד. התקדמות של חדר אחר לא נחשבת (גם לא לרגע, במעבר בין חדרים)
+  const [progressState, setProgress] = useState(null);
+  const progress = progressState && progressState.code === code ? progressState : null;
   const [question, setQuestion] = useState(null);
   const [picked, setPicked] = useState(null);
   const [input, setInput] = useState('');
@@ -356,14 +358,14 @@ const EscapeRoom = ({
   useEffect(() => {
     if (!playing || progress) return;
     const saved = readRoomProgress(code);
-    const p = saved && Array.isArray(saved.topics)
-      ? saved
-      : { topics: pickTopics(meta.subject, categoryStats, TASKS_PER_KID), done: 0, inserted: false };
+    const p = saved && Array.isArray(saved.topics) && (saved.code === undefined || saved.code === code)
+      ? { ...saved, code }
+      : { code, topics: pickTopics(meta.subject, categoryStats, TASKS_PER_KID), done: 0, inserted: false };
     setProgress(p);
   }, [playing, progress, code, meta?.subject, categoryStats]);
 
   useEffect(() => {
-    if (code && progress) saveRoomProgress(code, progress);
+    if (code && progress && progress.code === code) saveRoomProgress(code, progress);
   }, [code, progress]);
 
   const allDone = progress && progress.done >= progress.topics.length;
@@ -460,6 +462,24 @@ const EscapeRoom = ({
   // ---------------- סיום: הפרס נרשם פעם אחת ----------------
   const [endStats, setEndStats] = useState(null);
   const [celebrate, setCelebrate] = useState(false);
+
+  // מעבר לחדר אחר (אתגר חדש / סיבוב נוסף / הזמנה): מתחילים את הסט האישי מאפס.
+  // בלי זה ההתקדמות מהאתגר הקודם נשארת, והילד/ה נראה/ית כאילו כבר סיים/ה - בלי שאלות
+  useEffect(() => {
+    setProgress(null);
+    setQuestion(null);
+    setPicked(null);
+    setInput('');
+    setResult(null);
+    setHint(null);
+    setSupport(false);
+    setSentCheer(false);
+    setToast(null);
+    setEndStats(null);
+    setCelebrate(false);
+    setImageState(null);
+    setCopied(null);
+  }, [code]);
   useEffect(() => {
     if (!ended || !me || me.st !== 'in' || !assign) return;
     const roomId = `${code}-${meta.startedAt}`;
