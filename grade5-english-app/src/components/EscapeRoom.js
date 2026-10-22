@@ -449,10 +449,10 @@ const EscapeRoom = ({
   if (!uid) {
     return (
       <div className="escape-room">
-        {header('חדר בריחה', onExit)}
+        {header('אתגר מפצחי הכספות', onExit)}
         <div className="er-hero">
           <div className="er-hero-icon"><LockIcon /></div>
-          <h1>חדר בריחה עם חברים</h1>
+          <h1>אתגר מפצחי הכספות</h1>
           <p>כדי לשחק יחד צריך להתחבר עם חשבון, כך שהחברים יוכלו להצטרף לחדר שלכם.</p>
         </div>
         {onSignUp && <button className="er-cta" onClick={onSignUp}>הרשמה / התחברות ✨</button>}
@@ -464,16 +464,16 @@ const EscapeRoom = ({
   if (!code) {
     return (
       <div className="escape-room">
-        {header('חדר בריחה', onExit)}
+        {header('אתגר מפצחי הכספות', onExit)}
         <div className="er-hero">
           <div className="er-hero-icon"><LockIcon /></div>
-          <h1>פותחים חדר חדש</h1>
+          <h1>פותחים אתגר חדש</h1>
           <p>פותרים יחד, פותחים את הכספת יחד</p>
         </div>
 
         <div className="er-card">
           <label className="er-label" htmlFor="er-team">שם הצוות</label>
-          <input id="er-team" className="er-text" value={team} maxLength={40} onChange={(e) => setTeam(e.target.value)} placeholder="למשל: מפצחי הכספות" />
+          <input id="er-team" className="er-text" value={team} maxLength={40} onChange={(e) => setTeam(e.target.value)} placeholder="למשל: הנמרים של ה'2" />
 
           {subjects.length > 1 && (
             <>
@@ -498,7 +498,7 @@ const EscapeRoom = ({
           </div>
 
           <div className="er-note">🔗 אחרי הפתיחה תקבלו קוד וקישור לשלוח לחברים. כל מי שמצטרף מחכה לאישור שלכם.</div>
-          <button className="er-cta" disabled={busy} onClick={handleCreate}>{busy ? 'פותחים...' : 'פתיחת החדר 🚀'}</button>
+          <button className="er-cta" disabled={busy} onClick={handleCreate}>{busy ? 'פותחים...' : 'פתיחת האתגר 🚀'}</button>
         </div>
 
         <div className="er-card">
@@ -525,7 +525,7 @@ const EscapeRoom = ({
   if (meta === undefined) {
     return (
       <div className="escape-room">
-        {header('חדר בריחה', leaveToMenu)}
+        {header('אתגר מפצחי הכספות', leaveToMenu)}
         <div className="er-center"><div className="spinner">🔐</div>{error || 'נכנסים לחדר...'}</div>
       </div>
     );
@@ -534,7 +534,7 @@ const EscapeRoom = ({
   if (meta === null) {
     return (
       <div className="escape-room">
-        {header('חדר בריחה', leaveToMenu)}
+        {header('אתגר מפצחי הכספות', leaveToMenu)}
         <div className="er-card er-center-card">
           <h2>לא מצאנו חדר עם הקוד הזה 🤔</h2>
           <p>בדקו את הקוד עם מי שפתח/ה את החדר.</p>
@@ -580,11 +580,11 @@ const EscapeRoom = ({
     if (me.st === 'out') {
       return (
         <div className="escape-room">
-          {header('חדר בריחה', leaveToMenu)}
+          {header('אתגר מפצחי הכספות', leaveToMenu)}
           <div className="er-card er-center-card">
             <h2>הפעם זה לא הסתדר</h2>
-            <p>אפשר לפתוח חדר משלכם ולהזמין חברים 🙂</p>
-            <button className="er-cta" onClick={leaveToMenu}>לפתיחת חדר</button>
+            <p>אפשר לפתוח אתגר משלכם ולהזמין חברים 🙂</p>
+            <button className="er-cta" onClick={leaveToMenu}>לפתיחת אתגר</button>
           </div>
         </div>
       );
@@ -617,7 +617,7 @@ const EscapeRoom = ({
       );
     }
     const link = roomLink(code);
-    const invite = `🔐 בואו לחדר בריחה "${meta.team}"! הקוד: ${code}\n${link}`;
+    const invite = `🔐 בואו לאתגר מפצחי הכספות עם הצוות "${meta.team}"! הקוד: ${code}\n${link}`;
     return (
       <div className="escape-room">
         {header('חדר המתנה', leaveToMenu)}
@@ -660,11 +660,11 @@ const EscapeRoom = ({
   if (!me || me.st !== 'in' || !assign) {
     return (
       <div className="escape-room">
-        {header('חדר בריחה', leaveToMenu)}
+        {header('אתגר מפצחי הכספות', leaveToMenu)}
         <div className="er-card er-center-card">
           <h2>החדר הזה כבר התחיל 🔒</h2>
-          <p>אפשר לפתוח חדר חדש ולהזמין חברים.</p>
-          <button className="er-cta" onClick={leaveToMenu}>לפתיחת חדר</button>
+          <p>אפשר לפתוח אתגר חדש ולהזמין חברים.</p>
+          <button className="er-cta" onClick={leaveToMenu}>לפתיחת אתגר</button>
         </div>
       </div>
     );
@@ -707,8 +707,8 @@ const EscapeRoom = ({
         <div className="er-trophy-strip">
           <span className="er-trophy-face" aria-hidden="true">🏆</span>
           <span className="er-trophy-text">
-            <b>גביע חדר בריחה</b>
-            <span>{opened ? `זה חדר הבריחה ה-${played} שלכם` : 'השתתפתם בחדר בריחה - זה מה שקובע!'}</span>
+            <b>גביע מפצחי הכספות</b>
+            <span>{opened ? `זה האתגר ה-${played} שלכם` : 'השתתפתם באתגר - זה מה שקובע!'}</span>
           </span>
           <span className="er-trophy-count" dir="ltr">×{played}</span>
         </div>
@@ -739,7 +739,7 @@ const EscapeRoom = ({
         <div className="er-choices two">
           {isHost && !meta.next && <button className="er-ghost" disabled={busy} onClick={handleNextRound}>🔄 עוד סיבוב</button>}
           {!isHost && meta.next && <button className="er-ghost" disabled={busy} onClick={joinNextRound}>🔄 לסיבוב החדש</button>}
-          {!isHost && !meta.next && <button className="er-ghost" onClick={leaveToMenu}>חדר חדש</button>}
+          {!isHost && !meta.next && <button className="er-ghost" onClick={leaveToMenu}>אתגר חדש</button>}
           {isHost && meta.next && <button className="er-ghost" onClick={() => setCode(meta.next)}>🔄 לסיבוב החדש</button>}
           <button className="er-ghost" onClick={exit}>חזרה לאפליקציה</button>
         </div>

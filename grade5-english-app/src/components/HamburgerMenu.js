@@ -113,7 +113,7 @@ const HamburgerMenu = ({
               {onEscapeRoom && (
                 <div className="hm-section">
                   <div className="hm-title">עם חברים</div>
-                  <Item icon="🔐" label="חדר בריחה" hint="פותרים יחד ופותחים את הכספת" onClick={run(onEscapeRoom)} />
+                  <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" onClick={run(onEscapeRoom)} />
                 </div>
               )}
 

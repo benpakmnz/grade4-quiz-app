@@ -132,8 +132,8 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
         >
           <span className="hub-escape-icon" aria-hidden="true">🔐</span>
           <span className="hub-escape-text">
-            <b>חדר בריחה עם חברים</b>
-            <span>פותרים יחד ופותחים את הכספת</span>
+            <b>אתגר מפצחי הכספות</b>
+            <span>עם חברים: פותרים יחד ופותחים את הכספת</span>
           </span>
           <span className="hub-escape-go" aria-hidden="true">←</span>
         </motion.button>

@@ -17,14 +17,14 @@ const EscapeTrophies = () => {
   const next = nextTier(stats.played);
   return (
     <div className="escape-trophies">
-      <h3>🔐 חדרי בריחה</h3>
+      <h3>🔐 אתגר מפצחי הכספות</h3>
       <div className="et-main">
         <div className={`et-cup ${stats.played ? '' : 'empty'}`} aria-hidden="true">
           🏆
           {stats.played > 0 && <span className="et-count">{stats.played}</span>}
         </div>
         <div className="et-text">
-          <b>{stats.played ? stats.played === 1 ? 'השתתפת בחדר בריחה אחד' : `השתתפת ב-${stats.played} חדרי בריחה` : 'עוד לא השתתפת בחדר בריחה'}</b>
+          <b>{stats.played ? stats.played === 1 ? 'השתתפת באתגר אחד' : `השתתפת ב-${stats.played} אתגרים` : 'עוד לא השתתפת באתגר'}</b>
           {stats.played > 0 && <span>🔓 {stats.opened} כספות נפתחו · 💡 {stats.hints} רמזים נתת לקופה</span>}
         </div>
       </div>
@@ -36,7 +36,7 @@ const EscapeTrophies = () => {
           </div>
         ))}
       </div>
-      {next && <div className="et-next">{stats.played ? `עוד ${next.at - stats.played} ל${next.name === 'ארד' ? 'גביע הארד' : `גביע ה${next.name}`}` : 'פותחים חדר מהתפריט ☰ ומזמינים חברים'}</div>}
+      {next && <div className="et-next">{stats.played ? `עוד ${next.at - stats.played} ל${next.name === 'ארד' ? 'גביע הארד' : `גביע ה${next.name}`}` : 'פותחים אתגר מהתפריט ☰ ומזמינים חברים'}</div>}
     </div>
   );
 };

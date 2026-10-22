@@ -28,7 +28,7 @@ const roundRect = (ctx, x, y, w, h, r) => {
 };
 
 export const cardLines = ({ team, subjectLabel, opened, filled, total, seconds }) => ({
-  chip: `חדר בריחה · ${subjectLabel}`,
+  chip: `אתגר מפצחי הכספות · ${subjectLabel}`,
   title: team,
   result: opened
     ? `פתחו את הכספת${seconds != null ? ` ב-${formatClock(seconds * 1000)} דקות` : ''}!`
