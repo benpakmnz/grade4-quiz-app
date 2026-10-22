@@ -1064,3 +1064,8 @@
   font-size: 0.85rem;
   color: #92400e;
 }
+
+.er-choices .er-cta {
+  font-size: 1rem;
+  padding: 0 8px;
+}

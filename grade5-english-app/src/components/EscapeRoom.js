@@ -12,6 +12,7 @@ import {
   changeBank, sendCheer, linkNextRound, watch, watchServerOffset
 } from '../services/rooms';
 import { logMistake } from '../utils/mistakes';
+import { saveTeamCard } from '../utils/teamCard';
 import MathText from './MathText';
 import MathVisual from './MathVisual';
 import SpeakButton from './SpeakButton';
@@ -166,6 +167,7 @@ const EscapeRoom = ({
   const [minutes, setMinutes] = useState(15);
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(null);
+  const [imageState, setImageState] = useState(null); // 'saving' | 'shared' | 'downloaded' | 'failed'
 
   const serverNow = now + offset;
 
@@ -711,7 +713,29 @@ const EscapeRoom = ({
           <span className="er-trophy-count" dir="ltr">×{played}</span>
         </div>
 
-        <button className="er-cta" onClick={() => shareOrWhatsApp(text)}>📤 שיתוף כרטיס הצוות</button>
+        <div className="er-choices two">
+          <button className="er-cta" onClick={() => shareOrWhatsApp(text)}>📤 שליחת הודעה</button>
+          <button
+            className="er-cta"
+            disabled={imageState === 'saving'}
+            onClick={async () => {
+              setImageState('saving');
+              setImageState(await saveTeamCard({
+                team: meta.team,
+                subjectLabel: `${SUBJECTS[meta.subject]?.emoji || ''} ${SUBJECTS[meta.subject]?.name || ''}`.trim(),
+                opened,
+                filled,
+                total: slots,
+                seconds,
+                emojis: teamList.map(([, m]) => m.emoji),
+                link: window.location.origin
+              }));
+            }}
+          >
+            {imageState === 'saving' ? 'מכינים...' : imageState === 'downloaded' ? 'נשמר ✓' : '🖼️ שמירת תמונה'}
+          </button>
+        </div>
+        {imageState === 'failed' && <div className="er-error">לא הצלחנו ליצור את התמונה במכשיר הזה. אפשר לשלוח את ההודעה במקום.</div>}
         <div className="er-choices two">
           {isHost && !meta.next && <button className="er-ghost" disabled={busy} onClick={handleNextRound}>🔄 עוד סיבוב</button>}
           {!isHost && meta.next && <button className="er-ghost" disabled={busy} onClick={joinNextRound}>🔄 לסיבוב החדש</button>}
@@ -719,7 +743,7 @@ const EscapeRoom = ({
           {isHost && meta.next && <button className="er-ghost" onClick={() => setCode(meta.next)}>🔄 לסיבוב החדש</button>}
           <button className="er-ghost" onClick={exit}>חזרה לאפליקציה</button>
         </div>
-        <p className="er-share-note">🛡️ בהודעת השיתוף מופיעים רק שם הצוות והתוצאה - בלי שמות של ילדים ובלי ציונים.</p>
+        <p className="er-share-note">🛡️ בהודעה ובתמונה מופיעים רק שם הצוות, הדמויות והתוצאה - בלי שמות של ילדים ובלי ציונים.</p>
       </div>
     );
   }
