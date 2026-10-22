@@ -864,6 +864,33 @@
   font-weight: 800;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px 8px 10px;
+}
+
+.er-toast-face {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e0e7ff;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.er-toast-body {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  text-align: right;
+}
+
+.er-toast-body b {
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
 /* ---------- סיום ---------- */
@@ -1068,4 +1095,286 @@
 .er-choices .er-cta {
   font-size: 1rem;
   padding: 0 8px;
+}
+
+/* ---------- רשימת האתגרים שבוצעו ---------- */
+.ch-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: right;
+}
+
+.ch-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #f5f7ff;
+  border: 2px solid #e0e7ff;
+  color: #1e1b4b;
+}
+
+.ch-item.opened {
+  background: #fffbeb;
+  border-color: #fde68a;
+}
+
+.ch-icon {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: white;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.ch-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ch-top b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ch-meta {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+.ch-result {
+  font-size: 0.9rem;
+  color: #475569;
+}
+
+.ch-team {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  font-size: 1.25rem;
+}
+
+.ch-list.compact .ch-item {
+  padding: 8px 10px;
+  gap: 10px;
+  border-radius: 14px;
+}
+
+.ch-list.compact .ch-icon {
+  width: 34px;
+  height: 34px;
+  font-size: 1.1rem;
+}
+
+.ch-list.compact .ch-top b { font-size: 0.9rem; }
+.ch-list.compact .ch-result { font-size: 0.8rem; }
+.ch-list.compact .ch-team { font-size: 1rem; }
+
+.ch-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(15, 10, 46, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.ch-dialog {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 86vh;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px 16px 16px;
+  border-radius: 26px;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  direction: rtl;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+}
+
+.ch-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: #f1f5f9;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.ch-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  color: #1e1b4b;
+}
+
+.ch-head h2 {
+  margin: 4px 0 0;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.ch-head p {
+  margin: 0;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.ch-key {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+  font-size: 2.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-key i,
+.key-badge i {
+  position: absolute;
+  bottom: -4px;
+  left: -4px;
+  min-width: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  padding: 0 6px;
+  border-radius: 13px;
+  background: #4338ca;
+  color: white;
+  border: 2px solid white;
+  font-style: normal;
+  font-size: 0.8rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ch-empty {
+  margin: 0;
+  text-align: center;
+  color: #64748b;
+}
+
+/* המפתח בכותרת של האפליקציה */
+.key-badge {
+  position: relative;
+  width: 44px;
+  height: 40px;
+  border: 0;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #fde047, #f59e0b);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  font-size: 1.3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.key-badge i {
+  bottom: -6px;
+  left: -8px;
+  min-width: 22px;
+  height: 22px;
+  font-size: 0.72rem;
+}
+
+/* ---------- דף הכניסה לאתגר ---------- */
+.er-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.er-intro-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.er-intro-num {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #eef2ff;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.er-intro-step b {
+  display: block;
+  font-size: 1rem;
+}
+
+.er-intro-step span {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #475569;
+}
+
+.er-next-title {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 900;
+  color: white;
+  text-align: center;
+  text-shadow: 0 3px 10px rgba(0, 0, 0, 0.25);
+}
+
+.er-link {
+  align-self: center;
+  border: 0;
+  background: none;
+  color: #4338ca;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 6px;
+}
+
+.er-link.light {
+  color: white;
 }

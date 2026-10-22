@@ -4,7 +4,7 @@
 //   assign  - לכל ילד/ה: המשבצת והספרה שלו/ה בקוד. רק הילד/ה עצמו/ה יכול/ה לקרוא - כך אף אחד לא יודע מי הכניס מה
 //   lock    - הספרות שכבר נכנסו למנעול (בלי שם)
 //   bank    - קופת הרמזים המשותפת
-//   cheers  - מדבקות עידוד (בלי שם השולח)
+//   cheers  - מדבקות עידוד (עם השולח/ת - הכללים מוודאים שזה באמת הוא/היא)
 import { ref, get, set, update, onValue, runTransaction, push, serverTimestamp } from 'firebase/database';
 import { db } from './firebase';
 import { DB_ROOT } from './env';
@@ -98,7 +98,7 @@ export const changeBank = async (code, delta) => {
   return result.committed;
 };
 
-export const sendCheer = (code, cheerId) => push(r(code, 'cheers'), { s: cheerId, t: serverTimestamp() });
+export const sendCheer = (code, uid, cheerId) => push(r(code, 'cheers'), { s: cheerId, u: uid, t: serverTimestamp() });
 
 /** סיבוב נוסף: המארח/ת פותח/ת חדר חדש, ובחדר הישן נשמר הקוד שלו כדי שכולם יוכלו לעבור */
 export const linkNextRound = (oldCode, newCode) => update(r(oldCode, 'meta'), { next: newCode });

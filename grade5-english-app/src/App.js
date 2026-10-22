@@ -17,7 +17,8 @@ import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import GuestReminderDialog from './components/GuestReminderDialog';
 import EscapeRoom from './components/EscapeRoom';
-import { readRoomParam, escapeRoomAvailable } from './data/escapeRoom';
+import { readRoomParam, escapeRoomAvailable, readEscapeStats } from './data/escapeRoom';
+import EscapeHistoryDialog from './components/EscapeHistory';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
@@ -68,6 +69,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const escapeOn = escapeRoomAvailable(isAdmin) || Boolean(roomInvite);
   const startPage = roomInvite ? 'escape' : hasHub ? 'hub' : 'home';
   const homePage = hasHub ? 'hub' : 'home';
+  // מפתח בכותרת: כמה אתגרים בוצעו, ולחיצה פותחת את הרשימה
+  const [escapeStats, setEscapeStats] = useState(() => readEscapeStats());
+  const [showChallenges, setShowChallenges] = useState(false);
   const [lastSubject] = useState(() => {
     try {
       return localStorage.getItem('english_subject');
@@ -180,6 +184,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // כל מעבר מסך מתחיל מראש העמוד (אחרת בטלפון נשארים גלולים באמצע, למשל אחרי מסך הפתיחה)
   useEffect(() => {
     window.scrollTo(0, 0);
+    setEscapeStats(readEscapeStats()); // אחרי סנכרון מהענן או אתגר שהסתיים
   }, [currentGame]);
 
   // Save data to localStorage whenever it changes (but not on initial load)
@@ -335,6 +340,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           onAnswer={(topic, ok) => updateCategoryStats(topic, ok)}
           onReward={(points) => setScore(s => s + points)}
           onSignUp={onRequestSignup}
+          onFinished={() => setEscapeStats(readEscapeStats())}
         />
       );
     }
@@ -472,6 +478,16 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   <Text fontWeight="bold" fontSize="lg">{score}</Text>
                   <Text fontSize="lg">⭐</Text>
                 </Badge>
+                {escapeStats.played > 0 && (
+                  <button
+                    className="key-badge"
+                    onClick={() => setShowChallenges(true)}
+                    aria-label={`האתגרים שלי: ${escapeStats.played}`}
+                    title="האתגרים שלי"
+                  >
+                    🗝️<i>{escapeStats.played}</i>
+                  </button>
+                )}
   
 
 
@@ -546,6 +562,16 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   <Text fontWeight="bold" fontSize="xl">{score}</Text>
                   <Text fontSize="xl">⭐</Text>
                 </Badge>
+                {escapeStats.played > 0 && (
+                  <button
+                    className="key-badge"
+                    onClick={() => setShowChallenges(true)}
+                    aria-label={`האתגרים שלי: ${escapeStats.played}`}
+                    title="האתגרים שלי"
+                  >
+                    🗝️<i>{escapeStats.played}</i>
+                  </button>
+                )}
   
 
 
@@ -633,6 +659,17 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           />
         </AnimatePresence>
       )}
+
+      {/* האתגרים שבוצעו (מהמפתח בכותרת) */}
+      <AnimatePresence>
+        {showChallenges && (
+          <EscapeHistoryDialog
+            stats={escapeStats}
+            onClose={() => setShowChallenges(false)}
+            onNew={escapeOn ? () => { setShowChallenges(false); setCurrentGame('escape'); } : null}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Status Dialog - On App Reload */}
       {showStatusDialog && userData && (

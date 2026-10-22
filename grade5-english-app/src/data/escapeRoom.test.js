@@ -115,6 +115,21 @@ describe('trophy counter', () => {
     expect(JSON.parse(localStorage.getItem(ESCAPE_KEY)).played).toBe(2);
   });
 
+  test('history keeps the team, friends and time - newest first', () => {
+    recordRoomResult('333333-1', true, { team: 'מפצחי הכספות', subject: 'math', filled: 3, total: 3, seconds: 412, emojis: ['🦄', '🦁', '🐬'] }, 1000);
+    recordRoomResult('444444-1', false, { team: 'הנמרים', subject: 'english', filled: 2, total: 4, seconds: null, emojis: ['🐼'] }, 2000);
+    const { history } = readEscapeStats();
+    expect(history.map(h => h.team)).toEqual(['הנמרים', 'מפצחי הכספות']);
+    expect(history[1]).toMatchObject({ opened: true, subject: 'math', seconds: 412, emojis: ['🦄', '🦁', '🐬'], at: 1000 });
+    expect(history[0]).toMatchObject({ opened: false, filled: 2, total: 4, seconds: null });
+  });
+
+  test('old saved stats without history still work', () => {
+    localStorage.setItem(ESCAPE_KEY, JSON.stringify({ played: 2, opened: 1, hints: 0, rooms: ['a', 'b'] }));
+    expect(readEscapeStats().history).toEqual([]);
+    expect(recordRoomResult('c', true, { team: 'x' }).history).toHaveLength(1);
+  });
+
   test('tiers: bronze at 1, silver at 5, gold at 10', () => {
     expect(currentTier(0)).toBeNull();
     expect(currentTier(1).id).toBe('bronze');

@@ -137,12 +137,15 @@ export const TROPHY_TIERS = [
   { id: 'gold', emoji: '🥇', name: 'זהב', at: 10 }
 ];
 
-const EMPTY = { played: 0, opened: 0, hints: 0, rooms: [] };
+const EMPTY = { played: 0, opened: 0, hints: 0, rooms: [], history: [] };
+export const HISTORY_LIMIT = 40;
 
 export const readEscapeStats = () => {
   try {
     const data = JSON.parse(localStorage.getItem(ESCAPE_KEY) || 'null');
-    return data && typeof data === 'object' ? { ...EMPTY, ...data, rooms: Array.isArray(data.rooms) ? data.rooms : [] } : { ...EMPTY };
+    return data && typeof data === 'object'
+      ? { ...EMPTY, ...data, rooms: Array.isArray(data.rooms) ? data.rooms : [], history: Array.isArray(data.history) ? data.history : [] }
+      : { ...EMPTY };
   } catch {
     return { ...EMPTY };
   }
@@ -157,15 +160,30 @@ const writeEscapeStats = (stats) => {
   }
 };
 
-/** סיום חדר: נספר פעם אחת בלבד לכל חדר (גם אם המסך נפתח שוב). מחזיר את המונה החדש, או null אם כבר נספר */
-export const recordRoomResult = (roomId, opened) => {
+/**
+ * סיום חדר: נספר פעם אחת בלבד לכל חדר (גם אם המסך נפתח שוב). מחזיר את המונה החדש, או null אם כבר נספר.
+ * details - לרשימת האתגרים: שם הצוות, מקצוע, הדמויות של החברים, כמה מנעולים וכמה זמן לקח
+ */
+export const recordRoomResult = (roomId, opened, details = {}, now = Date.now()) => {
   const stats = readEscapeStats();
   if (stats.rooms.includes(roomId)) return null;
+  const entry = {
+    id: roomId,
+    at: now,
+    opened: Boolean(opened),
+    team: String(details.team || '').slice(0, 40),
+    subject: details.subject === 'math' ? 'math' : 'english',
+    filled: Number(details.filled) || 0,
+    total: Number(details.total) || 0,
+    seconds: Number.isFinite(details.seconds) ? details.seconds : null,
+    emojis: (details.emojis || []).slice(0, 12).map(e => String(e).slice(0, 16))
+  };
   const next = {
     ...stats,
     played: stats.played + 1,
     opened: stats.opened + (opened ? 1 : 0),
-    rooms: [roomId, ...stats.rooms].slice(0, 30)
+    rooms: [roomId, ...stats.rooms].slice(0, 30),
+    history: [entry, ...stats.history].slice(0, HISTORY_LIMIT)
   };
   writeEscapeStats(next);
   return next;

@@ -16,6 +16,8 @@ import { saveTeamCard } from '../utils/teamCard';
 import MathText from './MathText';
 import MathVisual from './MathVisual';
 import SpeakButton from './SpeakButton';
+import VaultCelebration from './VaultCelebration';
+import { ChallengeList } from './EscapeHistory';
 import './EscapeRoom.css';
 
 const LockIcon = ({ size = 52, open = false }) => (
@@ -54,6 +56,14 @@ const Vault = ({ slots, lock, compact }) => (
     })}
   </div>
 );
+
+// ההסבר בדף הכניסה
+const INTRO_STEPS = [
+  { icon: '🔑', title: 'פותחים חדר ומזמינים חברים', text: 'בוחרים שם לצוות, מקצוע וזמן, ושולחים לחברים קוד או קישור.' },
+  { icon: '🧩', title: 'כל אחד פותר 5 משימות', text: 'שאלה מכל נושא, ברמה שלך. ההתקדמות האישית גלויה רק לך.' },
+  { icon: '🔓', title: 'מכניסים ספרה לכספת', text: 'מי שמסיים מקבל ספרה מהקוד. כשכל הספרות בפנים - הכספת נפתחת!' },
+  { icon: '🤝', title: 'עוזרים אחד לשני', text: 'מי שסיים ממלא את קופת הרמזים ושולח עידוד. בלי תחרות - מנצחים יחד.' }
+];
 
 const shareOrWhatsApp = async (text) => {
   try {
@@ -146,7 +156,7 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
 // ---------------- מסך ראשי ----------------
 const EscapeRoom = ({
   authUser, userData, categoryStats, subjects, defaultSubject, initialCode,
-  onExit, onAnswer, onReward, onSignUp
+  onExit, onAnswer, onReward, onSignUp, onFinished
 }) => {
   const uid = authUser?.uid;
   const [code, setCode] = useState(() => initialCode || readActiveRoom());
@@ -167,6 +177,8 @@ const EscapeRoom = ({
   const [minutes, setMinutes] = useState(15);
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(null);
+  const [showForm, setShowForm] = useState(false); // דף הכניסה ← טופס פתיחת אתגר
+  const [showHow, setShowHow] = useState(false);
   const [imageState, setImageState] = useState(null); // 'saving' | 'shared' | 'downloaded' | 'failed'
 
   const serverNow = now + offset;
@@ -221,6 +233,7 @@ const EscapeRoom = ({
 
   const leaveToMenu = useCallback(() => {
     saveActiveRoom(null);
+    setShowForm(false);
     setCode(null);
     setMeta(undefined);
     setMembers({});
@@ -401,7 +414,7 @@ const EscapeRoom = ({
   });
 
   const cheerUp = (id) => {
-    sendCheer(code, id).catch(() => {});
+    sendCheer(code, uid, id).catch(() => {});
     setSentCheer(true);
     setTimeout(() => setSentCheer(false), 2500);
   };
@@ -410,18 +423,41 @@ const EscapeRoom = ({
   useEffect(() => {
     if (!cheer || !cheer.t || serverNow - cheer.t > 6000) return undefined;
     const text = CHEERS.find(c => c.id === cheer.s)?.text;
-    if (!text) return undefined;
-    setToast(text);
+    if (!text || cheer.u === uid) return undefined; // את העידוד שלי אני לא צריך/ה לראות
+    const from = members[cheer.u];
+    setToast({ text, name: from?.name, emoji: from?.emoji });
     const id = setTimeout(() => setToast(null), 3500);
     return () => clearTimeout(id);
   }, [cheer?.t]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------- סיום: הפרס נרשם פעם אחת ----------------
   const [endStats, setEndStats] = useState(null);
+  const [celebrate, setCelebrate] = useState(false);
   useEffect(() => {
     if (!ended || !me || me.st !== 'in' || !assign) return;
     const roomId = `${code}-${meta.startedAt}`;
-    const rec = recordRoomResult(roomId, opened);
+    // החגיגה - פעם אחת לכל חדר בכל מכשיר (לא בכל פעם שחוזרים למסך)
+    if (opened) {
+      try {
+        const key = `english_escapeCelebrated_${roomId}`;
+        if (!sessionStorage.getItem(key) && !localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          setCelebrate(true);
+        }
+      } catch {
+        setCelebrate(true);
+      }
+    }
+    const lastT = Math.max(0, ...Object.values(lock).map(c => c.t || 0));
+    const rec = recordRoomResult(roomId, opened, {
+      team: meta.team,
+      subject: meta.subject,
+      filled,
+      total: slots,
+      seconds: opened && meta.startedAt && lastT ? Math.max(0, Math.round((lastT - meta.startedAt) / 1000)) : null,
+      emojis: teamList.map(([, m]) => m.emoji)
+    });
+    onFinished?.();
     if (rec) {
       const points = roomReward(filled, slots);
       if (points) onReward(points);
@@ -460,11 +496,74 @@ const EscapeRoom = ({
     );
   }
 
-  // ----- פתיחה / הצטרפות -----
-  if (!code) {
+  const joinCard = (
+    <div className="er-card">
+      <label className="er-label" htmlFor="er-join">יש לכם קוד מחבר/ה?</label>
+      <div className="er-join-row">
+        <input
+          id="er-join"
+          className="er-text code"
+          value={joinCode}
+          inputMode="numeric"
+          dir="ltr"
+          maxLength={6}
+          onChange={(e) => setJoinCode(e.target.value.replace(/[^0-9]/g, ''))}
+          placeholder="123456"
+        />
+        <button className="er-secondary" disabled={busy || joinCode.length !== 6} onClick={handleJoinCode}>הצטרפות</button>
+      </div>
+    </div>
+  );
+
+  // ----- דף הכניסה: הסבר, האתגרים שכבר בוצעו, והתחלה -----
+  if (!code && !showForm) {
+    const past = readEscapeStats();
+    const returning = past.history.length > 0;
+    const intro = (
+      <div className="er-card">
+        <div className="er-card-title">איך זה עובד?</div>
+        <div className="er-intro">
+          {INTRO_STEPS.map(st => (
+            <div key={st.icon} className="er-intro-step">
+              <span className="er-intro-num" aria-hidden="true">{st.icon}</span>
+              <span><b>{st.title}</b><span>{st.text}</span></span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
     return (
       <div className="escape-room">
         {header('אתגר מפצחי הכספות', onExit)}
+        <div className="er-hero">
+          <div className="er-hero-icon"><LockIcon /></div>
+          {returning
+            ? <h1 className="er-next-title">מוכנים לאתגר הבא?</h1>
+            : <><h1>אתגר מפצחי הכספות</h1><p>פותרים יחד, פותחים את הכספת יחד</p></>}
+        </div>
+        {!returning && intro}
+        <button className="er-cta" onClick={() => setShowForm(true)}>התחלה 🚀</button>
+        {returning && (
+          <div className="er-card">
+            <div className="er-row-between">
+              <b className="er-card-title">האתגרים שלכם</b>
+              <span className="er-pill">🗝️ {past.played}</span>
+            </div>
+            <ChallengeList history={past.history.slice(0, 5)} compact />
+          </div>
+        )}
+        {returning && (showHow ? intro : <button className="er-link light" onClick={() => setShowHow(true)}>איך זה עובד?</button>)}
+        {joinCard}
+        {errorBox}
+      </div>
+    );
+  }
+
+  // ----- פתיחת אתגר חדש -----
+  if (!code) {
+    return (
+      <div className="escape-room">
+        {header('אתגר מפצחי הכספות', () => setShowForm(false))}
         <div className="er-hero">
           <div className="er-hero-icon"><LockIcon /></div>
           <h1>פותחים אתגר חדש</h1>
@@ -499,23 +598,6 @@ const EscapeRoom = ({
 
           <div className="er-note">🔗 אחרי הפתיחה תקבלו קוד וקישור לשלוח לחברים. כל מי שמצטרף מחכה לאישור שלכם.</div>
           <button className="er-cta" disabled={busy} onClick={handleCreate}>{busy ? 'פותחים...' : 'פתיחת האתגר 🚀'}</button>
-        </div>
-
-        <div className="er-card">
-          <label className="er-label" htmlFor="er-join">יש לכם קוד מחבר/ה?</label>
-          <div className="er-join-row">
-            <input
-              id="er-join"
-              className="er-text code"
-              value={joinCode}
-              inputMode="numeric"
-              dir="ltr"
-              maxLength={6}
-              onChange={(e) => setJoinCode(e.target.value.replace(/[^0-9]/g, ''))}
-              placeholder="123456"
-            />
-            <button className="er-secondary" disabled={busy || joinCode.length !== 6} onClick={handleJoinCode}>הצטרפות</button>
-          </div>
         </div>
         {errorBox}
       </div>
@@ -677,8 +759,19 @@ const EscapeRoom = ({
     const points = roomReward(filled, slots);
     const played = endStats?.played || readEscapeStats().played;
     const text = shareText({ team: meta.team, opened, filled, total: slots, seconds, link: window.location.origin });
+    const codeDigits = Object.keys(lock).sort((a, b) => Number(a) - Number(b)).map(k => lock[k].d);
     return (
       <div className="escape-room">
+        <AnimatePresence>
+          {celebrate && (
+            <VaultCelebration
+              digits={codeDigits}
+              team={meta.team}
+              emojis={teamList.map(([, m]) => m.emoji)}
+              onDone={() => setCelebrate(false)}
+            />
+          )}
+        </AnimatePresence>
         <div className="er-hero">
           {opened && <div className="er-confetti" aria-hidden="true"><span>🎊</span><span>✨</span><span>⭐</span><span>🎉</span></div>}
           <div className="er-hero-icon">
@@ -863,7 +956,11 @@ const EscapeRoom = ({
       <AnimatePresence>
         {toast && (
           <motion.div className="er-toast" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 30 }}>
-            {toast}
+            {toast.emoji && <span className="er-toast-face" aria-hidden="true">{toast.emoji}</span>}
+            <span className="er-toast-body">
+              {toast.name && <b>{toast.name}</b>}
+              <span>{toast.text}</span>
+            </span>
           </motion.div>
         )}
       </AnimatePresence>
