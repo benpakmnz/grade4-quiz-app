@@ -16,9 +16,10 @@ import ProfileEditDialog from './components/ProfileEditDialog';
 import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import GuestReminderDialog from './components/GuestReminderDialog';
-import EscapeRoom from './components/EscapeRoom';
+import EscapeRoom, { EscapeRoomBoundary } from './components/EscapeRoom';
 import { readRoomParam, escapeRoomAvailable, readEscapeStats } from './data/escapeRoom';
 import EscapeHistoryDialog from './components/EscapeHistory';
+import { watchInvites } from './services/rooms';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
@@ -72,6 +73,15 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // מפתח בכותרת: כמה אתגרים בוצעו, ולחיצה פותחת את הרשימה
   const [escapeStats, setEscapeStats] = useState(() => readEscapeStats());
   const [showChallenges, setShowChallenges] = useState(false);
+  // הזמנות לאתגר חדש מחברים לצוות (מופיע בדף הבחירה)
+  const [inviteCount, setInviteCount] = useState(0);
+  useEffect(() => {
+    if (!escapeOn || !authUser || !cloudEnabled) return undefined;
+    return watchInvites(authUser.uid, (all) => {
+      const fresh = Object.values(all).filter(inv => inv && Date.now() - (inv.t || 0) < 6 * 3600000);
+      setInviteCount(fresh.length);
+    });
+  }, [escapeOn, authUser, cloudEnabled]);
   const [lastSubject] = useState(() => {
     try {
       return localStorage.getItem('english_subject');
@@ -308,6 +318,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           lastSubject={lastSubject}
           onPick={pickSubject}
           onEscapeRoom={escapeOn ? () => setCurrentGame('escape') : null}
+          escapeInvites={inviteCount}
         />
       );
     }
@@ -329,6 +340,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
     if (currentGame === 'escape' && escapeOn) {
       return (
+        <EscapeRoomBoundary onExit={() => setCurrentGame(homePage)}>
         <EscapeRoom
           authUser={authUser}
           userData={userData}
@@ -342,6 +354,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           onSignUp={onRequestSignup}
           onFinished={() => setEscapeStats(readEscapeStats())}
         />
+        </EscapeRoomBoundary>
       );
     }
 

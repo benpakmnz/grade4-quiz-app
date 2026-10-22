@@ -6,6 +6,7 @@
 //   bank    - קופת הרמזים המשותפת
 //   cheers  - מדבקות עידוד (עם השולח/ת - הכללים מוודאים שזה באמת הוא/היא)
 import { ref, get, set, update, onValue, runTransaction, push, serverTimestamp } from 'firebase/database';
+// הזמנות: <DB_ROOT>/invites/<uid>/<code> - מי שפותח/ת אתגר חדש עם צוות קודם מזמין/ה את החברים מאותו צוות
 import { db } from './firebase';
 import { DB_ROOT } from './env';
 import { makeRoomCode, makeCodeDigits, MAX_TEAM, STARTING_HINTS } from '../data/escapeRoom';
@@ -110,3 +111,33 @@ export const watch = (code, sub, callback, onError) =>
 /** ההפרש בין השעון של המכשיר לשעון של השרת - כדי שהשעון המשותף יהיה זהה לכולם */
 export const watchServerOffset = (callback) =>
   onValue(ref(db, '.info/serverTimeOffset'), (snap) => callback(Number(snap.val()) || 0));
+
+// ---------------- אתגר חדש עם צוות קודם ----------------
+const invitesRef = (uid, sub = '') => ref(db, `${DB_ROOT}/invites/${uid}${sub ? `/${sub}` : ''}`);
+
+/** החברים מהאתגר הקודם (מי שהיה בצוות), חוץ ממני */
+export const readPrevTeam = async (prevCode, myUid) => {
+  const snap = await get(r(prevCode, 'members'));
+  return Object.entries(snap.val() || {}).filter(([id, m]) => id !== myUid && m.st === 'in').map(([id]) => id);
+};
+
+/**
+ * פותחים אתגר חדש עם אותו צוות ושולחים הזמנה לכל מי שהיה בו.
+ * הכללים מאפשרים להזמין רק מי שהיה איתי באותו צוות.
+ */
+export const createRoomWithTeam = async (user, userData, past) => {
+  const code = await createRoom(user, userData, { team: past.team, subject: past.subject, minutes: past.minutes || 15, prev: past.code });
+  const friends = await readPrevTeam(past.code, user.uid).catch(() => []);
+  await Promise.all(friends.map(uid => set(invitesRef(uid, code), {
+    team: String(past.team || '').slice(0, 40),
+    name: String(userData?.name || '').slice(0, 30),
+    emoji: String(userData?.character?.emoji || '🙂').slice(0, 16),
+    t: serverTimestamp()
+  }).catch(() => {})));
+  return code;
+};
+
+export const watchInvites = (uid, callback) =>
+  onValue(invitesRef(uid), (snap) => callback(snap.val() || {}), () => callback({}));
+
+export const dismissInvite = (uid, code) => set(invitesRef(uid, code), null);

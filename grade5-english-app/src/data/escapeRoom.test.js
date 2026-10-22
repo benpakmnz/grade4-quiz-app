@@ -56,6 +56,13 @@ describe('roomQuestion', () => {
     });
   });
 
+  test('a topic that cannot make a question falls back to another topic', () => {
+    const q = roomQuestion('noSuchTopic');
+    expect(q).toBeTruthy();
+    expect(q.topic).toBe('noSuchTopic');
+    expect(ROOM_TOPICS.english).toContain(q.from);
+  });
+
   test('reading question includes the passage', () => {
     const q = roomQuestion('reading');
     expect(q.passage.text.length).toBeGreaterThan(50);

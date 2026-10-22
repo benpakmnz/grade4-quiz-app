@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SUBJECTS } from '../data/subjects';
 import {
@@ -9,7 +9,8 @@ import {
 } from '../data/escapeRoom';
 import {
   createRoom, readMeta, requestJoin, setMemberStatus, leaveRoom, startRoom, insertDigit,
-  changeBank, sendCheer, linkNextRound, watch, watchServerOffset
+  changeBank, sendCheer, linkNextRound, watch, watchServerOffset,
+  createRoomWithTeam, watchInvites, dismissInvite
 } from '../services/rooms';
 import { logMistake } from '../utils/mistakes';
 import { saveTeamCard } from '../utils/teamCard';
@@ -57,6 +58,9 @@ const Vault = ({ slots, lock, compact }) => (
   </div>
 );
 
+// הזמנה לאתגר חדש תקפה כמה שעות
+const INVITE_HOURS = 6;
+
 // ההסבר בדף הכניסה
 const INTRO_STEPS = [
   { icon: '🔑', title: 'פותחים חדר ומזמינים חברים', text: 'בוחרים שם לצוות, מקצוע וזמן, ושולחים לחברים קוד או קישור.' },
@@ -93,7 +97,7 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
   const options = (question.options || []).filter(o => !removed.includes(o));
   return (
     <div className="er-question">
-      <div className="er-chip">{topicName(question.topic)}</div>
+      <div className="er-chip">{topicName(question.from || question.topic)}</div>
       <div className="er-prompt">{isMath ? <MathText text={question.prompt} /> : question.prompt}</div>
       {question.passage && (
         <div className="er-passage" dir="ltr">
@@ -248,20 +252,25 @@ const EscapeRoom = ({
   };
 
   // ----- המארח/ת מאשר/ת מיד מי שהיה בצוות בסיבוב הקודם -----
-  const prevTeam = useRef(null);
+  const [prevTeam, setPrevTeam] = useState(null);
   useEffect(() => {
-    if (!isHost || !meta?.prev || prevTeam.current) return;
-    prevTeam.current = {};
-    watch(meta.prev, 'members', (v) => {
-      prevTeam.current = v || {};
-    });
-  }, [isHost, meta?.prev]); // eslint-disable-line react-hooks/exhaustive-deps -- פעם אחת לכל חדר
+    setPrevTeam(null);
+    if (!isHost || !meta?.prev) return undefined;
+    return watch(meta.prev, 'members', (v) => setPrevTeam(v || {}));
+  }, [isHost, meta?.prev]);
   useEffect(() => {
-    if (!isHost || meta?.status !== 'lobby' || !prevTeam.current) return;
+    if (!isHost || meta?.status !== 'lobby' || !prevTeam) return;
     pending.forEach(([id]) => {
-      if (prevTeam.current[id]?.st === 'in' && teamList.length < MAX_TEAM) setMemberStatus(code, id, 'in').catch(() => {});
+      if (prevTeam[id]?.st === 'in' && teamList.length < MAX_TEAM) setMemberStatus(code, id, 'in').catch(() => {});
     });
-  }, [isHost, meta?.status, pending.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isHost, meta?.status, pending.length, prevTeam]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ----- הזמנות לאתגר חדש מחברים לצוות קודם -----
+  const [invites, setInvites] = useState({});
+  useEffect(() => (uid ? watchInvites(uid, setInvites) : undefined), [uid]);
+  const freshInvites = Object.entries(invites)
+    .filter(([c, inv]) => CODE_PATTERN.test(c) && inv && serverNow - (inv.t || 0) < INVITE_HOURS * 3600000)
+    .sort((a, b) => (b[1].t || 0) - (a[1].t || 0));
 
   // ----- פעולות -----
   const run = async (fn) => {
@@ -296,6 +305,24 @@ const EscapeRoom = ({
   };
 
   const handleRequest = () => run(() => requestJoin(code, authUser, userData));
+
+  // אתגר חדש עם צוות מאתגר קודם (כל מי שהיה בצוות יכול לפתוח)
+  const handleAgain = (past) => run(async () => {
+    const newCode = await createRoomWithTeam(authUser, userData, past);
+    setCode(newCode);
+  });
+
+  // מצטרפים מהזמנה - המארח/ת מאשר/ת אוטומטית מי שהיה בצוות
+  const acceptInvite = (inviteCode) => run(async () => {
+    const m = await readMeta(inviteCode);
+    dismissInvite(uid, inviteCode).catch(() => {});
+    if (!m || m.status !== 'lobby') {
+      setError('האתגר הזה כבר התחיל או נסגר. אפשר לפתוח אתגר חדש 🙂');
+      return;
+    }
+    await requestJoin(inviteCode, authUser, userData);
+    setCode(inviteCode);
+  });
 
   const handleStart = () => run(() => startRoom(code, meta, members, serverNow));
 
@@ -373,10 +400,10 @@ const EscapeRoom = ({
     if (given === null || String(given).trim() === '') return;
     const ok = checkRoomAnswer(question, given);
     setResult(ok ? 'right' : 'wrong');
-    onAnswer(question.topic, ok);
+    onAnswer(question.from || question.topic, ok);
     if (!ok) {
       logMistake({
-        category: question.topic,
+        category: question.from || question.topic,
         question: [question.prompt, question.english, question.expr].filter(Boolean).join('  '),
         given,
         correct: question.answer,
@@ -450,6 +477,8 @@ const EscapeRoom = ({
     }
     const lastT = Math.max(0, ...Object.values(lock).map(c => c.t || 0));
     const rec = recordRoomResult(roomId, opened, {
+      code,
+      minutes: meta.minutes,
       team: meta.team,
       subject: meta.subject,
       filled,
@@ -541,6 +570,19 @@ const EscapeRoom = ({
             ? <h1 className="er-next-title">מוכנים לאתגר הבא?</h1>
             : <><h1>אתגר מפצחי הכספות</h1><p>פותרים יחד, פותחים את הכספת יחד</p></>}
         </div>
+        {freshInvites.map(([c, inv]) => (
+          <motion.div key={c} className="er-invite" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+            <span className="er-request-face" aria-hidden="true">{inv.emoji}</span>
+            <span className="er-invite-text">
+              <b>📩 הזמנה לאתגר!</b>
+              <span>{inv.name} פתח/ה אתגר חדש עם הצוות "{inv.team}"</span>
+            </span>
+            <span className="er-invite-actions">
+              <button className="er-approve" disabled={busy} onClick={() => acceptInvite(c)}>הצטרפות</button>
+              <button className="er-decline" onClick={() => dismissInvite(uid, c).catch(() => {})}>לא עכשיו</button>
+            </span>
+          </motion.div>
+        ))}
         {!returning && intro}
         <button className="er-cta" onClick={() => setShowForm(true)}>התחלה 🚀</button>
         {returning && (
@@ -549,7 +591,7 @@ const EscapeRoom = ({
               <b className="er-card-title">האתגרים שלכם</b>
               <span className="er-pill">🗝️ {past.played}</span>
             </div>
-            <ChallengeList history={past.history.slice(0, 5)} compact />
+            <ChallengeList history={past.history.slice(0, 5)} compact onAgain={busy ? null : handleAgain} />
           </div>
         )}
         {returning && (showHow ? intro : <button className="er-link light" onClick={() => setShowHow(true)}>איך זה עובד?</button>)}
@@ -842,7 +884,13 @@ const EscapeRoom = ({
   }
 
   // ----- משחק -----
-  if (!progress) return null;
+  if (!progress) {
+    return (
+      <div className="escape-room">
+        <div className="er-center"><div className="spinner">🔐</div>טוענים את המשימות...</div>
+      </div>
+    );
+  }
   const myDigit = assign.digit;
   const timeLeft = (meta.endsAt || 0) - serverNow;
   const answerReady = question && (question.kind === 'input' ? input.trim() !== '' : picked !== null);
@@ -968,6 +1016,37 @@ const EscapeRoom = ({
     </div>
   );
 };
+
+/** אם משהו נשבר בתוך האתגר - הודעה ברורה (עם פרטי השגיאה לצילום מסך) במקום מסך ריק */
+export class EscapeRoomBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+
+  componentDidCatch(error, info) {
+    console.error('Escape room crashed', error, info);
+  }
+
+  render() {
+    if (!this.state.error) return this.props.children;
+    return (
+      <div className="escape-room">
+        <div className="er-card er-center-card">
+          <h2>אופס, משהו השתבש באתגר 🙈</h2>
+          <p>אפשר לנסות שוב. אם זה חוזר - צלמו את המסך ושלחו להורה.</p>
+          <code className="er-crash" dir="ltr">{String(this.state.error?.message || this.state.error).slice(0, 200)}</code>
+          <button className="er-cta" onClick={() => this.setState({ error: null })}>לנסות שוב</button>
+          {this.props.onExit && <button className="er-outline" onClick={this.props.onExit}>חזרה לאפליקציה</button>}
+        </div>
+      </div>
+    );
+  }
+}
 
 export default EscapeRoom;
 

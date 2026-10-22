@@ -29,7 +29,7 @@ export const subjectReadiness = (subjectId, categoryStats = {}) => {
 const examDateText = (date) => `${date.getDate()}.${date.getMonth() + 1}`;
 
 // דף הבחירה: לאן הולכים היום - אנגלית או חשבון?
-const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject, onEscapeRoom }) => {
+const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject, onEscapeRoom, escapeInvites = 0 }) => {
   const g = (t) => getGenderText(t, userData?.gender);
 
   return (
@@ -49,6 +49,20 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
         <h1 className="hub-title">היי {userData?.name}! 👋</h1>
         <p className="hub-subtitle">{g('במה בא לך להתאמן היום?')}</p>
       </motion.div>
+
+      {onEscapeRoom && escapeInvites > 0 && (
+        <motion.button
+          className="hub-invite-banner"
+          onClick={onEscapeRoom}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: [1, 1.03, 1] }}
+          transition={{ scale: { repeat: Infinity, duration: 1.8 } }}
+        >
+          <span aria-hidden="true">📩</span>
+          <span><b>הוזמנת לאתגר מפצחי הכספות!</b> החברים מהצוות מחכים לך</span>
+          <span className="hub-invite-go">הצטרפות ←</span>
+        </motion.button>
+      )}
 
       <div className="hub-cards">
         {subjects.map((id, i) => {
@@ -131,6 +145,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
           whileTap={{ scale: 0.97 }}
         >
           <span className="hub-escape-icon" aria-hidden="true">🔐</span>
+          {escapeInvites > 0 && <span className="hub-escape-invite">📩 {escapeInvites === 1 ? 'הזמנה חדשה!' : `${escapeInvites} הזמנות!`}</span>}
           <span className="hub-escape-text">
             <b>אתגר מפצחי הכספות</b>
             <span>עם חברים: פותרים יחד ופותחים את הכספת</span>

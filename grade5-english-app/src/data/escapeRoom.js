@@ -66,16 +66,40 @@ const readingQuestion = () => {
 };
 
 /** שאלה אחת לנושא. subject נשמר על השאלה כדי לדעת איך להציג אותה */
-export const roomQuestion = (topic) => {
+const usable = (q) => Boolean(q) && (
+  (q.kind === 'mc' && Array.isArray(q.options) && q.options.length >= 2 && q.options.includes(q.answer)) ||
+  (q.kind === 'input' && q.answer !== undefined && q.answer !== null && String(q.answer) !== '')
+);
+
+const tryTopic = (topic) => {
   const isMath = MATH_TOPIC_IDS.includes(topic);
-  let q = null;
-  for (let i = 0; i < 5 && !q; i++) {
-    if (isMath) q = generateMathQuestion(topic);
-    else if (topic === 'reading') q = readingQuestion();
-    else q = generateQuestion(topic);
-    if (q && q.kind !== 'mc' && q.kind !== 'input') q = null;
+  for (let i = 0; i < 5; i++) {
+    let q = null;
+    try {
+      if (isMath) q = generateMathQuestion(topic);
+      else if (topic === 'reading') q = readingQuestion();
+      else q = generateQuestion(topic);
+    } catch (err) {
+      console.warn('Escape room: question failed', topic, err);
+    }
+    if (usable(q)) return { ...q, subject: isMath ? 'math' : 'english' };
   }
-  return q ? { ...q, topic, subject: isMath ? 'math' : 'english' } : null;
+  return null;
+};
+
+/**
+ * שאלה לנושא. אם הנושא לא מצליח לייצר שאלה תקינה (למשל תוכן שנוסף בממשק הניהול בלי תשובות) -
+ * לוקחים שאלה מנושא אחר באותו מקצוע, כדי שאף ילד/ה לא ייתקע/תיתקע בלי שאלה.
+ * topic נשאר הנושא של המשימה (כדי שההתקדמות תמשיך כרגיל)
+ */
+export const roomQuestion = (topic) => {
+  const subject = MATH_TOPIC_IDS.includes(topic) ? 'math' : 'english';
+  const order = [topic, ...shuffle(ROOM_TOPICS[subject].filter(t => t !== topic))];
+  for (const t of order) {
+    const q = tryTopic(t);
+    if (q) return { ...q, topic, from: t };
+  }
+  return null;
 };
 
 export const checkRoomAnswer = (question, given) =>
@@ -144,7 +168,7 @@ export const readEscapeStats = () => {
   try {
     const data = JSON.parse(localStorage.getItem(ESCAPE_KEY) || 'null');
     return data && typeof data === 'object'
-      ? { ...EMPTY, ...data, rooms: Array.isArray(data.rooms) ? data.rooms : [], history: Array.isArray(data.history) ? data.history : [] }
+      ? { ...EMPTY, ...data, rooms: Array.isArray(data.rooms) ? data.rooms : [], history: Array.isArray(data.history) ? data.history.map(h => ({ ...h, code: h.code || String(h.id || '').split('-')[0] })) : [] }
       : { ...EMPTY };
   } catch {
     return { ...EMPTY };
@@ -169,6 +193,8 @@ export const recordRoomResult = (roomId, opened, details = {}, now = Date.now())
   if (stats.rooms.includes(roomId)) return null;
   const entry = {
     id: roomId,
+    code: String(details.code || String(roomId).split('-')[0]),
+    minutes: ROOM_MINUTES.includes(details.minutes) ? details.minutes : 15,
     at: now,
     opened: Boolean(opened),
     team: String(details.team || '').slice(0, 40),

@@ -241,6 +241,30 @@
             ".validate": false
           }
         }
+      },
+      "invites": {
+        "$uid": {
+          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          "$code": {
+            ".write": "($app === 'english' || $app === 'english-test') && auth != null && $code.matches(/^[0-9]{6}$/) && ((auth.uid === $uid && !newData.exists()) || (newData.exists() && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child($uid).child('st').val() === 'in' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child(auth.uid).child('st').val() === 'in'))",
+            ".validate": "newData.hasChildren(['team', 'name', 'emoji', 't'])",
+            "team": {
+              ".validate": "newData.isString() && newData.val().length <= 40"
+            },
+            "name": {
+              ".validate": "newData.isString() && newData.val().length <= 30"
+            },
+            "emoji": {
+              ".validate": "newData.isString() && newData.val().length <= 16"
+            },
+            "t": {
+              ".validate": "newData.isNumber() && newData.val() <= now"
+            },
+            "$other": {
+              ".validate": false
+            }
+          }
+        }
       }
     }
   }

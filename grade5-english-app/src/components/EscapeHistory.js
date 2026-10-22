@@ -11,7 +11,7 @@ const dateText = (ts) => {
 };
 
 /** רשימת האתגרים שבוצעו: שם הצוות, החברים, וכמה זמן לקח לפצח */
-export const ChallengeList = ({ history = [], compact = false }) => (
+export const ChallengeList = ({ history = [], compact = false, onAgain = null }) => (
   <ul className={`ch-list ${compact ? 'compact' : ''}`}>
     {history.map(h => (
       <li key={h.id} className={`ch-item ${h.opened ? 'opened' : ''}`}>
@@ -30,6 +30,9 @@ export const ChallengeList = ({ history = [], compact = false }) => (
             <span className="ch-team" aria-label={`${h.emojis.length} חברים בצוות`}>
               {h.emojis.map((e, i) => <span key={i} aria-hidden="true">{e}</span>)}
             </span>
+          )}
+          {onAgain && h.code && h.emojis?.length > 1 && (
+            <button className="ch-again" onClick={() => onAgain(h)}>🔄 אתגר חדש עם הצוות הזה</button>
           )}
         </span>
       </li>
