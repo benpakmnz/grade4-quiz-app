@@ -7,6 +7,7 @@ import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import MathGame from './components/MathGame';
+import { generateHebrewQuestion } from './data/hebrewQuestions';
 import SubjectHub from './components/SubjectHub';
 import HamburgerMenu from './components/HamburgerMenu';
 import AdminPanel from './components/AdminPanel';
@@ -35,6 +36,8 @@ import {
   VStack,
   Badge,
 } from '@chakra-ui/react';
+
+const HEBREW_PRAISES = ['כל הכבוד! 🌟', 'מעולה! את אלופה! 🚀', 'נכון מאוד! ⭐', 'יפה מאוד! 🏆', 'מצוין! 🎉'];
 
 const getEmptyCategoryStats = () =>
   allCategories.reduce((acc, cat) => {
@@ -393,6 +396,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
     if (category.subject === 'math') {
       return <MathGame {...gameProps} />;
+    }
+    if (category.subject === 'hebrew') {
+      return <MathGame {...gameProps} generate={generateHebrewQuestion} praises={HEBREW_PRAISES} />;
     }
     if (category.id === 'reading' || category.id === 'listening') {
       return <PassageGame {...gameProps} />;

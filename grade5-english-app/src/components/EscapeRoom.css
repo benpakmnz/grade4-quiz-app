@@ -1612,3 +1612,8 @@
     animation: none;
   }
 }
+
+.ch-subject.hebrew {
+  background: #ccfbf1;
+  color: #0f766e;
+}

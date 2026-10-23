@@ -7,6 +7,7 @@ import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/su
 
 const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
   const hasMath = subjects.includes('math');
+  const hasHebrew = subjects.includes('hebrew');
   console.log('WelcomeDialog - userData:', userData);
   
   return (
@@ -32,7 +33,7 @@ const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
         <div className="welcome-dialog-body">
           <div className="welcome-section">
             <div className="welcome-icon">📝</div>
-            <h3>{hasMath ? 'אנגלית וחשבון' : 'מבחן מיפוי באנגלית'}</h3>
+            <h3>{hasMath && hasHebrew ? 'אנגלית, חשבון ושפה' : hasMath ? 'אנגלית וחשבון' : 'מבחן מיפוי באנגלית'}</h3>
             <p>
               {hasMath && <>🔤 <strong>אנגלית:</strong> </>}אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
               {' '}🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
@@ -41,6 +42,12 @@ const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
                 <>
                   🔢 <strong>חשבון:</strong> מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.
                   <br />
+                  {hasHebrew && (
+                    <>
+                      📝 <strong>שפה:</strong> שורשים ומשפחות מילים, שמות עצם, מילות קישור, זמנים, פעלים וכינויי גוף.
+                      <br />
+                    </>
+                  )}
                   {getGenderText('בחרי', userData?.gender)} מקצוע בראש דף הבית.{' '}
                 </>
               )}

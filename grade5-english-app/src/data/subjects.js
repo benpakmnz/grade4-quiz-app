@@ -1,6 +1,7 @@
-// מקצועות התרגול באפליקציה: אנגלית וחשבון. אותם משתמשים, אותן נקודות - נושאים ומבחן נפרדים.
+// מקצועות התרגול באפליקציה: אנגלית, חשבון ושפה. אותם משתמשים, אותן נקודות - נושאים ומבחן נפרדים.
 import { categories as englishCategories, EXAM_DATE as ENGLISH_EXAM_DATE } from './categories';
 import { mathCategories, MATH_EXAM_DATE } from './mathCategories';
+import { hebrewCategories, HEBREW_EXAM_DATE } from './hebrewCategories';
 import { IS_TEST_ENV } from '../services/env';
 
 export const SUBJECTS = {
@@ -19,6 +20,14 @@ export const SUBJECTS = {
     examName: 'מבחן בחשבון',
     examDate: MATH_EXAM_DATE,
     categories: mathCategories
+  },
+  hebrew: {
+    id: 'hebrew',
+    name: 'שפה',
+    emoji: '📝',
+    examName: 'מבחן בשפה',
+    examDate: HEBREW_EXAM_DATE,
+    categories: hebrewCategories
   }
 };
 
@@ -49,8 +58,14 @@ export const getDaysUntilSubjectExam = (subjectId, now) =>
 // כדי לפתוח לכולם גם באתר האמיתי: REACT_APP_MATH_FOR_EVERYONE=true (או לשנות כאן ל-true)
 export const MATH_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_MATH_FOR_EVERYONE || '').trim() === 'true';
 
+// שפה - באותה שיטה: בבדיקות לכולם, באתר האמיתי למנהלים עד REACT_APP_HEBREW_FOR_EVERYONE=true
+export const HEBREW_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_HEBREW_FOR_EVERYONE || '').trim() === 'true';
+
 /** המקצועות שהמשתמש/ת רואה */
-export const availableSubjects = (isAdmin) => (MATH_FOR_EVERYONE || isAdmin ? SUBJECT_IDS : ['english']);
+export const availableSubjects = (isAdmin) => SUBJECT_IDS.filter(id =>
+  id === 'english'
+  || (id === 'math' && (MATH_FOR_EVERYONE || isAdmin))
+  || (id === 'hebrew' && (HEBREW_FOR_EVERYONE || isAdmin)));
 
 const SUBJECT_KEY = 'english_subject';
 

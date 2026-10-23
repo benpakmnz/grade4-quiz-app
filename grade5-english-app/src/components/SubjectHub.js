@@ -12,6 +12,11 @@ const LOOK = {
     floaters: ['A', 'b', 'C', '🔤', '📖', '🎧'],
     className: 'hub-card-english'
   },
+  hebrew: {
+    tagline: 'שורשים, פעלים, זמנים ועוד',
+    floaters: ['א', 'ב', 'ש', '📝', '✏️', '📚'],
+    className: 'hub-card-hebrew'
+  },
   math: {
     tagline: 'מספרים, שברים וגאומטריה',
     floaters: ['+', '÷', '×', '½', '📐', '🔢'],

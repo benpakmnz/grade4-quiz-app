@@ -129,7 +129,7 @@
               ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
             },
             "subject": {
-              ".validate": "newData.val() === 'english' || newData.val() === 'math'"
+              ".validate": "newData.val() === 'english' || newData.val() === 'math' || newData.val() === 'hebrew'"
             },
             "minutes": {
               ".validate": "newData.val() === 10 || newData.val() === 15 || newData.val() === 20 || newData.val() === 25"

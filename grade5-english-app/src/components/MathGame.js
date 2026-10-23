@@ -14,13 +14,13 @@ import './EnglishGame.css';
 import './MathGame.css';
 
 const PRAISES = ['כל הכבוד! 🌟', 'מעולה! את אלופה! 🚀', 'נכון מאוד! ⭐', 'יפה מאוד! 🏆', 'מצוין! חישבת נכון 🎉'];
-const pickPraise = (gender) => getGenderText(PRAISES[Math.floor(Math.random() * PRAISES.length)], gender);
 
 // משחק החשבון: שאלות אמריקאיות או הקלדת תשובה, עם ציורים והסבר מלא אחרי כל שאלה
+// generate / praises - כדי שאותו משחק ישמש גם מקצועות אחרים (שפה)
 const MathGame = (props) => {
-  const { category, title, onBack, streak, userData, testLength = 0 } = props;
+  const { category, title, onBack, streak, userData, testLength = 0, generate = generateMathQuestion, praises = PRAISES } = props;
   const { registerResult } = useGameScoring(props);
-  const praise = () => pickPraise(userData?.gender);
+  const praise = () => getGenderText(praises[Math.floor(Math.random() * praises.length)], userData?.gender);
   const g = (text) => getGenderText(text, userData?.gender);
 
   const [question, setQuestion] = useState(null);
@@ -35,14 +35,14 @@ const MathGame = (props) => {
   const inputRef = useRef(null);
 
   const nextQuestion = useCallback(() => {
-    setQuestion(generateMathQuestion(category));
+    setQuestion(generate(category));
     setQuestionKey(k => k + 1);
     setFeedback(null);
     setAttempts(0);
     setWrongOptions([]);
     setFirstWrong(null);
     setInput('');
-  }, [category]);
+  }, [category, generate]);
 
   useEffect(() => {
     nextQuestion();
