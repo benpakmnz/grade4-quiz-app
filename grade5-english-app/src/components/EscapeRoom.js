@@ -171,6 +171,7 @@ const EscapeRoom = ({
   const [code, setCode] = useState(() => initialCode || readActiveRoom());
   const [meta, setMeta] = useState(undefined);       // undefined = טוען, null = אין חדר כזה
   const [members, setMembers] = useState({});
+  const [membersFor, setMembersFor] = useState(null); // לאיזה חדר רשימת הילדים כבר נטענה
   const [assign, setAssign] = useState(null);
   const [lock, setLock] = useState({});
   const [bank, setBank] = useState(0);
@@ -199,7 +200,7 @@ const EscapeRoom = ({
     const fail = () => setError('אין חיבור לחדר. בדקו את האינטרנט ונסו שוב.');
     const offs = [
       watch(code, 'meta', setMeta, fail),
-      watch(code, 'members', (v) => setMembers(v || {}), fail),
+      watch(code, 'members', (v) => { setMembers(v || {}); setMembersFor(code); }, fail),
       watch(code, `assign/${uid}`, setAssign),
       watch(code, 'lock', (v) => setLock(v || {})),
       watch(code, 'bank', (v) => setBank(Number(v) || 0)),
@@ -487,9 +488,15 @@ const EscapeRoom = ({
     setImageState(null);
     setCopied(null);
   }, [code]);
+  // רץ כשהחדר נגמר וגם כשהפרטים שלי (חבר/ה בצוות + הספרה) מגיעים - למשל כשחוזרים לחדר שנגמר בזמן שלא הייתי.
+  // recordRoomResult סופר כל חדר פעם אחת בלבד, ו-handledEnd מונע הפעלה כפולה של החגיגה והפרס
+  const myTeamReady = Boolean(me && me.st === 'in' && assign);
+  const [handledEnd, setHandledEnd] = useState(null);
   useEffect(() => {
-    if (!ended || !me || me.st !== 'in' || !assign) return;
+    if (!ended || !myTeamReady) return;
     const roomId = `${code}-${meta.startedAt}`;
+    if (handledEnd === roomId) return;
+    setHandledEnd(roomId);
     // החגיגה - פעם אחת לכל חדר בכל מכשיר (לא בכל פעם שחוזרים למסך)
     if (opened) {
       try {
@@ -520,7 +527,17 @@ const EscapeRoom = ({
     }
     setEndStats(rec || readEscapeStats());
     clearRoomProgress(code);
-  }, [ended]); // eslint-disable-line react-hooks/exhaustive-deps -- פעם אחת כשהחדר נגמר
+    // האתגר נגמר: מסך הסיום נשאר עד שיוצאים, אבל בכניסה הבאה לדף האתגר מתחילים מדף הכניסה
+    // (החזרה האוטומטית לחדר נועדה רק לניתוק באמצע אתגר)
+    saveActiveRoom(null);
+  }, [ended, myTeamReady]); // eslint-disable-line react-hooks/exhaustive-deps -- פעם אחת לכל חדר שנגמר
+
+  // חדר שלא קיים, או חדר שהתחיל בלעדיי - גם אותו לא זוכרים לפעם הבאה
+  useEffect(() => {
+    if (!code || meta === undefined) return;
+    if (meta === null) saveActiveRoom(null);
+    else if (meta.status === 'playing' && membersFor === code && (!me || me.st !== 'in')) saveActiveRoom(null);
+  }, [code, meta, me, membersFor]);
 
   // ================= תצוגה =================
   const header = (title, onBack) => (
@@ -853,7 +870,7 @@ const EscapeRoom = ({
         <Vault slots={slots} lock={lock} />
 
         <div className="er-card er-center-card">
-          <div className="er-muted">{opened ? 'כל הצוות מקבל אותו פרס' : 'מה הצוות הרוויח'}</div>
+          {!opened && <div className="er-muted">מה הצוות הרוויח</div>}
           <div className="er-prize">
             <span className="er-prize-icon" aria-hidden="true">{opened ? '🗝️' : '🔐'}</span>
             <span>
@@ -870,7 +887,7 @@ const EscapeRoom = ({
           <span className="er-trophy-face" aria-hidden="true">🏆</span>
           <span className="er-trophy-text">
             <b>גביע מפצחי הכספות</b>
-            <span>{opened ? `זה האתגר ה-${played} שלכם` : 'השתתפתם באתגר - זה מה שקובע!'}</span>
+            <span>{opened ? `זה האתגר ה-${played} שלך` : 'השתתפת באתגר - זה מה שקובע!'}</span>
           </span>
           <span className="er-trophy-count" dir="ltr">×{played}</span>
         </div>
