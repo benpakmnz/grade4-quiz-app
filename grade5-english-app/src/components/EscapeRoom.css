@@ -502,6 +502,7 @@
 }
 
 .er-hint-btn {
+  white-space: nowrap;
   min-height: 44px;
   padding: 0 14px;
   border-radius: 22px;
@@ -1495,4 +1496,119 @@
 .ch-subject.math {
   background: #ffedd5;
   color: #c2410c;
+}
+
+.er-choice.er-size {
+  min-height: 86px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.er-size b {
+  font-size: 1.05rem;
+}
+
+.er-size span {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.er-size .er-size-points {
+  margin-top: 2px;
+  padding: 1px 10px;
+  border-radius: 50px;
+  background: #fef9c3;
+  color: #854d0e;
+  font-weight: 800;
+}
+
+.er-choice.er-size.on .er-size-points {
+  background: #fde047;
+  color: #713f12;
+}
+
+/* ---------- תנועה במסך המשימות ---------- */
+.er-option-wrap {
+  display: flex;
+}
+
+.er-option-wrap > .er-option {
+  width: 100%;
+}
+
+.er-card-right {
+  animation: er-right-pulse 0.7s ease-out;
+}
+
+@keyframes er-right-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7), 0 14px 34px rgba(0, 0, 0, 0.2); transform: scale(1); }
+  35% { transform: scale(1.025); }
+  100% { box-shadow: 0 0 0 22px rgba(16, 185, 129, 0), 0 14px 34px rgba(0, 0, 0, 0.2); transform: scale(1); }
+}
+
+.er-steps span {
+  transition: background 0.5s ease, transform 0.4s ease;
+}
+
+.er-steps span.now {
+  animation: er-step-now 1.3s ease-in-out infinite;
+}
+
+.er-steps span.done {
+  animation: er-step-done 0.5s ease-out;
+}
+
+@keyframes er-step-now {
+  50% { transform: scaleY(1.6); filter: brightness(1.15); }
+}
+
+@keyframes er-step-done {
+  0% { transform: scaleY(2.2); }
+  100% { transform: scaleY(1); }
+}
+
+.er-clock.urgent {
+  animation: er-urgent 0.9s ease-in-out infinite;
+}
+
+@keyframes er-urgent {
+  50% { transform: scale(1.08); box-shadow: 0 0 0 6px rgba(239, 68, 68, 0.3); }
+}
+
+.er-vault-cell.filled {
+  animation: er-cell-in 0.6s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+@keyframes er-cell-in {
+  0% { transform: scale(0.3) rotate(-30deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+.er-sound {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.escape-room.playing .er-top {
+  gap: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .er-card-right,
+  .er-steps span.now,
+  .er-steps span.done,
+  .er-clock.urgent,
+  .er-vault-cell.filled {
+    animation: none;
+  }
 }

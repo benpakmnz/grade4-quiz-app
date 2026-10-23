@@ -132,7 +132,7 @@
               ".validate": "newData.val() === 'english' || newData.val() === 'math'"
             },
             "minutes": {
-              ".validate": "newData.val() === 10 || newData.val() === 15 || newData.val() === 20"
+              ".validate": "newData.val() === 10 || newData.val() === 15 || newData.val() === 20 || newData.val() === 25"
             },
             "status": {
               ".validate": "(newData.val() === 'lobby' && (!data.exists() || data.val() === 'lobby')) || (newData.val() === 'playing' && data.exists())"
@@ -140,11 +140,14 @@
             "createdAt": {
               ".validate": "newData.isNumber() && newData.val() <= now && (!data.exists() || newData.val() === data.val())"
             },
+            "tasks": {
+              ".validate": "newData.val() === 5 || newData.val() === 8 || newData.val() === 12 || newData.val() === 16"
+            },
             "startedAt": {
               ".validate": "newData.isNumber() && newData.val() <= now + 60000"
             },
             "endsAt": {
-              ".validate": "newData.isNumber() && newData.val() <= now + 1260000"
+              ".validate": "newData.isNumber() && newData.val() <= now + 1560000"
             },
             "slots": {
               ".validate": "newData.isNumber() && newData.val() >= 1 && newData.val() <= 12"

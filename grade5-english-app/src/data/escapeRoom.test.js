@@ -1,5 +1,5 @@
 import {
-  ROOM_TOPICS, TASKS_PER_KID, pickTopics, roomQuestion, checkRoomAnswer, canHint, makeHint,
+  ROOM_TOPICS, ROOM_SIZES, roomSize, TASKS_PER_KID, pickTopics, roomQuestion, checkRoomAnswer, canHint, makeHint,
   makeCodeDigits, makeRoomCode, readRoomParam, formatClock, roomReward, recordRoomResult,
   recordHintGiven, readEscapeStats, currentTier, nextTier, shareText, ESCAPE_KEY
 } from './escapeRoom';
@@ -35,6 +35,24 @@ describe('pickTopics', () => {
     }
     expect(strongLeftOut).toBe(100);
   });
+});
+
+test('bigger challenges repeat topics, weakest first, never the same topic twice in a row', () => {
+  [8, 12, 16].forEach(count => {
+    for (let i = 0; i < 100; i++) {
+      const topics = pickTopics('english', { vocabulary: { correct: 30, total: 30 } }, count);
+      expect(topics).toHaveLength(count);
+      topics.forEach((t, k) => k > 0 && expect(t).not.toBe(topics[k - 1]));
+    }
+  });
+});
+
+test('challenge sizes: more tasks = more time and points', () => {
+  const sizes = ROOM_SIZES.map(s => [s.tasks, s.minutes, s.points]);
+  expect(sizes).toEqual([[5, 10, 200], [8, 15, 300], [12, 20, 450], [16, 25, 600]]);
+  expect(roomReward(3, 3, 12)).toBe(450);
+  expect(roomReward(2, 3, 12)).toBe(20);
+  expect(roomSize({ minutes: 15 }).tasks).toBe(5); // חדר ישן - 5 משימות
 });
 
 describe('roomQuestion', () => {

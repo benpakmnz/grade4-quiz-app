@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SUBJECTS } from '../data/subjects';
 import {
-  ROOM_MINUTES, TASKS_PER_KID, MAX_TEAM, CODE_PATTERN, CHEERS,
+  ROOM_SIZES, DEFAULT_SIZE, roomSize, MAX_POINTS, MAX_TEAM, CODE_PATTERN, CHEERS,
   pickTopics, roomQuestion, checkRoomAnswer, canHint, makeHint, topicName, roomLink, formatClock,
-  roomReward, POINTS_FULL, POINTS_PER_LOCK, recordRoomResult, recordHintGiven, readEscapeStats,
+  roomReward, POINTS_PER_LOCK, recordRoomResult, recordHintGiven, readEscapeStats,
   saveActiveRoom, readActiveRoom, saveRoomProgress, readRoomProgress, clearRoomProgress, shareText, ROOM_TOPICS
 } from '../data/escapeRoom';
 import {
@@ -15,7 +15,7 @@ import {
 import { logMistake } from '../utils/mistakes';
 import { saveTeamCard } from '../utils/teamCard';
 import { getGenderText } from '../utils/genderText';
-import { fxCorrect, fxWrong } from '../utils/fx';
+import { fxCorrect, fxWrong, playSuccess, isSoundOn, setSoundOn } from '../utils/fx';
 import MathText from './MathText';
 import MathVisual from './MathVisual';
 import SpeakButton from './SpeakButton';
@@ -65,11 +65,11 @@ const INVITE_HOURS = 6;
 
 // ההסבר בדף הכניסה
 const INTRO_STEPS = [
-  { icon: '🔑', title: 'פותחים חדר ומזמינים חברים', text: 'בוחרים שם לצוות, מקצוע וזמן, ושולחים לחברים קוד או קישור.' },
-  { icon: '🧩', title: 'כל אחד פותר 5 משימות', text: 'שאלה מכל נושא, ברמה שלך. ההתקדמות האישית גלויה רק לך.' },
+  { icon: '🔑', title: 'פותחים חדר ומזמינים חברים', text: 'בוחרים שם לצוות, מקצוע וכמה משימות, ושולחים לחברים קוד או קישור.' },
+  { icon: '🧩', title: 'כל אחד פותר את המשימות שלו', text: 'שאלות מכל הנושאים, ברמה שלך. ההתקדמות האישית גלויה רק לך.' },
   { icon: '🔓', title: 'מכניסים ספרה לכספת', text: 'מי שמסיים מקבל ספרה מהקוד. כשכל הספרות בפנים - הכספת נפתחת!' },
   { icon: '🤝', title: 'עוזרים אחד לשני', text: 'מי שסיים ממלא את קופת הרמזים ושולח עידוד. בלי תחרות - מנצחים יחד.' },
-  { icon: '🏆', title: `פרס: ${POINTS_FULL} נקודות לכל אחד!`, text: `כשהכספת נפתחת - כל אחד בצוות מקבל ${POINTS_FULL} נקודות ⭐ וגביע. נגמר הזמן? ${POINTS_PER_LOCK} נקודות על כל מנעול שנפתח.` }
+  { icon: '🏆', title: `פרס: עד ${MAX_POINTS} נקודות לכל אחד!`, text: `כשהכספת נפתחת - כל אחד בצוות מקבל נקודות ⭐ וגביע. יותר משימות = יותר נקודות: ${ROOM_SIZES.map(s => `${s.tasks} משימות - ${s.points}`).join(', ')}. נגמר הזמן? ${POINTS_PER_LOCK} נקודות על כל מנעול שנפתח.` }
 ];
 
 const shareOrWhatsApp = async (text) => {
@@ -122,13 +122,19 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
 
       {question.kind === 'mc' && (
         <div className={`er-options ${question.optionVisuals ? 'visual' : ''} ${options.some(o => String(o).length > 18) ? 'long' : ''}`}>
-          {options.map(o => {
+          {options.map((o, idx) => {
             const sel = picked === o;
             // אחרי טעות: התשובה הנכונה מסומנת בירוק (ומה שנבחר - באדום)
             const state = result && sel ? (result === 'right' ? 'right' : 'wrong') : result === 'wrong' && o === question.answer ? 'right' : sel ? 'picked' : '';
             return (
-              <button
+              <motion.div
                 key={o}
+                className="er-option-wrap"
+                initial={{ opacity: 0, y: 16, scale: 0.92 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.15 + idx * 0.07, type: 'spring', stiffness: 380, damping: 22 }}
+              >
+              <button
                 className={`er-option ${state}`}
                 dir={question.optionsHebrew || isMath ? 'rtl' : 'ltr'}
                 aria-pressed={sel}
@@ -139,6 +145,7 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
                   ? <MathVisual spec={question.optionVisuals[o]} small />
                   : isMath ? <MathText text={o} /> : o}
               </button>
+              </motion.div>
             );
           })}
         </div>
@@ -185,7 +192,7 @@ const EscapeRoom = ({
   // טופס פתיחה / הצטרפות
   const [team, setTeam] = useState('');
   const [subject, setSubject] = useState(subjects.includes(defaultSubject) ? defaultSubject : subjects[0]);
-  const [minutes, setMinutes] = useState(15);
+  const [tasks, setTasks] = useState(DEFAULT_SIZE.tasks);
   const [joinCode, setJoinCode] = useState('');
   const [copied, setCopied] = useState(null);
   const [showForm, setShowForm] = useState(false); // דף הכניסה ← טופס פתיחת אתגר
@@ -294,7 +301,7 @@ const EscapeRoom = ({
   };
 
   const handleCreate = () => run(async () => {
-    const newCode = await createRoom(authUser, userData, { team: team.trim() || 'הצוות שלנו', subject, minutes });
+    const newCode = await createRoom(authUser, userData, { team: team.trim() || 'הצוות שלנו', subject, tasks });
     setCode(newCode);
   });
 
@@ -334,7 +341,7 @@ const EscapeRoom = ({
   const handleStart = () => run(() => startRoom(code, meta, members, serverNow));
 
   const handleNextRound = () => run(async () => {
-    const newCode = await createRoom(authUser, userData, { team: meta.team, subject: meta.subject, minutes: meta.minutes, prev: code });
+    const newCode = await createRoom(authUser, userData, { team: meta.team, subject: meta.subject, tasks: roomSize(meta).tasks, prev: code });
     await linkNextRound(code, newCode);
     clearRoomProgress(code);
     setCode(newCode);
@@ -360,6 +367,7 @@ const EscapeRoom = ({
   const [sentCheer, setSentCheer] = useState(false);
   const [toast, setToast] = useState(null);
 
+  const roomTasks = roomSize(meta).tasks;
   const playing = meta?.status === 'playing' && me?.st === 'in' && assign && !ended;
 
   useEffect(() => {
@@ -367,9 +375,9 @@ const EscapeRoom = ({
     const saved = readRoomProgress(code);
     const p = saved && Array.isArray(saved.topics) && (saved.code === undefined || saved.code === code)
       ? { ...saved, code }
-      : { code, topics: pickTopics(meta.subject, categoryStats, TASKS_PER_KID), done: 0, inserted: false };
+      : { code, topics: pickTopics(meta.subject, categoryStats, roomTasks), done: 0, inserted: false };
     setProgress(p);
-  }, [playing, progress, code, meta?.subject, categoryStats]);
+  }, [playing, progress, code, meta?.subject, roomTasks, categoryStats]);
 
   useEffect(() => {
     if (code && progress && progress.code === code) saveRoomProgress(code, progress);
@@ -377,7 +385,10 @@ const EscapeRoom = ({
 
   const allDone = progress && progress.done >= progress.topics.length;
 
+  const [qKey, setQKey] = useState(0); // כל שאלה חדשה נכנסת עם אנימציה
+  const [soundOn, setSound] = useState(isSoundOn);
   const newQuestion = useCallback((topic) => {
+    setQKey(k => k + 1);
     setQuestion(roomQuestion(topic));
     setPicked(null);
     setInput('');
@@ -409,7 +420,10 @@ const EscapeRoom = ({
     if (given === null || String(given).trim() === '') return;
     const ok = checkRoomAnswer(question, given);
     setResult(ok ? 'right' : 'wrong');
-    if (ok) fxCorrect();
+    if (ok) {
+      fxCorrect();
+      playSuccess(progress?.done || 0);
+    }
     else fxWrong();
     onAnswer(question.from || question.topic, ok);
     if (!ok) {
@@ -514,6 +528,7 @@ const EscapeRoom = ({
     const rec = recordRoomResult(roomId, opened, {
       code,
       minutes: meta.minutes,
+      tasks: roomSize(meta).tasks,
       team: meta.team,
       subject: meta.subject,
       filled,
@@ -523,7 +538,7 @@ const EscapeRoom = ({
     });
     onFinished?.();
     if (rec) {
-      const points = roomReward(filled, slots);
+      const points = roomReward(filled, slots, roomSize(meta).tasks);
       if (points) onReward(points);
     }
     setEndStats(rec || readEscapeStats());
@@ -614,7 +629,7 @@ const EscapeRoom = ({
           {returning
             ? <h1 className="er-next-title">מוכנים לאתגר הבא?</h1>
             : <><h1>אתגר מפצחי הכספות</h1><p>פותרים יחד, פותחים את הכספת יחד</p></>}
-          <span className="er-prize-pill">🏆 פיצחתם? <b><bdi dir="ltr">+{POINTS_FULL}</bdi> ⭐</b> לכל אחד בצוות!</span>
+          <span className="er-prize-pill">🏆 פיצחתם? עד <b><bdi dir="ltr">+{MAX_POINTS}</bdi> ⭐</b> לכל אחד!</span>
         </div>
         {freshInvites.map(([c, inv]) => (
           <motion.div key={c} className="er-invite" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
@@ -675,11 +690,13 @@ const EscapeRoom = ({
             </>
           )}
 
-          <div className="er-label" id="er-time">כמה זמן יש לכם?</div>
-          <div className="er-choices three" role="group" aria-labelledby="er-time">
-            {ROOM_MINUTES.map(m => (
-              <button key={m} className={`er-choice tall ${minutes === m ? 'on' : ''}`} aria-pressed={minutes === m} onClick={() => setMinutes(m)}>
-                <b>{m}</b><span>דקות</span>
+          <div className="er-label" id="er-size">כמה משימות לכל אחד?</div>
+          <div className="er-choices two" role="group" aria-labelledby="er-size">
+            {ROOM_SIZES.map(sz => (
+              <button key={sz.tasks} className={`er-choice er-size ${tasks === sz.tasks ? 'on' : ''}`} aria-pressed={tasks === sz.tasks} onClick={() => setTasks(sz.tasks)}>
+                <b>🧩 {sz.tasks} משימות</b>
+                <span>⏰ {sz.minutes} דקות</span>
+                <span className="er-size-points">🏆 <bdi dir="ltr">+{sz.points}</bdi> ⭐</span>
               </button>
             ))}
           </div>
@@ -717,6 +734,7 @@ const EscapeRoom = ({
   const chips = (
     <div className="er-chips">
       <span>{SUBJECTS[meta.subject]?.emoji} {SUBJECTS[meta.subject]?.name}</span>
+      <span>🧩 {roomSize(meta).tasks} משימות</span>
       <span>⏰ {meta.minutes} דקות</span>
       <span>👥 {teamList.length} בצוות</span>
     </div>
@@ -844,7 +862,7 @@ const EscapeRoom = ({
   if (ended) {
     const lastT = Math.max(...Object.values(lock).map(c => c.t || 0));
     const seconds = opened && meta.startedAt ? Math.max(0, Math.round((lastT - meta.startedAt) / 1000)) : null;
-    const points = roomReward(filled, slots);
+    const points = roomReward(filled, slots, roomSize(meta).tasks);
     const played = endStats?.played || readEscapeStats().played;
     const text = shareText({ team: meta.team, opened, filled, total: slots, seconds, link: window.location.origin });
     const codeDigits = Object.keys(lock).sort((a, b) => Number(a) - Number(b)).map(k => lock[k].d);
@@ -942,7 +960,13 @@ const EscapeRoom = ({
 
   const questionBlock = question && (
     <>
-      <div className="er-card">
+      <motion.div
+        key={qKey}
+        className={`er-card ${result === 'right' ? 'er-card-right' : ''}`}
+        initial={{ opacity: 0, x: -70, rotate: -2, scale: 0.96 }}
+        animate={{ opacity: 1, x: 0, rotate: 0, scale: 1 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+      >
         <RoomQuestion
           question={question}
           removed={hint?.remove || []}
@@ -955,18 +979,18 @@ const EscapeRoom = ({
           gender={userData?.gender}
         />
         {hint?.text && <div className="er-hint">💡 רמז: {hint.text} אף אחד בצוות לא רואה מי לקח רמז.</div>}
-      </div>
+      </motion.div>
       {!result && (
         <button className="er-cta" disabled={!answerReady} onClick={check}>בדיקה</button>
       )}
       {result === 'right' && (
-        <div className="er-feedback right">
+        <motion.div className="er-feedback right" initial={{ opacity: 0, y: 24, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 320, damping: 18 }}>
           <span>{support ? 'נכון! הוספתם רמז לקופה של הצוות 💡' : progress.done + 1 >= progress.topics.length ? 'נכון! הרווחתם חלק מהקוד של הצוות 🔑' : 'נכון! ממשיכים למשימה הבאה ✨'}</span>
           <button className="er-cta green" onClick={afterResult}>{support ? 'לשאלת בונוס נוספת' : progress.done + 1 >= progress.topics.length ? 'לחלק שלי בקוד 🔑' : 'למשימה הבאה'}</button>
-        </div>
+        </motion.div>
       )}
       {result === 'wrong' && (
-        <div className="er-feedback wrong">
+        <motion.div className="er-feedback wrong" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
           <div className="er-explain">
             <div className="er-explain-answer">
               ✅ התשובה הנכונה:{' '}
@@ -985,7 +1009,7 @@ const EscapeRoom = ({
           </div>
           <span>💪 {support ? 'עכשיו עוד שאלת בונוס.' : 'עכשיו עוד שאלה מאותו נושא - הפעם תצליחו!'}</span>
           <button className="er-cta" onClick={afterResult}>לשאלה הבאה</button>
-        </div>
+        </motion.div>
       )}
     </>
   );
@@ -996,9 +1020,17 @@ const EscapeRoom = ({
         <div className={`er-clock ${timeLeft < 60000 ? 'urgent' : ''}`} aria-label="הזמן שנשאר">
           ⏰ <span dir="ltr">{formatClock(timeLeft)}</span>
         </div>
+        <button
+          className="er-sound"
+          onClick={() => { setSoundOn(!soundOn); setSound(!soundOn); }}
+          aria-label={soundOn ? 'השתקת צלילים' : 'הפעלת צלילים'}
+          title={soundOn ? 'השתקת צלילים' : 'הפעלת צלילים'}
+        >
+          {soundOn ? '🔊' : '🔇'}
+        </button>
         {!allDone && !support && (
           <button className="er-hint-btn" disabled={busy || !question || !canHint(question) || Boolean(hint) || Boolean(result) || bank < 1} onClick={takeHint}>
-            💡 רמז מהקופה · {bank}
+            💡 רמז · {bank}
           </button>
         )}
         {(allDone || support) && <div className="er-team-name">{meta.team}</div>}
@@ -1011,7 +1043,7 @@ const EscapeRoom = ({
             <span>👁️ רק לך רואים את זה</span>
           </div>
           <div className="er-steps">
-            {progress.topics.map((t, i) => <span key={t} className={i < progress.done ? 'done' : i === progress.done ? 'now' : ''} />)}
+            {progress.topics.map((t, i) => <span key={i} className={i < progress.done ? 'done' : i === progress.done ? 'now' : ''} />)}
           </div>
         </div>
       )}
@@ -1021,10 +1053,15 @@ const EscapeRoom = ({
       {allDone && (
         <>
           <div className="er-card er-mine">
-            <div className="er-key">
+            <motion.div
+              className="er-key"
+              initial={{ scale: 0, rotate: -25 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 12, delay: 0.1 }}
+            >
               <span aria-hidden="true">🔑</span>
               <b>{myDigit}</b>
-            </div>
+            </motion.div>
             <div>
               <h2>{progress.inserted ? 'נכנס למנעול! 🎉' : 'החלק שלכם בקוד'}</h2>
               <p>{progress.inserted ? 'עכשיו אפשר לעזור לצוות במשימת התמיכה.' : 'הכניסו אותו למנעול, וכל הצוות יראה את הקוד מתמלא.'}</p>

@@ -9,7 +9,7 @@ import { ref, get, set, update, onValue, runTransaction, push, serverTimestamp }
 // הזמנות: <DB_ROOT>/invites/<uid>/<code> - מי שפותח/ת אתגר חדש עם צוות קודם מזמין/ה את החברים מאותו צוות
 import { db } from './firebase';
 import { DB_ROOT } from './env';
-import { makeRoomCode, makeCodeDigits, MAX_TEAM, STARTING_HINTS } from '../data/escapeRoom';
+import { makeRoomCode, makeCodeDigits, MAX_TEAM, STARTING_HINTS, roomSize } from '../data/escapeRoom';
 
 const roomPath = (code, sub = '') => `${DB_ROOT}/rooms/${code}${sub ? `/${sub}` : ''}`;
 const r = (code, sub) => ref(db, roomPath(code, sub));
@@ -22,7 +22,8 @@ const member = (user, userData, st) => ({
 });
 
 /** פתיחת חדר חדש. מנסים כמה קודים עד שמוצאים אחד פנוי */
-export const createRoom = async (user, userData, { team, subject, minutes, prev = null }) => {
+export const createRoom = async (user, userData, { team, subject, tasks, prev = null }) => {
+  const size = roomSize(tasks);
   for (let i = 0; i < 6; i++) {
     const code = makeRoomCode();
     try {
@@ -31,7 +32,8 @@ export const createRoom = async (user, userData, { team, subject, minutes, prev 
         host: user.uid,
         team: String(team).slice(0, 40),
         subject,
-        minutes,
+        tasks: size.tasks,
+        minutes: size.minutes,
         status: 'lobby',
         createdAt: serverTimestamp(),
         ...(prev ? { prev } : {})
@@ -126,7 +128,7 @@ export const readPrevTeam = async (prevCode, myUid) => {
  * הכללים מאפשרים להזמין רק מי שהיה איתי באותו צוות.
  */
 export const createRoomWithTeam = async (user, userData, past) => {
-  const code = await createRoom(user, userData, { team: past.team, subject: past.subject, minutes: past.minutes || 15, prev: past.code });
+  const code = await createRoom(user, userData, { team: past.team, subject: past.subject, tasks: past.tasks, prev: past.code });
   const friends = await readPrevTeam(past.code, user.uid).catch(() => []);
   await Promise.all(friends.map(uid => set(invitesRef(uid, code), {
     team: String(past.team || '').slice(0, 40),

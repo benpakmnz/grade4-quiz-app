@@ -11,8 +11,24 @@ import { IS_TEST_ENV } from '../services/env';
 export const ESCAPE_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_ESCAPE_ROOM || '').trim() === 'true';
 export const escapeRoomAvailable = (isAdmin) => ESCAPE_FOR_EVERYONE || Boolean(isAdmin);
 
-export const ROOM_MINUTES = [10, 15, 20];
+// גודל האתגר: המארח/ת בוחר/ת כמה משימות לכל ילד/ה; הזמן והפרס נגזרים מזה
+export const ROOM_SIZES = [
+  { tasks: 5, minutes: 10, points: 200 },
+  { tasks: 8, minutes: 15, points: 300 },
+  { tasks: 12, minutes: 20, points: 450 },
+  { tasks: 16, minutes: 25, points: 600 }
+];
+export const ROOM_MINUTES = ROOM_SIZES.map(s => s.minutes);
 export const TASKS_PER_KID = 5;
+export const DEFAULT_SIZE = ROOM_SIZES[1];
+/** הגודל של חדר (חדרים ישנים בלי tasks - לפי הזמן, או 5 משימות) */
+export const roomSize = (metaOrTasks) => {
+  const tasks = typeof metaOrTasks === 'number' ? metaOrTasks : metaOrTasks?.tasks;
+  return ROOM_SIZES.find(s => s.tasks === tasks)
+    || ROOM_SIZES.find(s => typeof metaOrTasks === 'object' && s.minutes === metaOrTasks?.minutes && s.tasks === TASKS_PER_KID)
+    || ROOM_SIZES[0];
+};
+export const MAX_POINTS = Math.max(...ROOM_SIZES.map(s => s.points));
 export const MAX_TEAM = 12;          // תקרה טכנית: מספר הילדים = אורך הקוד
 export const STARTING_HINTS = 2;     // כדי שיהיה רמז גם לפני שמישהו סיים
 export const CODE_PATTERN = /^[0-9]{6}$/;
@@ -44,9 +60,31 @@ export const pickTopics = (subject, categoryStats = {}, count = TASKS_PER_KID, r
       return { id, weight: rate * 0.7 + Math.min(1, (s.correct || 0) / 30) * 0.3 + random() * 0.35 };
     })
     .sort((a, b) => a.weight - b.weight)
-    .slice(0, Math.min(count, topics.length))
     .map(t => t.id);
-  return shuffle(ranked);
+  // יותר משימות מנושאים? חוזרים על הנושאים (קודם החלשים) - ובלי אותו נושא פעמיים ברצף
+  if (count <= ranked.length) return shuffle(ranked.slice(0, count));
+  const chosen = [];
+  while (chosen.length < count) {
+    // בכל סבב: הנושאים החלשים ביותר שעוד נדרשים, בסדר מעורבב
+    chosen.push(...shuffle(ranked.slice(0, Math.min(ranked.length, count - chosen.length))));
+  }
+  // אותו נושא פעמיים ברצף? מחליפים עם משימה אחרת שלא יוצרת כפילות חדשה
+  const okAt = (arr, k, t) => arr[k - 1] !== t && arr[k + 1] !== t;
+  for (let pass = 0; pass < 3; pass++) {
+    for (let i = 1; i < chosen.length; i++) {
+      if (chosen[i] !== chosen[i - 1]) continue;
+      for (let j = 0; j < chosen.length; j++) {
+        if (j === i || chosen[j] === chosen[i]) continue;
+        const a = [...chosen];
+        [a[i], a[j]] = [a[j], a[i]];
+        if (okAt(a, i, a[i]) && okAt(a, j, a[j])) {
+          chosen.splice(0, chosen.length, ...a);
+          break;
+        }
+      }
+    }
+  }
+  return chosen;
 };
 
 // שאלת הבנת הנקרא: קטע אחד ושאלה אחת ממנו (אמריקאית או Yes/No)
@@ -146,11 +184,11 @@ export const formatClock = (ms) => {
 };
 
 // ---------------- הפרס ----------------
-export const POINTS_FULL = 200;
+export const POINTS_FULL = 200; // האתגר הקטן (5 משימות)
 export const POINTS_PER_LOCK = 10;
 
 /** הפרס זהה לכל הצוות: כספת פתוחה = 200 לכל אחד, אחרת 10 לכל מנעול שנפתח */
-export const roomReward = (filled, total) => (total > 0 && filled >= total ? POINTS_FULL : filled * POINTS_PER_LOCK);
+export const roomReward = (filled, total, tasks = TASKS_PER_KID) => (total > 0 && filled >= total ? roomSize(tasks).points : filled * POINTS_PER_LOCK);
 
 // ---------------- גביעים ומונה (נשמר עם ההתקדמות) ----------------
 export const ESCAPE_KEY = 'english_escapeRooms';
@@ -195,6 +233,7 @@ export const recordRoomResult = (roomId, opened, details = {}, now = Date.now())
     id: roomId,
     code: String(details.code || String(roomId).split('-')[0]),
     minutes: ROOM_MINUTES.includes(details.minutes) ? details.minutes : 15,
+    tasks: roomSize(details.tasks || TASKS_PER_KID).tasks,
     at: now,
     opened: Boolean(opened),
     team: String(details.team || '').slice(0, 40),
