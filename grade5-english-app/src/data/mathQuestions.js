@@ -425,8 +425,10 @@ const operationsQuestion = () => {
   }
 
   if (type === 'mul1' || type === 'mul2') {
-    const a = type === 'mul1' ? (Math.random() < 0.6 ? rnd(12, 99) : rnd(101, 999)) : rnd(11, 99);
-    const b = type === 'mul1' ? rnd(2, 9) : rnd(11, 25);
+    // כפל ברמה של כיתה ה': בעיקר דו-ספרתי × חד-ספרתי, לפעמים תלת-ספרתי קטן × 2-5, ודו-ספרתי × 11-15
+    const small3 = type === 'mul1' && Math.random() < 0.25;
+    const a = type === 'mul1' ? (small3 ? rnd(101, 250) : rnd(11, 99)) : rnd(11, 35);
+    const b = type === 'mul1' ? (small3 ? rnd(2, 5) : rnd(2, 9)) : rnd(11, 15);
     return {
       kind: 'input',
       label: 'כפל',
@@ -453,7 +455,8 @@ const operationsQuestion = () => {
 
   if (type === 'div') {
     const b = rnd(2, 9);
-    const q = Math.random() < 0.6 ? rnd(3, 30) : rnd(31, 150);
+    // חילוק בלי שארית: בעיקר תוצאה עד 20 (לוח הכפל המורחב), לפעמים עד 50
+    const q = Math.random() < 0.7 ? rnd(3, 20) : rnd(21, 50);
     const a = b * q;
     return {
       kind: 'input',
@@ -554,13 +557,13 @@ const equationsQuestion = () => {
     expr = `${fmt(a)} - □ = ${fmt(a - x)}`;
     explanation = `כמה הורידו? ${fmt(a)} - ${fmt(a - x)} = ${fmt(x)}\nבדיקה: ${fmt(a)} - ${fmt(x)} = ${fmt(a - x)} ✓`;
   } else if (type === 'x*a') {
-    x = rnd(2, 12);
-    const a = rnd(2, 12) * (Math.random() < 0.3 ? 10 : 1);
+    x = rnd(2, 10);
+    const a = Math.random() < 0.25 ? rnd(2, 9) * 10 : rnd(2, 10);
     expr = Math.random() < 0.5 ? `□ × ${a} = ${a * x}` : `${a} × □ = ${a * x}`;
     explanation = `חסר גורם בכפל? מחלקים: ${a * x} : ${a} = ${x}\nבדיקה: ${x} × ${a} = ${a * x} ✓`;
   } else if (type === 'x:a') {
     const a = rnd(2, 9);
-    const q = rnd(2, 30);
+    const q = rnd(2, 15);
     x = a * q;
     expr = `□ : ${a} = ${q}`;
     explanation = `חסר המחולק? כופלים: ${q} × ${a} = ${x}\nבדיקה: ${x} : ${a} = ${q} ✓`;
@@ -591,19 +594,19 @@ const equationsQuestion = () => {
 // ======================================================================
 const WORD_PROBLEMS = [
   () => { const a = rnd(1200, 4800), b = rnd(150, 900), c = rnd(100, 700); return { text: `בספרייה היו ${fmt(a)} ספרים. הגיעו ${fmt(b)} ספרים חדשים, ו-${fmt(c)} ספרים הושאלו לקוראים. כמה ספרים נשארו בספרייה?`, value: a + b - c, unit: 'ספרים', steps: [`${fmt(a)} + ${fmt(b)} = ${fmt(a + b)}`, `${fmt(a + b)} - ${fmt(c)} = ${fmt(a + b - c)}`] }; },
-  () => { const s = pick([45, 48, 52, 55, 60]), n = rnd(4, 9), empty = rnd(3, 20); return { text: `לטיול השכבתי יצאו ${n} אוטובוסים, ובכל אוטובוס ${s} מקומות. ${empty} מקומות נשארו ריקים. כמה תלמידים יצאו לטיול?`, value: s * n - empty, unit: 'תלמידים', steps: [`${s} × ${n} = ${s * n} מקומות`, `${s * n} - ${empty} = ${s * n - empty}`] }; },
-  () => { const g = rnd(4, 8), n = rnd(12, 40); return { text: `${g * n} תלמידים התחלקו לקבוצות של ${g} תלמידים בכל קבוצה. כמה קבוצות יש?`, value: n, unit: 'קבוצות', steps: [`${g * n} : ${g} = ${n}`] }; },
+  () => { const s = pick([20, 25, 30, 40]), n = rnd(2, 5), empty = rnd(3, 15); return { text: `לטיול השכבתי יצאו ${n} אוטובוסים, ובכל אוטובוס ${s} מקומות. ${empty} מקומות נשארו ריקים. כמה תלמידים יצאו לטיול?`, value: s * n - empty, unit: 'תלמידים', steps: [`${s} × ${n} = ${s * n} מקומות`, `${s * n} - ${empty} = ${s * n - empty}`] }; },
+  () => { const g = rnd(3, 8), n = rnd(3, 15); return { text: `${g * n} תלמידים התחלקו לקבוצות של ${g} תלמידים בכל קבוצה. כמה קבוצות יש?`, value: n, unit: 'קבוצות', steps: [`${g * n} : ${g} = ${n}`] }; },
   () => { const p = rnd(6, 15), n = rnd(3, 8), pen = rnd(4, 12), paid = 100; if (p * n + pen >= paid) return null; const name = pick(NAMES_F); return { text: `${name} קנתה ${n} מחברות במחיר ${p} ₪ כל אחת, ועט ב-${pen} ₪. היא שילמה בשטר של ${paid} ₪. כמה עודף קיבלה?`, value: paid - p * n - pen, unit: '₪', steps: [`${n} × ${p} = ${n * p} ₪ על מחברות`, `${n * p} + ${pen} = ${n * p + pen} ₪ בסך הכול`, `${paid} - ${n * p + pen} = ${paid - n * p - pen} ₪ עודף`] }; },
-  () => { const s = pick([15, 20, 25, 30, 35, 40]), w = rnd(4, 12), price = s * w + rnd(20, 200); const name = pick(NAMES_M); return { text: `${name} חוסך ${s} ₪ בכל שבוע. אחרי ${w} שבועות הוא רוצה לקנות אופניים שעולים ${price} ₪. כמה כסף עוד חסר לו?`, value: price - s * w, unit: '₪', steps: [`${s} × ${w} = ${s * w} ₪ חסך`, `${price} - ${s * w} = ${price - s * w} ₪ חסרים`] }; },
-  () => { const perDay = rnd(120, 480), days = rnd(3, 7); return { text: `מפעל מייצר ${fmt(perDay)} בקבוקים ביום. כמה בקבוקים ייצר המפעל ב-${days} ימים?`, value: perDay * days, unit: 'בקבוקים', steps: [multiplyExplanation(perDay, days)] }; },
+  () => { const s = pick([10, 15, 20, 25, 30]), w = rnd(3, 8), price = s * w + rnd(20, 150); const name = pick(NAMES_M); return { text: `${name} חוסך ${s} ₪ בכל שבוע. אחרי ${w} שבועות הוא רוצה לקנות אופניים שעולים ${price} ₪. כמה כסף עוד חסר לו?`, value: price - s * w, unit: '₪', steps: [`${s} × ${w} = ${s * w} ₪ חסך`, `${price} - ${s * w} = ${price - s * w} ₪ חסרים`] }; },
+  () => { const perDay = rnd(20, 90), days = rnd(3, 6); return { text: `מפעל מייצר ${fmt(perDay)} בקבוקים ביום. כמה בקבוקים ייצר המפעל ב-${days} ימים?`, value: perDay * days, unit: 'בקבוקים', steps: [multiplyExplanation(perDay, days)] }; },
   () => { const total = rnd(20000, 60000), kids = rnd(5000, total - 5000); return { text: `בעיר גרים ${fmt(total)} תושבים. ${fmt(kids)} מהם ילדים. כמה מבוגרים גרים בעיר?`, value: total - kids, unit: 'מבוגרים', steps: [`${fmt(total)} - ${fmt(kids)} = ${fmt(total - kids)}`] }; },
-  () => { const boxes = rnd(12, 40), broken = rnd(3, 15); return { text: `בכל תבנית יש 12 ביצים. בחנות יש ${boxes} תבניות. ${broken} ביצים נשברו. כמה ביצים שלמות נשארו?`, value: boxes * 12 - broken, unit: 'ביצים', steps: [`${boxes} × 12 = ${boxes * 12} ביצים`, `${boxes * 12} - ${broken} = ${boxes * 12 - broken}`] }; },
-  () => { const f = rnd(3, 6), each = rnd(12, 30), give = rnd(2, 8); return { text: `${f} חברים חילקו ביניהם ${f * each} סוכריות שווה בשווה. כל אחד נתן ${give} סוכריות לאח הקטן שלו. כמה סוכריות נשארו לכל אחד?`, value: each - give, unit: 'סוכריות', steps: [`${f * each} : ${f} = ${each} סוכריות לכל אחד`, `${each} - ${give} = ${each - give}`] }; },
-  () => { const y = rnd(12, 45), times = rnd(2, 4); const name = pick(NAMES_F), name2 = pick(NAMES_M); return { text: `ל${name2} יש ${y} מדבקות. ל${name} יש פי ${times} יותר מדבקות. כמה מדבקות יש לשניהם יחד?`, value: y + y * times, unit: 'מדבקות', steps: [`ל${name}: ${y} × ${times} = ${y * times}`, `יחד: ${y} + ${y * times} = ${y + y * times}`] }; },
+  () => { const boxes = rnd(3, 12), broken = rnd(2, 10); return { text: `בכל תבנית יש 12 ביצים. בחנות יש ${boxes} תבניות. ${broken} ביצים נשברו. כמה ביצים שלמות נשארו?`, value: boxes * 12 - broken, unit: 'ביצים', steps: [`${boxes} × 12 = ${boxes * 12} ביצים`, `${boxes * 12} - ${broken} = ${boxes * 12 - broken}`] }; },
+  () => { const f = rnd(2, 6), each = rnd(5, 15), give = rnd(1, 4); return { text: `${f} חברים חילקו ביניהם ${f * each} סוכריות שווה בשווה. כל אחד נתן ${give} סוכריות לאח הקטן שלו. כמה סוכריות נשארו לכל אחד?`, value: each - give, unit: 'סוכריות', steps: [`${f * each} : ${f} = ${each} סוכריות לכל אחד`, `${each} - ${give} = ${each - give}`] }; },
+  () => { const y = rnd(5, 25), times = rnd(2, 4); const name = pick(NAMES_F), name2 = pick(NAMES_M); return { text: `ל${name2} יש ${y} מדבקות. ל${name} יש פי ${times} יותר מדבקות. כמה מדבקות יש לשניהם יחד?`, value: y + y * times, unit: 'מדבקות', steps: [`ל${name}: ${y} × ${times} = ${y * times}`, `יחד: ${y} + ${y * times} = ${y + y * times}`] }; },
   () => { const price = rnd(35, 65), n = rnd(2, 4), paid = 200; if (price * n >= paid) return null; return { text: `אמא קנתה ${n} חולצות במחיר ${price} ₪ כל אחת, ושילמה ב-${paid} ₪. כמה עודף קיבלה?`, value: paid - price * n, unit: '₪', steps: [`${n} × ${price} = ${n * price} ₪`, `${paid} - ${n * price} = ${paid - n * price} ₪`] }; },
-  () => { const rows = rnd(10, 20), seats = rnd(11, 20), taken = rnd(50, rows * seats - 10); return { text: `באולם ${rows} שורות, ובכל שורה ${seats} כיסאות. ${taken} כיסאות כבר תפוסים. כמה כיסאות פנויים?`, value: rows * seats - taken, unit: 'כיסאות', steps: [`${rows} × ${seats} = ${rows * seats} כיסאות`, `${rows * seats} - ${taken} = ${rows * seats - taken}`] }; },
+  () => { const rows = rnd(5, 12), seats = rnd(6, 12), taken = rnd(10, rows * seats - 5); return { text: `באולם ${rows} שורות, ובכל שורה ${seats} כיסאות. ${taken} כיסאות כבר תפוסים. כמה כיסאות פנויים?`, value: rows * seats - taken, unit: 'כיסאות', steps: [`${rows} × ${seats} = ${rows * seats} כיסאות`, `${rows * seats} - ${taken} = ${rows * seats - taken}`] }; },
   () => { const a = rnd(120, 480), diff = rnd(30, 150); const n1 = pick(NAMES_F), n2 = pick(NAMES_M); return { text: `${n1} קראה ${a} עמודים. ${n2} קרא ${diff} עמודים פחות ממנה. כמה עמודים קראו שניהם יחד?`, value: a + a - diff, unit: 'עמודים', steps: [`${n2}: ${a} - ${diff} = ${a - diff}`, `יחד: ${a} + ${a - diff} = ${2 * a - diff}`] }; },
-  () => { const km = rnd(120, 380), d = rnd(3, 7); return { text: `משאית נסעה ${km} ק"מ בכל יום, במשך ${d} ימים. כמה ק"מ נסעה בסך הכול?`, value: km * d, unit: 'ק"מ', steps: [`${km} × ${d} = ${fmt(km * d)}`] }; }
+  () => { const km = rnd(40, 150), d = rnd(2, 5); return { text: `משאית נסעה ${km} ק"מ בכל יום, במשך ${d} ימים. כמה ק"מ נסעה בסך הכול?`, value: km * d, unit: 'ק"מ', steps: [`${km} × ${d} = ${fmt(km * d)}`] }; }
 ];
 
 const wordProblemQuestion = () => {
@@ -1270,14 +1273,17 @@ const areaPerimeterQuestion = () => {
   }
 
   if (type === 'sideFromArea') {
+    // חילוק בלוח הכפל: אורך עד 10
+    const sw = rnd(3, 10);
+    const sh = sw === h ? (h > 2 ? h - 1 : h + 1) : Math.min(h, 10);
     return {
       kind: 'input',
       label: 'מהשטח לצלע',
-      prompt: `שטח המלבן הוא ${w * h} סמ"ר, ואורכו ${w} ס"מ. מה הרוחב שלו?`,
-      visual: { type: 'rect', w, h, wLabel: `${w} ס"מ`, hLabel: '?' },
-      answer: String(h),
+      prompt: `שטח המלבן הוא ${sw * sh} סמ"ר, ואורכו ${sw} ס"מ. מה הרוחב שלו?`,
+      visual: { type: 'rect', w: sw, h: sh, wLabel: `${sw} ס"מ`, hLabel: '?' },
+      answer: String(sh),
       unit: 'ס"מ',
-      explanation: `אורך × רוחב = שטח, ולכן ${w} × □ = ${w * h}\n□ = ${w * h} : ${w} = ${h} ס"מ`
+      explanation: `אורך × רוחב = שטח, ולכן ${sw} × □ = ${sw * sh}\n□ = ${sw * sh} : ${sw} = ${sh} ס"מ`
     };
   }
 
