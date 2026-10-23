@@ -919,7 +919,7 @@ const EscapeRoom = ({
           {!isHost && meta.next && <button className="er-ghost" disabled={busy} onClick={joinNextRound}>🔄 לסיבוב החדש</button>}
           {!isHost && !meta.next && <button className="er-ghost" onClick={leaveToMenu}>אתגר חדש</button>}
           {isHost && meta.next && <button className="er-ghost" onClick={() => setCode(meta.next)}>🔄 לסיבוב החדש</button>}
-          <button className="er-ghost" onClick={exit}>חזרה לאפליקציה</button>
+          <button className="er-ghost" onClick={exit}>🏠 לדף הבחירה</button>
         </div>
         <p className="er-share-note">🛡️ בהודעה ובתמונה מופיעים רק שם הצוות, הדמויות והתוצאה - בלי שמות של ילדים ובלי ציונים.</p>
       </div>
@@ -1101,7 +1101,7 @@ export class EscapeRoomBoundary extends React.Component {
           <p>אפשר לנסות שוב. אם זה חוזר - צלמו את המסך ושלחו להורה.</p>
           <code className="er-crash" dir="ltr">{String(this.state.error?.message || this.state.error).slice(0, 200)}</code>
           <button className="er-cta" onClick={() => this.setState({ error: null })}>לנסות שוב</button>
-          {this.props.onExit && <button className="er-outline" onClick={this.props.onExit}>חזרה לאפליקציה</button>}
+          {this.props.onExit && <button className="er-outline" onClick={this.props.onExit}>🏠 לדף הבחירה</button>}
         </div>
       </div>
     );
