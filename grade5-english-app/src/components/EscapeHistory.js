@@ -19,7 +19,10 @@ export const ChallengeList = ({ history = [], compact = false, onAgain = null })
         <span className="ch-main">
           <span className="ch-top">
             <b>{h.team || 'הצוות'}</b>
-            <span className="ch-meta">{SUBJECTS[h.subject]?.emoji} {dateText(h.at)}</span>
+            <span className="ch-meta">{dateText(h.at)}</span>
+          </span>
+          <span className={`ch-subject ${h.subject === 'math' ? 'math' : 'english'}`}>
+            {SUBJECTS[h.subject]?.emoji} {SUBJECTS[h.subject]?.name}
           </span>
           <span className="ch-result">
             {h.opened

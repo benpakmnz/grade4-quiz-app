@@ -614,7 +614,7 @@ const EscapeRoom = ({
           {returning
             ? <h1 className="er-next-title">מוכנים לאתגר הבא?</h1>
             : <><h1>אתגר מפצחי הכספות</h1><p>פותרים יחד, פותחים את הכספת יחד</p></>}
-          <span className="er-prize-pill">🏆 פיצחתם את הכספת? <b><bdi dir="ltr">+{POINTS_FULL}</bdi> ⭐</b> לכל אחד בצוות!</span>
+          <span className="er-prize-pill">🏆 פיצחתם? <b><bdi dir="ltr">+{POINTS_FULL}</bdi> ⭐</b> לכל אחד בצוות!</span>
         </div>
         {freshInvites.map(([c, inv]) => (
           <motion.div key={c} className="er-invite" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
@@ -919,7 +919,7 @@ const EscapeRoom = ({
         <div className="er-choices two">
           {isHost && !meta.next && <button className="er-ghost" disabled={busy} onClick={handleNextRound}>🔄 עוד סיבוב</button>}
           {!isHost && meta.next && <button className="er-ghost" disabled={busy} onClick={joinNextRound}>🔄 לסיבוב החדש</button>}
-          {!isHost && !meta.next && <button className="er-ghost" onClick={leaveToMenu}>אתגר חדש</button>}
+          <button className="er-ghost" onClick={leaveToMenu}>✨ אתגר חדש</button>
           {isHost && meta.next && <button className="er-ghost" onClick={() => setCode(meta.next)}>🔄 לסיבוב החדש</button>}
           <button className="er-ghost" onClick={exit}>🏠 לדף הבחירה</button>
         </div>

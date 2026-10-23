@@ -221,8 +221,13 @@
   color: #fef08a;
 }
 
+.hm-item.highlight .hm-name {
+  white-space: nowrap;
+}
+
 .hm-tag {
-  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 4px;
   padding: 4px 9px;
   border-radius: 50px;
   background: #fde047;

@@ -15,10 +15,10 @@ const Item = ({ icon, label, hint, onClick, active, danger, disabled, highlight,
   >
     <span className="hm-icon" aria-hidden="true">{icon}</span>
     <span className="hm-label">
-      {label}
+      <span className="hm-name">{label}</span>
       {hint && <span className="hm-hint">{hint}</span>}
+      {tag && <span className="hm-tag"><bdi dir="ltr">{tag}</bdi></span>}
     </span>
-    {tag && <span className="hm-tag"><bdi dir="ltr">{tag}</bdi></span>}
     {active && <span className="hm-check" aria-hidden="true">✓</span>}
   </button>
 );

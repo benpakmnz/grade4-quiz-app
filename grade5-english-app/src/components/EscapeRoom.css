@@ -1464,8 +1464,10 @@
 
 .er-prize-pill {
   margin-top: 6px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   border-radius: 50px;
+  white-space: nowrap;
+  max-width: 100%;
   background: #fde047;
   color: #713f12;
   font-size: 0.95rem;
@@ -1475,4 +1477,22 @@
 
 .er-prize-pill b {
   font-weight: 900;
+}
+
+.ch-subject {
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.ch-subject.english {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.ch-subject.math {
+  background: #ffedd5;
+  color: #c2410c;
 }

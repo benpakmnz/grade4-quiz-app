@@ -74,6 +74,13 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // מפתח בכותרת: כמה אתגרים בוצעו, ולחיצה פותחת את הרשימה
   const [escapeStats, setEscapeStats] = useState(() => readEscapeStats());
   const [showChallenges, setShowChallenges] = useState(false);
+  // כל כניסה לאתגר (מהתפריט, מדף הבחירה או מהמפתח) פותחת אותו מחדש - גם כשכבר נמצאים בו.
+  // אתגר שנגמר כבר לא נזכר, אז נפתח דף הכניסה; אתגר באמצע - חוזרים אליו
+  const [escapeVisit, setEscapeVisit] = useState(0);
+  const openEscape = () => {
+    setEscapeVisit(v => v + 1);
+    setCurrentGame('escape');
+  };
   // הזמנות לאתגר חדש מחברים לצוות (מופיע בדף הבחירה)
   const [inviteCount, setInviteCount] = useState(0);
   useEffect(() => {
@@ -318,7 +325,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           categoryStats={categoryStats}
           lastSubject={lastSubject}
           onPick={pickSubject}
-          onEscapeRoom={escapeOn ? () => setCurrentGame('escape') : null}
+          onEscapeRoom={escapeOn ? openEscape : null}
           escapeInvites={inviteCount}
         />
       );
@@ -343,12 +350,13 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       return (
         <EscapeRoomBoundary onExit={() => setCurrentGame(homePage)}>
         <EscapeRoom
+          key={escapeVisit}
           authUser={authUser}
           userData={userData}
           categoryStats={categoryStats}
           subjects={allowedSubjects}
           defaultSubject={subject}
-          initialCode={roomInvite}
+          initialCode={escapeVisit === 0 ? roomInvite : null}
           onExit={() => setCurrentGame(homePage)}
           onAnswer={(topic, ok) => updateCategoryStats(topic, ok)}
           onReward={(points) => setScore(s => s + points)}
@@ -438,7 +446,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               onProgress={() => openAchievements('progress')}
               onEditProfile={openProfileEdit}
               onAdmin={() => setCurrentGame('admin')}
-              onEscapeRoom={escapeOn ? () => setCurrentGame('escape') : null}
+              onEscapeRoom={escapeOn ? openEscape : null}
               onSignUp={onRequestSignup}
             />
           )}
@@ -711,7 +719,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           <EscapeHistoryDialog
             stats={escapeStats}
             onClose={() => setShowChallenges(false)}
-            onNew={escapeOn ? () => { setShowChallenges(false); setCurrentGame('escape'); } : null}
+            onNew={escapeOn ? () => { setShowChallenges(false); openEscape(); } : null}
           />
         )}
       </AnimatePresence>
