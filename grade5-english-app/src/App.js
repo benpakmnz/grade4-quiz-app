@@ -16,6 +16,11 @@ import ProfileEditDialog from './components/ProfileEditDialog';
 import WelcomeDialog from './components/WelcomeDialog';
 import StatusDialog from './components/StatusDialog';
 import GuestReminderDialog from './components/GuestReminderDialog';
+import EscapeRoom, { EscapeRoomBoundary } from './components/EscapeRoom';
+import { readRoomParam, escapeRoomAvailable, readEscapeStats } from './data/escapeRoom';
+import EscapeHistoryDialog from './components/EscapeHistory';
+import FxLayer from './components/FxLayer';
+import { watchInvites } from './services/rooms';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
@@ -61,7 +66,30 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
   // כולם מתחילים בדף הבחירה (אנגלית / חשבון). מקצוע שעוד לא פתוח למשתמש/ת מוצג אפור עם "בקרוב"
   const hasHub = SUBJECT_IDS.length > 1;
-  const startPage = hasHub ? 'hub' : 'home';
+  // קישור הזמנה לחדר בריחה (?room=123456) - נכנסים ישר לחדר
+  const [roomInvite] = useState(() => readRoomParam());
+  const escapeOn = escapeRoomAvailable(isAdmin) || Boolean(roomInvite);
+  const startPage = roomInvite ? 'escape' : hasHub ? 'hub' : 'home';
+  const homePage = hasHub ? 'hub' : 'home';
+  // מפתח בכותרת: כמה אתגרים בוצעו, ולחיצה פותחת את הרשימה
+  const [escapeStats, setEscapeStats] = useState(() => readEscapeStats());
+  const [showChallenges, setShowChallenges] = useState(false);
+  // כל כניסה לאתגר (מהתפריט, מדף הבחירה או מהמפתח) פותחת אותו מחדש - גם כשכבר נמצאים בו.
+  // אתגר שנגמר כבר לא נזכר, אז נפתח דף הכניסה; אתגר באמצע - חוזרים אליו
+  const [escapeVisit, setEscapeVisit] = useState(0);
+  const openEscape = () => {
+    setEscapeVisit(v => v + 1);
+    setCurrentGame('escape');
+  };
+  // הזמנות לאתגר חדש מחברים לצוות (מופיע בדף הבחירה)
+  const [inviteCount, setInviteCount] = useState(0);
+  useEffect(() => {
+    if (!escapeOn || !authUser || !cloudEnabled) return undefined;
+    return watchInvites(authUser.uid, (all) => {
+      const fresh = Object.values(all).filter(inv => inv && Date.now() - (inv.t || 0) < 6 * 3600000);
+      setInviteCount(fresh.length);
+    });
+  }, [escapeOn, authUser, cloudEnabled]);
   const [lastSubject] = useState(() => {
     try {
       return localStorage.getItem('english_subject');
@@ -174,6 +202,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // כל מעבר מסך מתחיל מראש העמוד (אחרת בטלפון נשארים גלולים באמצע, למשל אחרי מסך הפתיחה)
   useEffect(() => {
     window.scrollTo(0, 0);
+    setEscapeStats(readEscapeStats()); // אחרי סנכרון מהענן או אתגר שהסתיים
   }, [currentGame]);
 
   // Save data to localStorage whenever it changes (but not on initial load)
@@ -296,6 +325,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           categoryStats={categoryStats}
           lastSubject={lastSubject}
           onPick={pickSubject}
+          onEscapeRoom={escapeOn ? openEscape : null}
+          escapeInvites={inviteCount}
         />
       );
     }
@@ -313,6 +344,27 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         calculateSuccessRate={calculateSuccessRate}
         getGenderText={getGenderText}
       />;
+    }
+
+    if (currentGame === 'escape' && escapeOn) {
+      return (
+        <EscapeRoomBoundary onExit={() => setCurrentGame(homePage)}>
+        <EscapeRoom
+          key={escapeVisit}
+          authUser={authUser}
+          userData={userData}
+          categoryStats={categoryStats}
+          subjects={allowedSubjects}
+          defaultSubject={subject}
+          initialCode={escapeVisit === 0 ? roomInvite : null}
+          onExit={() => setCurrentGame(homePage)}
+          onAnswer={(topic, ok) => updateCategoryStats(topic, ok)}
+          onReward={(points) => setScore(s => s + points)}
+          onSignUp={onRequestSignup}
+          onFinished={() => setEscapeStats(readEscapeStats())}
+        />
+        </EscapeRoomBoundary>
+      );
     }
 
     if (currentGame === 'admin' && isAdmin) {
@@ -358,6 +410,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
         : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
     }}>
       <BackgroundElements />
+      <FxLayer />
 
       {syncError && currentGame !== 'welcome' && (
         <div className="sync-error-banner">⚠️ {syncError}</div>
@@ -393,6 +446,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               onProgress={() => openAchievements('progress')}
               onEditProfile={openProfileEdit}
               onAdmin={() => setCurrentGame('admin')}
+              onEscapeRoom={escapeOn ? openEscape : null}
               onSignUp={onRequestSignup}
             />
           )}
@@ -444,14 +498,39 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   gap={2}
                 >
                   <Text fontWeight="bold">נקודות:</Text>
-                  <Text fontWeight="bold" fontSize="lg">{score}</Text>
+                  <motion.span key={score} className="score-bump" initial={{ scale: 1.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                    <Text as="span" fontWeight="bold" fontSize="lg">{score}</Text>
+                  </motion.span>
                   <Text fontSize="lg">⭐</Text>
                 </Badge>
+                {streak >= 3 && (
+                  <motion.span
+                    key={`streak-${streak}`}
+                    className="streak-pill"
+                    dir="ltr"
+                    title="רצף תשובות נכונות"
+                    initial={{ scale: 1.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                  >
+                    🔥 {streak}
+                  </motion.span>
+                )}
+                {escapeStats.played > 0 && (
+                  <button
+                    className="key-badge"
+                    onClick={() => setShowChallenges(true)}
+                    aria-label={`האתגרים שלי: ${escapeStats.played}`}
+                    title="האתגרים שלי"
+                  >
+                    🗝️<i>{escapeStats.played}</i>
+                  </button>
+                )}
   
 
 
                 {/* Exam Countdown */}
-                {currentGame !== 'hub' && (
+                {currentGame !== 'hub' && daysUntilExam >= 0 && (
 <Badge
                   fontSize="sm"
                   px={3}
@@ -518,14 +597,39 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
                   alignItems="center"
                   gap={2}
                 >
-                  <Text fontWeight="bold" fontSize="xl">{score}</Text>
+                  <motion.span key={score} className="score-bump" initial={{ scale: 1.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 12 }}>
+                    <Text as="span" fontWeight="bold" fontSize="xl">{score}</Text>
+                  </motion.span>
                   <Text fontSize="xl">⭐</Text>
                 </Badge>
+                {streak >= 3 && (
+                  <motion.span
+                    key={`streak-${streak}`}
+                    className="streak-pill"
+                    dir="ltr"
+                    title="רצף תשובות נכונות"
+                    initial={{ scale: 1.5 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 12 }}
+                  >
+                    🔥 {streak}
+                  </motion.span>
+                )}
+                {escapeStats.played > 0 && (
+                  <button
+                    className="key-badge"
+                    onClick={() => setShowChallenges(true)}
+                    aria-label={`האתגרים שלי: ${escapeStats.played}`}
+                    title="האתגרים שלי"
+                  >
+                    🗝️<i>{escapeStats.played}</i>
+                  </button>
+                )}
   
 
 
                 {/* Exam Countdown - Compact */}
-                {currentGame !== 'hub' && (
+                {currentGame !== 'hub' && daysUntilExam >= 0 && (
 <Badge
                   fontSize="sm"
                   px={3}
@@ -553,6 +657,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
       <AnimatePresence mode="wait">
         <motion.div
           key={currentGame}
+          // בחדר הבריחה התוכן מעל כוכבי הרקע (שלא יסתירו כפתורים)
+          style={currentGame === 'escape' ? { position: 'relative', zIndex: 2 } : undefined}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -606,6 +712,17 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           />
         </AnimatePresence>
       )}
+
+      {/* האתגרים שבוצעו (מהמפתח בכותרת) */}
+      <AnimatePresence>
+        {showChallenges && (
+          <EscapeHistoryDialog
+            stats={escapeStats}
+            onClose={() => setShowChallenges(false)}
+            onNew={escapeOn ? () => { setShowChallenges(false); openEscape(); } : null}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Status Dialog - On App Reload */}
       {showStatusDialog && userData && (

@@ -1,4 +1,5 @@
 import { getGenderText } from './genderText';
+import { fxCorrect, fxWrong } from './fx';
 
 // לוגיקת ניקוד משותפת לכל המשחקים: נקודות, רצף, ספירת שאלות וסטטיסטיקה לפי נושא
 export const useGameScoring = ({
@@ -11,9 +12,11 @@ export const useGameScoring = ({
       const points = basePoints + streak * 5;
       setScore(score + points);
       setStreak(streak + 1);
+      fxCorrect(points, streak + 1);
       return points;
     }
     setStreak(0);
+    fxWrong();
     return 0;
   };
 

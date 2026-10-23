@@ -3,10 +3,10 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, connectAuthEmulator
 } from 'firebase/auth';
 import { usernameToEmail, normalizeUsername } from '../utils/username';
-import { getDatabase } from 'firebase/database';
+import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
 import { initializeAppCheck, ReCaptchaEnterpriseProvider } from 'firebase/app-check';
 
 // ערכים שהודבקו ב-Vercel עם רווח או ירידת שורה ישברו את החיבור - לכן trim
@@ -62,6 +62,11 @@ if (isCloudConfigured) {
   }
   auth = getAuth(app);
   db = getDatabase(app);
+  // לבדיקות מקומיות בלבד: REACT_APP_FIREBASE_EMULATOR=true - עובדים מול אמולטור במחשב ולא מול הנתונים האמיתיים
+  if (env(process.env.REACT_APP_FIREBASE_EMULATOR) === 'true') {
+    connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    connectDatabaseEmulator(db, '127.0.0.1', 9000);
+  }
 }
 
 export { auth, db };

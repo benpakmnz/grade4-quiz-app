@@ -6,17 +6,18 @@ import { getGenderText } from '../utils/genderText';
 import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
 import './HamburgerMenu.css';
 
-const Item = ({ icon, label, hint, onClick, active, danger, disabled }) => (
+const Item = ({ icon, label, hint, onClick, active, danger, disabled, highlight, tag }) => (
   <button
-    className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''} ${disabled ? 'disabled' : ''}`}
+    className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''} ${disabled ? 'disabled' : ''} ${highlight ? 'highlight' : ''}`}
     onClick={disabled ? undefined : onClick}
     disabled={disabled}
     aria-current={active ? 'true' : undefined}
   >
     <span className="hm-icon" aria-hidden="true">{icon}</span>
     <span className="hm-label">
-      {label}
+      <span className="hm-name">{label}</span>
       {hint && <span className="hm-hint">{hint}</span>}
+      {tag && <span className="hm-tag"><bdi dir="ltr">{tag}</bdi></span>}
     </span>
     {active && <span className="hm-check" aria-hidden="true">✓</span>}
   </button>
@@ -29,7 +30,7 @@ const Item = ({ icon, label, hint, onClick, active, danger, disabled }) => (
 const HamburgerMenu = ({
   userData, authUser, isGuest, cloudEnabled, isAdmin,
   subjects, enabled = subjects, subject, onPickSubject, onOpenHub,
-  onAchievements, onProgress, onEditProfile, onAdmin, onSignUp
+  onAchievements, onProgress, onEditProfile, onAdmin, onSignUp, onEscapeRoom
 }) => {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -107,6 +108,13 @@ const HamburgerMenu = ({
                     />
                   ))}
                   {onOpenHub && <Item icon="🏠" label="דף הבחירה" onClick={run(onOpenHub)} />}
+                </div>
+              )}
+
+              {onEscapeRoom && (
+                <div className="hm-section">
+                  <div className="hm-title">עם חברים</div>
+                  <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" tag="עד +600 ⭐" highlight onClick={run(onEscapeRoom)} />
                 </div>
               )}
 

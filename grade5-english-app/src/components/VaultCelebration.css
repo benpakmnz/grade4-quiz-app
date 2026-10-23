@@ -1,0 +1,167 @@
+/* חגיגת פתיחת הכספת */
+.vc-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 24px 16px;
+  box-sizing: border-box;
+  background: radial-gradient(circle at 50% 42%, #4c1d95 0%, #1e1b4b 62%, #0f0a2e 100%);
+  color: white;
+  text-align: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vc-rays {
+  position: absolute;
+  top: 42%;
+  left: 50%;
+  width: 170vmax;
+  height: 170vmax;
+  margin: -85vmax 0 0 -85vmax;
+  background: repeating-conic-gradient(rgba(253, 224, 71, 0.16) 0deg 10deg, transparent 10deg 24deg);
+  -webkit-mask-image: radial-gradient(circle, black 0%, transparent 55%);
+  mask-image: radial-gradient(circle, black 0%, transparent 55%);
+  pointer-events: none;
+}
+
+.vc-digits {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: 92vw;
+}
+
+.vc-digits span {
+  width: 46px;
+  height: 54px;
+  border-radius: 12px;
+  background: #fde047;
+  color: #713f12;
+  font-size: 1.9rem;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 18px rgba(253, 224, 71, 0.6);
+}
+
+.vc-vault {
+  position: relative;
+  width: 190px;
+  height: 190px;
+  perspective: 700px;
+}
+
+.vc-inside {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fef9c3 0%, #fbbf24 55%, #b45309 100%);
+  box-shadow: 0 0 60px 18px rgba(251, 191, 36, 0.65), inset 0 0 30px rgba(120, 53, 15, 0.6);
+  font-size: 96px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vc-door {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cbd5e1 0%, #64748b 55%, #334155 100%);
+  border: 8px solid #1e293b;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 10px rgba(255, 255, 255, 0.08);
+  transform-origin: left center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+}
+
+.vc-wheel {
+  position: relative;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 8px solid #fde047;
+  box-sizing: border-box;
+}
+
+.vc-wheel span {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 8px;
+  margin: -4px 0 0 -60px;
+  border-radius: 4px;
+  background: #fde047;
+}
+
+.vc-wheel span:nth-child(2) { transform: rotate(60deg); }
+.vc-wheel span:nth-child(3) { transform: rotate(120deg); }
+
+.vc-bolts i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #94a3b8;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.vc-bolts i:nth-child(1) { top: 14px; left: 50%; margin-left: -7px; }
+.vc-bolts i:nth-child(2) { bottom: 14px; left: 50%; margin-left: -7px; }
+.vc-bolts i:nth-child(3) { left: 14px; top: 50%; margin-top: -7px; }
+.vc-bolts i:nth-child(4) { right: 14px; top: 50%; margin-top: -7px; }
+
+.vc-title {
+  position: relative;
+  margin: 6px 0 0;
+  font-size: 2.3rem;
+  font-weight: 900;
+  line-height: 1.15;
+  color: #fde047;
+  text-shadow: 0 0 24px rgba(253, 224, 71, 0.7), 0 4px 0 #92400e;
+}
+
+.vc-sub {
+  position: relative;
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.vc-team {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 92vw;
+  font-size: 2.4rem;
+}
+
+.vc-tap {
+  position: absolute;
+  bottom: 34px;
+  left: 0;
+  right: 0;
+  font-weight: 700;
+  color: #e0e7ff;
+}
+
+.vc-confetti {
+  position: absolute;
+  top: 0;
+  pointer-events: none;
+}

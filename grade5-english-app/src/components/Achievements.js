@@ -8,6 +8,38 @@ import ProgressReport, { buildLocalReport } from './ProgressReport';
 import { LessonViewer } from './LessonViewer';
 import { TARGET_PER_CATEGORY } from '../data/categories';
 import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
+import { readEscapeStats, TROPHY_TIERS, nextTier } from '../data/escapeRoom';
+import './EscapeRoom.css';
+
+// גביע חדר הבריחה: מונה ההשתתפויות ומדף הגביעים (ארד, כסף, זהב)
+const EscapeTrophies = () => {
+  const stats = readEscapeStats();
+  const next = nextTier(stats.played);
+  return (
+    <div className="escape-trophies">
+      <h3>🔐 אתגר מפצחי הכספות</h3>
+      <div className="et-main">
+        <div className={`et-cup ${stats.played ? '' : 'empty'}`} aria-hidden="true">
+          🏆
+          {stats.played > 0 && <span className="et-count">{stats.played}</span>}
+        </div>
+        <div className="et-text">
+          <b>{stats.played ? stats.played === 1 ? 'השתתפת באתגר אחד' : `השתתפת ב-${stats.played} אתגרים` : 'עוד לא השתתפת באתגר'}</b>
+          {stats.played > 0 && <span>🔓 {stats.opened} כספות נפתחו · 💡 {stats.hints} רמזים נתת לקופה</span>}
+        </div>
+      </div>
+      <div className="et-tiers">
+        {TROPHY_TIERS.map(t => (
+          <div key={t.id} className={`et-tier ${stats.played >= t.at ? '' : 'locked'}`}>
+            <span aria-hidden="true">{t.emoji}</span>
+            <span>{t.name}</span>
+          </div>
+        ))}
+      </div>
+      {next && <div className="et-next">{stats.played ? `עוד ${next.at - stats.played} ל${next.name === 'ארד' ? 'גביע הארד' : `גביע ה${next.name}`}` : 'פותחים אתגר מהתפריט ☰ ומזמינים חברים'}</div>}
+    </div>
+  );
+};
 
 const Achievements = ({ score, streak, questionCount, onClose, categoryStats, userData, initialTab = 'overview', onPractice, subject = 'english', subjects = ['english'] }) => {
   // מקצוע אחד בכל פעם (סקירה, פירוט נושאים והתקדמות). נפתח על המקצוע שנבחר בדף הבית
@@ -426,15 +458,17 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
 
             {/* Exam Countdown & Recommendation */}
             <div className="exam-section">
-              <div className="exam-card">
-                <div className="exam-icon">⏰</div>
-                <div className="exam-content">
-                  <h4>זמן עד המבחן ב{subjectName}</h4>
-                  <div className="exam-days">{examCountdownText(daysUntilExam)}</div>
+              {daysUntilExam >= 0 && (
+                <div className="exam-card">
+                  <div className="exam-icon">⏰</div>
+                  <div className="exam-content">
+                    <h4>זמן עד המבחן ב{subjectName}</h4>
+                    <div className="exam-days">{examCountdownText(daysUntilExam)}</div>
+                  </div>
                 </div>
-              </div>
+              )}
               
-              {remainingToTarget > 0 && (
+              {remainingToTarget > 0 && daysUntilExam > 0 && (
                 <div className="recommendation-card">
                   <div className="recommendation-icon">💡</div>
                   <div className="recommendation-content">
@@ -544,6 +578,7 @@ const Achievements = ({ score, streak, questionCount, onClose, categoryStats, us
             {subjects.length > 1 && (
               <p className="badges-shared-note">✨ התגים נצברים מכל המקצועות יחד - כל תרגול, באנגלית או בחשבון, מקרב לתג הבא!</p>
             )}
+            <EscapeTrophies />
             <div className="achievements-progress">
               <div className="progress-text">
                 <span className="progress-label">התקדמות:</span>
