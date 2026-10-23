@@ -146,10 +146,10 @@ export const formatClock = (ms) => {
 };
 
 // ---------------- הפרס ----------------
-export const POINTS_FULL = 50;
+export const POINTS_FULL = 200;
 export const POINTS_PER_LOCK = 10;
 
-/** הפרס זהה לכל הצוות: כספת פתוחה = 50, אחרת 10 לכל מנעול שנפתח */
+/** הפרס זהה לכל הצוות: כספת פתוחה = 200 לכל אחד, אחרת 10 לכל מנעול שנפתח */
 export const roomReward = (filled, total) => (total > 0 && filled >= total ? POINTS_FULL : filled * POINTS_PER_LOCK);
 
 // ---------------- גביעים ומונה (נשמר עם ההתקדמות) ----------------

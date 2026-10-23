@@ -188,3 +188,55 @@
 .hm-item.disabled:hover {
   background: transparent;
 }
+
+/* אתגר מפצחי הכספות - פריט בולט בתפריט */
+.hm-item.highlight {
+  position: relative;
+  margin: 4px 0;
+  padding: 14px 12px;
+  background: linear-gradient(135deg, #4338ca 0%, #7c3aed 60%, #db2777 100%);
+  color: white;
+  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4);
+  animation: hm-glow 2.4s ease-in-out infinite;
+}
+
+.hm-item.highlight:hover,
+.hm-item.highlight:focus-visible {
+  background: linear-gradient(135deg, #3730a3 0%, #6d28d9 60%, #be185d 100%);
+  outline: none;
+}
+
+.hm-item.highlight .hm-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #fde047;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+}
+
+.hm-item.highlight .hm-hint {
+  color: #fef08a;
+}
+
+.hm-tag {
+  flex-shrink: 0;
+  padding: 4px 9px;
+  border-radius: 50px;
+  background: #fde047;
+  color: #713f12;
+  font-size: 0.8rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+@keyframes hm-glow {
+  0%, 100% { box-shadow: 0 8px 20px rgba(124, 58, 237, 0.4); }
+  50% { box-shadow: 0 8px 28px rgba(219, 39, 119, 0.6); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hm-item.highlight { animation: none; }
+}

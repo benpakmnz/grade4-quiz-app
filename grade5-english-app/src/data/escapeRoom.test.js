@@ -105,7 +105,7 @@ test('codes and links', () => {
 });
 
 test('reward is the same for the whole team', () => {
-  expect(roomReward(5, 5)).toBe(50);
+  expect(roomReward(5, 5)).toBe(200);
   expect(roomReward(4, 5)).toBe(40);
   expect(roomReward(0, 5)).toBe(0);
 });

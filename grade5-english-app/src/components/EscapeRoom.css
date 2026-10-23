@@ -1461,3 +1461,18 @@
   color: #334155;
   overflow-wrap: anywhere;
 }
+
+.er-prize-pill {
+  margin-top: 6px;
+  padding: 6px 14px;
+  border-radius: 50px;
+  background: #fde047;
+  color: #713f12;
+  font-size: 0.95rem;
+  font-weight: 700;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.18);
+}
+
+.er-prize-pill b {
+  font-weight: 900;
+}

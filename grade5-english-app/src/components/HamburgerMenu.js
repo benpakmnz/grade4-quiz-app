@@ -6,9 +6,9 @@ import { getGenderText } from '../utils/genderText';
 import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
 import './HamburgerMenu.css';
 
-const Item = ({ icon, label, hint, onClick, active, danger, disabled }) => (
+const Item = ({ icon, label, hint, onClick, active, danger, disabled, highlight, tag }) => (
   <button
-    className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''} ${disabled ? 'disabled' : ''}`}
+    className={`hm-item ${active ? 'active' : ''} ${danger ? 'danger' : ''} ${disabled ? 'disabled' : ''} ${highlight ? 'highlight' : ''}`}
     onClick={disabled ? undefined : onClick}
     disabled={disabled}
     aria-current={active ? 'true' : undefined}
@@ -18,6 +18,7 @@ const Item = ({ icon, label, hint, onClick, active, danger, disabled }) => (
       {label}
       {hint && <span className="hm-hint">{hint}</span>}
     </span>
+    {tag && <span className="hm-tag"><bdi dir="ltr">{tag}</bdi></span>}
     {active && <span className="hm-check" aria-hidden="true">✓</span>}
   </button>
 );
@@ -113,7 +114,7 @@ const HamburgerMenu = ({
               {onEscapeRoom && (
                 <div className="hm-section">
                   <div className="hm-title">עם חברים</div>
-                  <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" onClick={run(onEscapeRoom)} />
+                  <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" tag="+200 ⭐" highlight onClick={run(onEscapeRoom)} />
                 </div>
               )}
 

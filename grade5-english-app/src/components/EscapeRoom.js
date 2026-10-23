@@ -4,7 +4,7 @@ import { SUBJECTS } from '../data/subjects';
 import {
   ROOM_MINUTES, TASKS_PER_KID, MAX_TEAM, CODE_PATTERN, CHEERS,
   pickTopics, roomQuestion, checkRoomAnswer, canHint, makeHint, topicName, roomLink, formatClock,
-  roomReward, recordRoomResult, recordHintGiven, readEscapeStats,
+  roomReward, POINTS_FULL, POINTS_PER_LOCK, recordRoomResult, recordHintGiven, readEscapeStats,
   saveActiveRoom, readActiveRoom, saveRoomProgress, readRoomProgress, clearRoomProgress, shareText, ROOM_TOPICS
 } from '../data/escapeRoom';
 import {
@@ -68,7 +68,8 @@ const INTRO_STEPS = [
   { icon: '🔑', title: 'פותחים חדר ומזמינים חברים', text: 'בוחרים שם לצוות, מקצוע וזמן, ושולחים לחברים קוד או קישור.' },
   { icon: '🧩', title: 'כל אחד פותר 5 משימות', text: 'שאלה מכל נושא, ברמה שלך. ההתקדמות האישית גלויה רק לך.' },
   { icon: '🔓', title: 'מכניסים ספרה לכספת', text: 'מי שמסיים מקבל ספרה מהקוד. כשכל הספרות בפנים - הכספת נפתחת!' },
-  { icon: '🤝', title: 'עוזרים אחד לשני', text: 'מי שסיים ממלא את קופת הרמזים ושולח עידוד. בלי תחרות - מנצחים יחד.' }
+  { icon: '🤝', title: 'עוזרים אחד לשני', text: 'מי שסיים ממלא את קופת הרמזים ושולח עידוד. בלי תחרות - מנצחים יחד.' },
+  { icon: '🏆', title: `פרס: ${POINTS_FULL} נקודות לכל אחד!`, text: `כשהכספת נפתחת - כל אחד בצוות מקבל ${POINTS_FULL} נקודות ⭐ וגביע. נגמר הזמן? ${POINTS_PER_LOCK} נקודות על כל מנעול שנפתח.` }
 ];
 
 const shareOrWhatsApp = async (text) => {
@@ -613,6 +614,7 @@ const EscapeRoom = ({
           {returning
             ? <h1 className="er-next-title">מוכנים לאתגר הבא?</h1>
             : <><h1>אתגר מפצחי הכספות</h1><p>פותרים יחד, פותחים את הכספת יחד</p></>}
+          <span className="er-prize-pill">🏆 פיצחתם את הכספת? <b><bdi dir="ltr">+{POINTS_FULL}</bdi> ⭐</b> לכל אחד בצוות!</span>
         </div>
         {freshInvites.map(([c, inv]) => (
           <motion.div key={c} className="er-invite" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
