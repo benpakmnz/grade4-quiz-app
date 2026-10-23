@@ -867,7 +867,6 @@ const EscapeRoom = ({
           <p>{opened ? `${meta.team}${seconds != null ? ` · ${formatClock(seconds * 1000)} דקות` : ''}` : `פתחתם ${filled} מתוך ${slots} מנעולים 💪`}</p>
         </div>
 
-        <Vault slots={slots} lock={lock} />
 
         <div className="er-card er-center-card">
           {!opened && <div className="er-muted">מה הצוות הרוויח</div>}
