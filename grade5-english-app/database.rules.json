@@ -115,6 +115,14 @@
           }
         }
       },
+      "classOf": {
+        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        "$uid": {
+          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          ".write": "($app === 'english' || $app === 'english-test') && auth != null && ((auth.uid === $uid && !data.exists() && newData.exists()) || root.child($app).child('admins').child(auth.uid).val() === true)",
+          ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9]{2,12}$/)"
+        }
+      },
       "rooms": {
         "$code": {
           ".validate": "$code.matches(/^[0-9]{6}$/)",
@@ -129,7 +137,7 @@
               ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 40"
             },
             "subject": {
-              ".validate": "newData.val() === 'english' || newData.val() === 'math' || newData.val() === 'hebrew'"
+              ".validate": "newData.val() === 'english' || newData.val() === 'math' || newData.val() === 'hebrew' || newData.val() === 'math3'"
             },
             "minutes": {
               ".validate": "newData.val() === 10 || newData.val() === 15 || newData.val() === 20 || newData.val() === 25"
@@ -158,6 +166,9 @@
             "next": {
               ".validate": "newData.isString() && newData.val().matches(/^[0-9]{6}$/)"
             },
+            "cls": {
+              ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val()) && (newData.val() === root.child($app).child('classOf').child(auth.uid).val() || (!root.child($app).child('classOf').child(auth.uid).exists() && newData.val() === 'gi5') || root.child($app).child('admins').child(auth.uid).val() === true)"
+            },
             "$other": {
               ".validate": false
             }
@@ -165,7 +176,7 @@
           "members": {
             ".read": "($app === 'english' || $app === 'english-test') && auth != null",
             "$uid": {
-              ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('rooms').child($code).child('meta').exists() && ((auth.uid === $uid && !newData.exists()) || (auth.uid === $uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && (newData.child('st').val() === 'pending' || root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid)) || (root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && data.exists() && newData.exists()))",
+              ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('rooms').child($code).child('meta').exists() && ((auth.uid === $uid && !newData.exists()) || (auth.uid === $uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && (newData.child('st').val() === 'pending' || root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid) && (root.child($app).child('rooms').child($code).child('meta').child('cls').val() === root.child($app).child('classOf').child(auth.uid).val() || (!root.child($app).child('classOf').child(auth.uid).exists() && root.child($app).child('rooms').child($code).child('meta').child('cls').val() === 'gi5') || (!root.child($app).child('rooms').child($code).child('meta').child('cls').exists() && root.child($app).child('classOf').child(auth.uid).val() === 'gi5') || root.child($app).child('admins').child(auth.uid).val() === true)) || (root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && data.exists() && newData.exists()))",
               ".validate": "newData.hasChildren(['name', 'emoji', 'st', 't'])",
               "name": {
                 ".validate": "newData.isString() && newData.val().length <= 30"

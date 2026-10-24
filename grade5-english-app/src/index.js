@@ -5,6 +5,10 @@ import './index.css';
 import AuthGate from './components/AuthGate';
 import EnvBanner from './components/EnvBanner';
 import reportWebVitals from './reportWebVitals';
+import { capturePendingClass } from './data/classes';
+
+// קישור הצטרפות לכיתה (?class=g3) - נשמר עד שהילד/ה נרשם/ת
+capturePendingClass();
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

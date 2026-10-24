@@ -27,7 +27,7 @@ export const shuffle = (arr) => {
 export const gcd = (a, b) => (b === 0 ? Math.abs(a) : gcd(b, a % b));
 
 /** 4 אפשרויות שונות: התשובה + מסיחים (בלי כפילויות ובלי ערכים לא תקינים) */
-const withDistractors = (answer, candidates, count = 4) => {
+export const withDistractors = (answer, candidates, count = 4) => {
   const seen = new Set([String(answer)]);
   const out = [String(answer)];
   for (const c of candidates) {
@@ -49,8 +49,8 @@ export const toMixed = (n, d) => {
   return w ? `${w} ${r}/${d}` : `${r}/${d}`;
 };
 
-const NAMES_F = ['נועה', 'מאיה', 'תמר', 'שירה', 'יעל', 'רותם', 'אביגיל', 'הילה', 'ליה', 'עדי'];
-const NAMES_M = ['איתי', 'יונתן', 'עומר', 'דניאל', 'אורי', 'נדב', 'אריאל', 'רון', 'יואב', 'תום'];
+export const NAMES_F = ['נועה', 'מאיה', 'תמר', 'שירה', 'יעל', 'רותם', 'אביגיל', 'הילה', 'ליה', 'עדי'];
+export const NAMES_M = ['איתי', 'יונתן', 'עומר', 'דניאל', 'אורי', 'נדב', 'אריאל', 'רון', 'יואב', 'תום'];
 
 // ======================================================================
 // מבנה עשרוני ופילוג

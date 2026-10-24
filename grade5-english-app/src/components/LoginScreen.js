@@ -4,6 +4,7 @@ import { signInWithGoogle, signInWithUsername, signUpWithUsername, describeAuthE
 import { validateUsername, validatePassword, USERNAME_MAX } from '../utils/username';
 import './WelcomeScreen.css';
 import './LoginScreen.css';
+import { readPendingClass, classLabel } from '../data/classes';
 
 const GoogleLogo = () => (
   <svg className="google-logo" viewBox="0 0 48 48" aria-hidden="true">
@@ -17,6 +18,7 @@ const GoogleLogo = () => (
 // טופס שם משתמש + סיסמה (כניסה / הרשמה)
 const UsernameForm = ({ busy, setBusy, setError, initialMode = 'signin' }) => {
   const [mode, setMode] = useState(initialMode); // signin | signup
+  const joiningClass = readPendingClass(); // מי שהגיע/ה מקישור של כיתה
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -50,6 +52,9 @@ const UsernameForm = ({ busy, setBusy, setError, initialMode = 'signin' }) => {
 
   return (
     <form className="username-form" onSubmit={submit}>
+      {joiningClass && mode === 'signup' && (
+        <div className="login-class">🏫 {classLabel(joiningClass)} - אחרי ההרשמה תגיעו ישר לתרגול של הכיתה</div>
+      )}
       <div className="login-tabs" role="tablist">
         <button type="button" role="tab" aria-selected={mode === 'signin'}
           className={`login-tab ${mode === 'signin' ? 'active' : ''}`} onClick={() => switchMode('signin')}>
@@ -122,6 +127,7 @@ const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [showUsername, setShowUsername] = useState(initialMode === 'signup');
+  const joining = readPendingClass();
 
   const google = async () => {
     setBusy(true);
@@ -149,9 +155,9 @@ const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
         >
           👋 ברוכים הבאים!
         </motion.h1>
-        <p className="welcome-subtitle">מתכוננים למבחני המיפוי - אנגלית וחשבון 📚</p>
+        <p className="welcome-subtitle">{joining ? `${classLabel(joining)} · מתכוננים למבחן 📚` : 'מתכוננים למבחני המיפוי - אנגלית וחשבון 📚'}</p>
 
-        {initialMode === 'signup' && (
+        {initialMode === 'signup' && !joining && (
           <p className="login-carry">✅ כל מה שכבר תרגלת במכשיר הזה יעבור לחשבון החדש</p>
         )}
         <p className="login-explain">

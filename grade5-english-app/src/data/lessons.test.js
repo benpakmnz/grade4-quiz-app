@@ -5,7 +5,7 @@ const KNOWN = ['rules', 'howto', 'sort', 'check', 'tips', 'pictures'];
 const VISUALS = ['fraction', 'fractionPair', 'set', 'numberLine', 'sequence', 'polygon', 'angle', 'clock', 'rect'];
 
 test('every practice category except the mixed test has a lesson', () => {
-  categories.filter(c => !['mixed', 'mTest', 'hTest'].includes(c.id)).forEach(c => {
+  categories.filter(c => !['mixed', 'mTest', 'hTest', 'g3Test'].includes(c.id)).forEach(c => {
     expect([c.id, Boolean(lessons[c.id])]).toEqual([c.id, true]);
   });
 });

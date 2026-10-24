@@ -5,10 +5,20 @@ import { getGenderText } from '../utils/genderText';
 import { TARGET_PER_CATEGORY } from '../data/categories';
 import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 
+// מה לומדים בכל מקצוע (רק המקצועות של הכיתה מוצגים)
+const ABOUT = {
+  english: (g) => <>אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה. 🔊 {g('לחצי')} על כפתור הרמקול כדי לשמוע איך אומרים.</>,
+  math: () => <>מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.</>,
+  hebrew: () => <>שורשים ומשפחות מילים, שמות עצם, מילות קישור, זמנים, פעלים וכינויי גוף.</>,
+  math3: () => <>מספרים עד 1,000, חיבור, חיסור, כפל וחילוק, בעיות מילוליות, היקף ושטח - עם הסבר "איך פותרים?" בכל נושא.</>
+};
+
+/** "אנגלית, חשבון ושפה" */
+const joinNames = (names) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} ו${names[names.length - 1]}`);
+
 const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
-  const hasMath = subjects.includes('math');
-  const hasHebrew = subjects.includes('hebrew');
-  console.log('WelcomeDialog - userData:', userData);
+  const g = (t) => getGenderText(t, userData?.gender);
+  const known = subjects.filter(id => SUBJECTS[id]);
   
   return (
     <motion.div
@@ -33,24 +43,16 @@ const WelcomeDialog = ({ onClose, userData, subjects = ['english'] }) => {
         <div className="welcome-dialog-body">
           <div className="welcome-section">
             <div className="welcome-icon">📝</div>
-            <h3>{hasMath && hasHebrew ? 'אנגלית, חשבון ושפה' : hasMath ? 'אנגלית וחשבון' : 'מבחן מיפוי באנגלית'}</h3>
+            <h3>{known.length === 1 ? SUBJECTS[known[0]].examName : joinNames(known.map(id => SUBJECTS[id].name))}</h3>
             <p>
-              {hasMath && <>🔤 <strong>אנגלית:</strong> </>}אוצר מילים, דקדוק, הבנת הנקרא, הבנת הנשמע וכתיבה.
-              {' '}🔊 {getGenderText('לחצי', userData?.gender)} על כפתור הרמקול כדי לשמוע איך אומרים.
-              <br />
-              {hasMath && (
-                <>
-                  🔢 <strong>חשבון:</strong> מספרים עד המיליון, ארבע פעולות, שברים וגאומטריה - עם הסבר "איך פותרים?" בכל נושא.
+              {known.map(id => (
+                <React.Fragment key={id}>
+                  {known.length > 1 && <>{SUBJECTS[id].emoji} <strong>{SUBJECTS[id].name}:</strong> </>}
+                  {(ABOUT[id] || ABOUT.math)(g)}
                   <br />
-                  {hasHebrew && (
-                    <>
-                      📝 <strong>שפה:</strong> שורשים ומשפחות מילים, שמות עצם, מילות קישור, זמנים, פעלים וכינויי גוף.
-                      <br />
-                    </>
-                  )}
-                  {getGenderText('בחרי', userData?.gender)} מקצוע בראש דף הבית.{' '}
-                </>
-              )}
+                </React.Fragment>
+              ))}
+              {known.length > 1 && <>{g('בחרי')} מקצוע בדף הבחירה.{' '}</>}
               <strong>היעד: 100% בכל נושא!</strong>
             </p>
           </div>

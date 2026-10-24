@@ -166,3 +166,9 @@
 .math-visual svg {
   direction: ltr;
 }
+
+.mv-side {
+  font-size: 7.5px;
+  font-weight: 700;
+  fill: #047857;
+}

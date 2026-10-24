@@ -201,3 +201,13 @@
   font-size: 0.85rem;
   font-weight: 600;
 }
+
+.login-class {
+  background: #ecfdf5;
+  color: #047857;
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 8px;
+}

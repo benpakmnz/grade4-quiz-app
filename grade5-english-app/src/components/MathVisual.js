@@ -127,7 +127,7 @@ const Sequence = ({ items }) => (
 );
 
 // ---------- מצולעים ----------
-const Polygon = ({ points, labels, highlight = [] }) => {
+const Polygon = ({ points, labels = [], highlight = [], sideLabels = [] }) => {
   const n = points.length;
   const cx = points.reduce((s, p) => s + p[0], 0) / n;
   const cy = points.reduce((s, p) => s + p[1], 0) / n;
@@ -146,6 +146,22 @@ const Polygon = ({ points, labels, highlight = [] }) => {
         return (
           <text key={i} x={p[0] + (dx / len) * 8} y={p[1] + (dy / len) * 8 + 3.5} textAnchor="middle" className="mv-vertex">
             {labels[i]}
+          </text>
+        );
+      })}
+      {/* אורכי הצלעות - באמצע כל צלע, מחוץ לצורה */}
+      {sideLabels.map((text, i) => {
+        if (!text) return null;
+        const a = points[i];
+        const b = points[(i + 1) % n];
+        const mx = (a[0] + b[0]) / 2;
+        const my = (a[1] + b[1]) / 2;
+        const dx = mx - cx;
+        const dy = my - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        return (
+          <text key={`s${i}`} x={mx + (dx / len) * 9} y={my + (dy / len) * 9 + 3} textAnchor="middle" className="mv-side">
+            {text}
           </text>
         );
       })}

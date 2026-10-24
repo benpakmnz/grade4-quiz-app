@@ -8,6 +8,8 @@ import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import MathGame from './components/MathGame';
 import { generateHebrewQuestion } from './data/hebrewQuestions';
+import { generateMath3Question } from './data/math3Questions';
+import { DEFAULT_CLASS, classById, readViewClass, saveViewClass } from './data/classes';
 import SubjectHub from './components/SubjectHub';
 import HamburgerMenu from './components/HamburgerMenu';
 import AdminPanel from './components/AdminPanel';
@@ -45,7 +47,7 @@ const getEmptyCategoryStats = () =>
     return acc;
   }, {});
 
-function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, isGuest = false, onRequestSignup }) {
+function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, isGuest = false, classId = DEFAULT_CLASS, onRequestSignup }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -62,12 +64,21 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   
   // Track success per category
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
-  // המקצוע שנבחר בדף הבית (אנגלית / חשבון)
-  const allowedSubjects = subjectsByExam(availableSubjects(isAdmin));
-  const subjectList = subjectsByExam(SUBJECT_IDS);
+  // הכיתה: כל ילד רואה רק את המקצועות של הכיתה שלו. מנהל/ת יכול/ה "לראות כמו" כיתה אחרת (רק בתצוגה)
+  const [viewClass, setViewClass] = useState(() => (isAdmin ? readViewClass() : null));
+  const myClass = (isAdmin && viewClass) || classId;
+  const changeViewClass = (id) => {
+    const next = id === classId ? null : id;
+    saveViewClass(next);
+    setViewClass(next);
+    setCurrentGame('hub');
+  };
+  // המקצוע שנבחר בדף הבית
+  const allowedSubjects = subjectsByExam(availableSubjects(isAdmin, myClass));
+  const subjectList = subjectsByExam(classById(myClass).subjects);
   const [chosenSubject, setSubject] = useState(() => readSubject(undefined, allowedSubjects));
-  // מי שאין לו גישה לחשבון (עדיין) - תמיד אנגלית
-  const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
+  // מקצוע שלא שייך לכיתה (או שעוד לא פתוח) - הראשון ברשימה
+  const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : (allowedSubjects[0] || 'english');
   // כולם מתחילים בדף הבחירה (אנגלית / חשבון). מקצוע שעוד לא פתוח למשתמש/ת מוצג אפור עם "בקרוב"
   const hasHub = SUBJECT_IDS.length > 1;
   // קישור הזמנה לחדר בריחה (?room=123456) - נכנסים ישר לחדר
@@ -360,6 +371,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
           categoryStats={categoryStats}
           subjects={allowedSubjects}
           defaultSubject={subject}
+          classId={myClass}
           initialCode={escapeVisit === 0 ? roomInvite : null}
           onExit={() => setCurrentGame(homePage)}
           onAnswer={(topic, ok) => updateCategoryStats(topic, ok)}
@@ -397,6 +409,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
     if (category.subject === 'math') {
       return <MathGame {...gameProps} />;
+    }
+    if (category.subject === 'math3') {
+      return <MathGame {...gameProps} generate={generateMath3Question} />;
     }
     if (category.subject === 'hebrew') {
       return <MathGame {...gameProps} generate={generateHebrewQuestion} praises={HEBREW_PRAISES} />;
@@ -444,6 +459,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               isGuest={isGuest}
               cloudEnabled={cloudEnabled}
               isAdmin={isAdmin}
+              classId={myClass}
+              onViewClass={isAdmin ? changeViewClass : null}
               subjects={subjectList}
               enabled={allowedSubjects}
               subject={currentGame === 'hub' ? null : subject}

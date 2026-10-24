@@ -8,6 +8,7 @@
 
 import { mathLessons } from './mathLessons';
 import { hebrewLessons } from './hebrewLessons';
+import { math3Lessons } from './math3Lessons';
 
 const englishLessons = {
   isAre: {
@@ -357,6 +358,6 @@ const englishLessons = {
   }
 };
 
-export const lessons = { ...englishLessons, ...mathLessons, ...hebrewLessons };
+export const lessons = { ...englishLessons, ...mathLessons, ...hebrewLessons, ...math3Lessons };
 
 export const hasLesson = (categoryId) => Boolean(lessons[categoryId]);
