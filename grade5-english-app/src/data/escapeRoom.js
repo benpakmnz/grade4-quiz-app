@@ -3,6 +3,7 @@
 import { generateQuestion, getPassage, shuffle } from './questionGenerator';
 import { generateMathQuestion, MATH_TOPIC_IDS, isInputCorrect } from './mathQuestions';
 import { generateHebrewQuestion, HEBREW_TOPIC_IDS } from './hebrewQuestions';
+import { generateMath3Question, MATH3_TOPIC_IDS } from './math3Questions';
 import { findCategory } from './subjects';
 import { notifyLocalChange } from '../services/cloudSync';
 import { IS_TEST_ENV } from '../services/env';
@@ -41,8 +42,12 @@ export const CODE_PATTERN = /^[0-9]{6}$/;
 export const ROOM_TOPICS = {
   english: ['vocabulary', 'isAre', 'hasHave', 'canCant', 'becauseWhy', 'reading'],
   math: MATH_TOPIC_IDS,
-  hebrew: HEBREW_TOPIC_IDS
+  hebrew: HEBREW_TOPIC_IDS,
+  math3: MATH3_TOPIC_IDS
 };
+
+/** לאיזה מקצוע שייך הנושא */
+const subjectOfTopic = (topic) => Object.keys(ROOM_TOPICS).find(s => s !== 'english' && ROOM_TOPICS[s].includes(topic)) || 'english';
 
 export const CHEERS = [
   { id: 'almost', text: '💪 יאללה, כמעט!' },
@@ -115,19 +120,19 @@ const usable = (q) => Boolean(q) && (
 );
 
 const tryTopic = (topic) => {
-  const isMath = MATH_TOPIC_IDS.includes(topic);
-  const isHebrew = HEBREW_TOPIC_IDS.includes(topic);
+  const subject = subjectOfTopic(topic);
   for (let i = 0; i < 5; i++) {
     let q = null;
     try {
-      if (isMath) q = generateMathQuestion(topic);
-      else if (isHebrew) q = generateHebrewQuestion(topic);
+      if (subject === 'math') q = generateMathQuestion(topic);
+      else if (subject === 'math3') q = generateMath3Question(topic);
+      else if (subject === 'hebrew') q = generateHebrewQuestion(topic);
       else if (topic === 'reading') q = readingQuestion();
       else q = generateQuestion(topic);
     } catch (err) {
       console.warn('Escape room: question failed', topic, err);
     }
-    if (usable(q)) return { ...q, subject: isMath ? 'math' : isHebrew ? 'hebrew' : 'english' };
+    if (usable(q)) return { ...q, subject };
   }
   return null;
 };
@@ -138,7 +143,7 @@ const tryTopic = (topic) => {
  * topic נשאר הנושא של המשימה (כדי שההתקדמות תמשיך כרגיל)
  */
 export const roomQuestion = (topic) => {
-  const subject = MATH_TOPIC_IDS.includes(topic) ? 'math' : HEBREW_TOPIC_IDS.includes(topic) ? 'hebrew' : 'english';
+  const subject = subjectOfTopic(topic);
   const order = [topic, ...shuffle(ROOM_TOPICS[subject].filter(t => t !== topic))];
   for (const t of order) {
     const q = tryTopic(t);
@@ -244,7 +249,7 @@ export const recordRoomResult = (roomId, opened, details = {}, now = Date.now())
     at: now,
     opened: Boolean(opened),
     team: String(details.team || '').slice(0, 40),
-    subject: ['math', 'hebrew'].includes(details.subject) ? details.subject : 'english',
+    subject: Object.keys(ROOM_TOPICS).includes(details.subject) ? details.subject : 'english',
     filled: Number(details.filled) || 0,
     total: Number(details.total) || 0,
     seconds: Number.isFinite(details.seconds) ? details.seconds : null,

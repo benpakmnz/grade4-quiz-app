@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
-import { SUBJECTS } from '../data/subjects';
+import { SUBJECTS, subjectFamily } from '../data/subjects';
 import { formatClock } from '../data/escapeRoom';
 import './EscapeRoom.css';
 
@@ -21,7 +21,7 @@ export const ChallengeList = ({ history = [], compact = false, onAgain = null })
             <b>{h.team || 'הצוות'}</b>
             <span className="ch-meta">{dateText(h.at)}</span>
           </span>
-          <span className={`ch-subject ${['math', 'hebrew'].includes(h.subject) ? h.subject : 'english'}`}>
+          <span className={`ch-subject ${['math', 'hebrew'].includes(subjectFamily(h.subject)) ? subjectFamily(h.subject) : 'english'}`}>
             {SUBJECTS[h.subject]?.emoji} {SUBJECTS[h.subject]?.name}
           </span>
           <span className="ch-result">

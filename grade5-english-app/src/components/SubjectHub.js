@@ -22,6 +22,11 @@ const LOOK = {
     tagline: 'מספרים, שברים וגאומטריה',
     floaters: ['+', '÷', '×', '½', '📐', '🔢'],
     className: 'hub-card-math'
+  },
+  math3: {
+    tagline: 'מספרים עד 1,000, פעולות, היקף ושטח',
+    floaters: ['+', '-', '×', '÷', '📐', '🔢'],
+    className: 'hub-card-math'
   }
 };
 
@@ -95,7 +100,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
       <div className="hub-cards">
         {subjects.map((id, i) => {
           const s = SUBJECTS[id];
-          const look = LOOK[id];
+          const look = LOOK[id] || LOOK.math;
           const locked = !enabled.includes(id);
           const days = getDaysUntilSubjectExam(id);
           const ready = subjectReadiness(id, categoryStats);

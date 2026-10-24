@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SUBJECTS } from '../data/subjects';
+import { SUBJECTS, subjectFamily } from '../data/subjects';
+import { DEFAULT_CLASS } from '../data/classes';
 import {
   ROOM_SIZES, DEFAULT_SIZE, roomSize, MAX_POINTS, MAX_TEAM, CODE_PATTERN, CHEERS,
   pickTopics, roomQuestion, checkRoomAnswer, canHint, makeHint, topicName, roomLink, formatClock,
@@ -96,7 +97,7 @@ const copy = async (text) => {
 
 // ---------------- שאלה ----------------
 const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, locked, result, gender }) => {
-  const isMath = question.subject === 'math';
+  const isMath = subjectFamily(question.subject) === 'math';
   const options = (question.options || []).filter(o => !removed.includes(o));
   return (
     <div className="er-question">
@@ -172,7 +173,7 @@ const RoomQuestion = ({ question, removed, picked, setPicked, input, setInput, l
 
 // ---------------- מסך ראשי ----------------
 const EscapeRoom = ({
-  authUser, userData, categoryStats, subjects, defaultSubject, initialCode,
+  authUser, userData, categoryStats, subjects, defaultSubject, initialCode, classId = DEFAULT_CLASS,
   onExit, onAnswer, onReward, onSignUp, onFinished
 }) => {
   const uid = authUser?.uid;
@@ -301,9 +302,13 @@ const EscapeRoom = ({
   };
 
   const handleCreate = () => run(async () => {
-    const newCode = await createRoom(authUser, userData, { team: team.trim() || 'הצוות שלנו', subject, tasks });
+    const newCode = await createRoom(authUser, userData, { team: team.trim() || 'הצוות שלנו', subject, tasks, cls: classId });
     setCode(newCode);
   });
+
+  // כל כיתה משחקת רק עם הכיתה שלה (חדרים מלפני שהיו כיתות שייכים לכיתת ברירת המחדל)
+  const OTHER_CLASS = 'החדר הזה שייך לכיתה אחרת. אפשר לפתוח אתגר חדש עם החברים מהכיתה 🙂';
+  const isOtherClass = (m) => Boolean(m) && (m.cls || DEFAULT_CLASS) !== classId;
 
   const handleJoinCode = () => {
     const c = joinCode.trim();
@@ -313,16 +318,23 @@ const EscapeRoom = ({
     }
     run(async () => {
       const m = await readMeta(c);
-      if (m) setCode(c);
+      if (isOtherClass(m)) setError(OTHER_CLASS);
+      else if (m) setCode(c);
       else setError('לא מצאנו חדר עם הקוד הזה. בדקו אותו עם מי שפתח/ה את החדר.');
     });
   };
 
-  const handleRequest = () => run(() => requestJoin(code, authUser, userData));
+  const handleRequest = () => {
+    if (isOtherClass(meta)) {
+      setError(OTHER_CLASS);
+      return;
+    }
+    run(() => requestJoin(code, authUser, userData));
+  };
 
   // אתגר חדש עם צוות מאתגר קודם (כל מי שהיה בצוות יכול לפתוח)
   const handleAgain = (past) => run(async () => {
-    const newCode = await createRoomWithTeam(authUser, userData, past);
+    const newCode = await createRoomWithTeam(authUser, userData, past, classId);
     setCode(newCode);
   });
 
@@ -334,6 +346,10 @@ const EscapeRoom = ({
       setError('האתגר הזה כבר התחיל או נסגר. אפשר לפתוח אתגר חדש 🙂');
       return;
     }
+    if (isOtherClass(m)) {
+      setError(OTHER_CLASS);
+      return;
+    }
     await requestJoin(inviteCode, authUser, userData);
     setCode(inviteCode);
   });
@@ -341,7 +357,7 @@ const EscapeRoom = ({
   const handleStart = () => run(() => startRoom(code, meta, members, serverNow));
 
   const handleNextRound = () => run(async () => {
-    const newCode = await createRoom(authUser, userData, { team: meta.team, subject: meta.subject, tasks: roomSize(meta).tasks, prev: code });
+    const newCode = await createRoom(authUser, userData, { team: meta.team, subject: meta.subject, tasks: roomSize(meta).tasks, prev: code, cls: meta.cls || classId });
     await linkNextRound(code, newCode);
     clearRoomProgress(code);
     setCode(newCode);
@@ -995,7 +1011,7 @@ const EscapeRoom = ({
             <div className="er-explain-answer">
               ✅ התשובה הנכונה:{' '}
               <b dir="auto">
-                {question.subject === 'math'
+                {subjectFamily(question.subject) === 'math'
                   ? <MathText text={`${question.answer}${question.unit ? ` ${question.unit}` : ''}`} />
                   : question.answer}
               </b>
@@ -1004,7 +1020,7 @@ const EscapeRoom = ({
               .split('\n')
               .filter(Boolean)
               .map((line, i) => (
-                <p key={i}>{question.subject === 'math' ? <MathText text={line} /> : line}</p>
+                <p key={i}>{subjectFamily(question.subject) === 'math' ? <MathText text={line} /> : line}</p>
               ))}
           </div>
           <span>💪 {support ? 'עכשיו עוד שאלת בונוס.' : 'עכשיו עוד שאלה מאותו נושא - הפעם תצליחו!'}</span>

@@ -4,6 +4,8 @@ import LoginScreen from './LoginScreen';
 import { isCloudConfigured, onUserChanged } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { subscribeContent, checkIsAdmin } from '../services/contentSync';
+import { resolveMyClass, readLocalClass } from '../services/classSync';
+import { readPendingClass } from '../data/classes';
 import { trackVisit } from '../services/analytics';
 import { IS_TEST_ENV } from '../services/env';
 import { startSession, endSession } from '../services/sessions';
@@ -27,6 +29,7 @@ const AuthGate = () => {
   const [user, setUser] = useState(null);
   const [syncError, setSyncError] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [classId, setClassId] = useState(() => readLocalClass() || readPendingClass());
   const [loginMode, setLoginMode] = useState(null); // 'signup' - כשמגיעים מתזכורת ההרשמה
 
   // שאלות שנוספו בממשק הניהול - נטענות לכולם (גם בלי התחברות)
@@ -41,6 +44,7 @@ const AuthGate = () => {
         stopSync();
         setUser(null);
         setIsAdmin(false);
+        setClassId(readPendingClass());
         setState(readGuest() ? 'guest' : 'login');
         return;
       }
@@ -57,6 +61,14 @@ const AuthGate = () => {
       }
       startSession(u.uid);
       setIsAdmin(await checkIsAdmin(u.uid));
+      // בלי "ראיתי את מסך הפתיחה" אחרי הסנכרון = משתמש/ת חדש/ה (אין התקדמות בענן)
+      let isNew = false;
+      try {
+        isNew = !localStorage.getItem('english_hasSeenWelcome');
+      } catch {
+        // ignore
+      }
+      setClassId(await resolveMyClass(u.uid, isNew));
       setUser(u);
       setState('ready');
     });
@@ -77,7 +89,7 @@ const AuthGate = () => {
     return (
       <div className="App">
         <LoginScreen
-          initialMode={loginMode}
+          initialMode={loginMode || (readPendingClass() ? 'signup' : null)}
           allowGuest={ALLOW_GUEST}
           onGuest={() => {
             try {
@@ -99,6 +111,7 @@ const AuthGate = () => {
       cloudEnabled={isCloudConfigured}
       syncError={syncError}
       isAdmin={isAdmin}
+      classId={classId || undefined}
       isGuest={state === 'guest'}
       onRequestSignup={() => {
         try {

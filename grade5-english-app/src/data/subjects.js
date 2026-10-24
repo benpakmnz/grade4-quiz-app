@@ -1,7 +1,10 @@
-// מקצועות התרגול באפליקציה: אנגלית, חשבון ושפה. אותם משתמשים, אותן נקודות - נושאים ומבחן נפרדים.
+// מקצועות התרגול באפליקציה. אותם משתמשים, אותן נקודות - נושאים ומבחן נפרדים.
+// כל כיתה רואה רק את המקצועות שלה (ראו classes.js). family - איזה מנוע/עיצוב המקצוע משתמש.
 import { categories as englishCategories, EXAM_DATE as ENGLISH_EXAM_DATE } from './categories';
 import { mathCategories, MATH_EXAM_DATE } from './mathCategories';
 import { hebrewCategories, HEBREW_EXAM_DATE } from './hebrewCategories';
+import { math3Categories, MATH3_EXAM_DATE } from './math3Categories';
+import { classById } from './classes';
 import { IS_TEST_ENV } from '../services/env';
 
 export const SUBJECTS = {
@@ -19,7 +22,8 @@ export const SUBJECTS = {
     emoji: '🔢',
     examName: 'מבחן בחשבון',
     examDate: MATH_EXAM_DATE,
-    categories: mathCategories
+    categories: mathCategories,
+    family: 'math'
   },
   hebrew: {
     id: 'hebrew',
@@ -28,8 +32,21 @@ export const SUBJECTS = {
     examName: 'מבחן בשפה',
     examDate: HEBREW_EXAM_DATE,
     categories: hebrewCategories
+  },
+  // כיתה ג'
+  math3: {
+    id: 'math3',
+    name: 'חשבון',
+    emoji: '🔢',
+    examName: 'מבחן תחילת השנה בחשבון',
+    examDate: MATH3_EXAM_DATE,
+    categories: math3Categories,
+    family: 'math'
   }
 };
+
+/** המשפחה של המקצוע: 'math' לכל מקצועות החשבון (כל הכיתות), אחרת המקצוע עצמו */
+export const subjectFamily = (id) => SUBJECTS[id]?.family || id;
 
 export const SUBJECT_IDS = Object.keys(SUBJECTS);
 
@@ -61,11 +78,11 @@ export const MATH_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_MATH_FOR_
 // שפה - באותה שיטה: בבדיקות לכולם, באתר האמיתי למנהלים עד REACT_APP_HEBREW_FOR_EVERYONE=true
 export const HEBREW_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_HEBREW_FOR_EVERYONE || '').trim() === 'true';
 
-/** המקצועות שהמשתמש/ת רואה */
-export const availableSubjects = (isAdmin) => SUBJECT_IDS.filter(id =>
-  id === 'english'
-  || (id === 'math' && (MATH_FOR_EVERYONE || isAdmin))
-  || (id === 'hebrew' && (HEBREW_FOR_EVERYONE || isAdmin)));
+/** המקצועות שהמשתמש/ת רואה: רק של הכיתה שלו/ה, ובכיתה ה' - לפי המתגים */
+export const availableSubjects = (isAdmin, classId) => classById(classId).subjects.filter(id =>
+  (id === 'math' ? (MATH_FOR_EVERYONE || isAdmin)
+    : id === 'hebrew' ? (HEBREW_FOR_EVERYONE || isAdmin)
+      : Boolean(SUBJECTS[id])));
 
 /** סדר התצוגה: המבחן הקרוב ראשון, ומבחנים שכבר עברו - בסוף */
 export const subjectsByExam = (ids = SUBJECT_IDS, now = new Date()) =>

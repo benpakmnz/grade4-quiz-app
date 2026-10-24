@@ -22,7 +22,7 @@ const member = (user, userData, st) => ({
 });
 
 /** פתיחת חדר חדש. מנסים כמה קודים עד שמוצאים אחד פנוי */
-export const createRoom = async (user, userData, { team, subject, tasks, prev = null }) => {
+export const createRoom = async (user, userData, { team, subject, tasks, prev = null, cls = null }) => {
   const size = roomSize(tasks);
   for (let i = 0; i < 6; i++) {
     const code = makeRoomCode();
@@ -36,7 +36,8 @@ export const createRoom = async (user, userData, { team, subject, tasks, prev = 
         minutes: size.minutes,
         status: 'lobby',
         createdAt: serverTimestamp(),
-        ...(prev ? { prev } : {})
+        ...(prev ? { prev } : {}),
+        ...(cls ? { cls } : {})
       });
       // eslint-disable-next-line no-await-in-loop
       await set(r(code, `members/${user.uid}`), member(user, userData, 'in'));
@@ -127,8 +128,8 @@ export const readPrevTeam = async (prevCode, myUid) => {
  * פותחים אתגר חדש עם אותו צוות ושולחים הזמנה לכל מי שהיה בו.
  * הכללים מאפשרים להזמין רק מי שהיה איתי באותו צוות.
  */
-export const createRoomWithTeam = async (user, userData, past) => {
-  const code = await createRoom(user, userData, { team: past.team, subject: past.subject, tasks: past.tasks, prev: past.code });
+export const createRoomWithTeam = async (user, userData, past, cls = null) => {
+  const code = await createRoom(user, userData, { team: past.team, subject: past.subject, tasks: past.tasks, prev: past.code, cls });
   const friends = await readPrevTeam(past.code, user.uid).catch(() => []);
   await Promise.all(friends.map(uid => set(invitesRef(uid, code), {
     team: String(past.team || '').slice(0, 40),

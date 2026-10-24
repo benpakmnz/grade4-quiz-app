@@ -10,14 +10,14 @@ import {
   VStack,
 } from '@chakra-ui/react';
 import './HomePage.css';
-import { SUBJECTS } from '../data/subjects';
+import { SUBJECTS, subjectFamily } from '../data/subjects';
 import './SubjectHub.css';
 
 const MotionBox = motion(Box);
 
 const HomePage = ({ onSelectGame, score, streak, questionCount, userData, categoryStats, calculateSuccessRate, getGenderText, subject = 'english', onOpenHub }) => {
   const games = SUBJECTS[subject].categories;
-  const isMath = subject === 'math';
+  const isMath = subjectFamily(subject) === 'math';
 
   return (
          <Container maxW="container.xl" pt="120px" pb={20}>

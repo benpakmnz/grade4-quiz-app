@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SUBJECTS } from '../data/subjects';
 import { ESCAPE_FIRST } from '../data/escapeRoom';
+import { CLASS_IDS, classLabel } from '../data/classes';
 import { accountLabel } from '../utils/username';
 import { getGenderText } from '../utils/genderText';
 import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
@@ -29,7 +30,7 @@ const Item = ({ icon, label, hint, onClick, active, danger, disabled, highlight,
  * כל פעולה סוגרת את התפריט לפני שהיא מתבצעת.
  */
 const HamburgerMenu = ({
-  userData, authUser, isGuest, cloudEnabled, isAdmin,
+  userData, authUser, isGuest, cloudEnabled, isAdmin, classId, onViewClass,
   subjects, enabled = subjects, subject, onPickSubject, onOpenHub,
   onAchievements, onProgress, onEditProfile, onAdmin, onSignUp, onEscapeRoom
 }) => {
@@ -103,7 +104,7 @@ const HamburgerMenu = ({
 
               {ESCAPE_FIRST && escapeSection}
 
-              {subjects.length > 1 && (
+              {(subjects.length > 1 || onOpenHub) && (
                 <div className="hm-section">
                   <div className="hm-title">מקצוע</div>
                   {subjects.map(id => (
@@ -134,6 +135,18 @@ const HamburgerMenu = ({
                 <div className="hm-title">החשבון שלי</div>
                 <Item icon="✏️" label="עריכת פרופיל" hint="שם, דמות וצבע" onClick={run(onEditProfile)} />
                 {isAdmin && <Item icon="⚙️" label="ניהול" hint="שאלות, משתמשים ושימוש" onClick={run(onAdmin)} />}
+              </div>
+
+              {isAdmin && onViewClass && CLASS_IDS.length > 1 && (
+                <div className="hm-section">
+                  <div className="hm-title">תצוגה כמו כיתה (מנהל)</div>
+                  {CLASS_IDS.map(id => (
+                    <Item key={id} icon="🏫" label={classLabel(id)} active={classId === id} onClick={run(() => onViewClass(id))} />
+                  ))}
+                </div>
+              )}
+
+              <div className="hm-section">
                 {cloudEnabled && authUser && (
                   <Item icon="🚪" label={busy ? 'מתנתקים...' : 'התנתקות'} danger onClick={handleSignOut} />
                 )}
