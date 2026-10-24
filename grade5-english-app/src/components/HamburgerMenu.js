@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { SUBJECTS } from '../data/subjects';
+import { ESCAPE_FIRST } from '../data/escapeRoom';
 import { accountLabel } from '../utils/username';
 import { getGenderText } from '../utils/genderText';
 import { signOutAndClear, goToSignIn, SIGN_OUT_CONFIRM } from '../services/account';
@@ -55,6 +56,13 @@ const HamburgerMenu = ({
     await signOutAndClear();
   };
 
+  const escapeSection = onEscapeRoom && (
+    <div className="hm-section">
+      <div className="hm-title">עם חברים</div>
+      <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" tag="עד +600 ⭐" highlight onClick={run(onEscapeRoom)} />
+    </div>
+  );
+
   return (
     <>
       <button
@@ -93,6 +101,8 @@ const HamburgerMenu = ({
                 <button className="hm-close" onClick={() => setOpen(false)} aria-label="סגירה">✕</button>
               </div>
 
+              {ESCAPE_FIRST && escapeSection}
+
               {subjects.length > 1 && (
                 <div className="hm-section">
                   <div className="hm-title">מקצוע</div>
@@ -111,12 +121,8 @@ const HamburgerMenu = ({
                 </div>
               )}
 
-              {onEscapeRoom && (
-                <div className="hm-section">
-                  <div className="hm-title">עם חברים</div>
-                  <Item icon="🔐" label="אתגר מפצחי הכספות" hint="פותרים יחד ופותחים את הכספת" tag="עד +600 ⭐" highlight onClick={run(onEscapeRoom)} />
-                </div>
-              )}
+
+              {!ESCAPE_FIRST && escapeSection}
 
               <div className="hm-section">
                 <div className="hm-title">ההתקדמות שלי</div>
