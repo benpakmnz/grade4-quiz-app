@@ -2,9 +2,14 @@ import { availableSubjects, readSubject, saveSubject } from './subjects';
 
 afterEach(() => localStorage.clear());
 
-test('math is only for admins (for now)', () => {
+test('math and hebrew are only for admins (for now)', () => {
   expect(availableSubjects(false)).toEqual(['english']);
-  expect(availableSubjects(true)).toEqual(['english', 'math']);
+  expect(availableSubjects(true)).toEqual(['english', 'math', 'hebrew']);
+});
+
+test('with no saved choice and hebrew open - hebrew exam (1.11) comes before math (8.11)', () => {
+  expect(readSubject(new Date('2026-10-25'), ['english', 'math', 'hebrew'])).toBe('hebrew');
+  expect(readSubject(new Date('2026-11-03'), ['english', 'math', 'hebrew'])).toBe('math');
 });
 
 test('a saved "math" choice is ignored for someone who cannot see math', () => {
@@ -27,7 +32,7 @@ test('on the test site (Vercel preview) everyone sees math; on the real site onl
     process.env.REACT_APP_VERCEL_ENV = saved;
     return mod;
   };
-  expect(load('preview').availableSubjects(false)).toEqual(['english', 'math']);
+  expect(load('preview').availableSubjects(false)).toEqual(['english', 'math', 'hebrew']);
   expect(load('production').availableSubjects(false)).toEqual(['english']);
-  expect(load('production').availableSubjects(true)).toEqual(['english', 'math']);
+  expect(load('production').availableSubjects(true)).toEqual(['english', 'math', 'hebrew']);
 });

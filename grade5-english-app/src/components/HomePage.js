@@ -185,9 +185,11 @@ const HomePage = ({ onSelectGame, score, streak, questionCount, userData, catego
           <Text color="white" fontSize="md" fontWeight="bold" textShadow="2px 2px 4px rgba(0, 0, 0, 0.2)">
             {isMath
               ? getGenderText('💪 את יכולה! כל תרגיל מקרב אותך להצלחה במבחן בחשבון!', userData?.gender)
-              : getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה במבחן המיפוי!', userData?.gender)}
+              : subject === 'hebrew'
+                ? getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה במבחן בשפה!', userData?.gender)
+                : getGenderText('💪 את יכולה! כל תרגול מקרב אותך להצלחה במבחן המיפוי!', userData?.gender)}
             <br />
-            {isMath
+            {isMath || subject === 'hebrew'
               ? '📘 לא בטוחים איך פותרים? בכל נושא יש כפתור "איך פותרים?" עם הסבר ודוגמה'
               : '🔊 בכל מקום שיש כפתור רמקול - אפשר ללחוץ ולשמוע איך אומרים באנגלית'}
           </Text>
