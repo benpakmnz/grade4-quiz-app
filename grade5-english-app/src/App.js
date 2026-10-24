@@ -25,7 +25,7 @@ import { watchInvites } from './services/rooms';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
-  SUBJECTS, SUBJECT_IDS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects
+  SUBJECTS, SUBJECT_IDS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects, subjectsByExam
 } from './data/subjects';
 import { notifyLocalChange } from './services/cloudSync';
 import { emailToUsername } from './utils/username';
@@ -63,7 +63,8 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   // Track success per category
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
   // המקצוע שנבחר בדף הבית (אנגלית / חשבון)
-  const allowedSubjects = availableSubjects(isAdmin);
+  const allowedSubjects = subjectsByExam(availableSubjects(isAdmin));
+  const subjectList = subjectsByExam(SUBJECT_IDS);
   const [chosenSubject, setSubject] = useState(() => readSubject(undefined, allowedSubjects));
   // מי שאין לו גישה לחשבון (עדיין) - תמיד אנגלית
   const subject = allowedSubjects.includes(chosenSubject) ? chosenSubject : 'english';
@@ -322,7 +323,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     if (currentGame === 'hub' && hasHub) {
       return (
         <SubjectHub
-          subjects={SUBJECT_IDS}
+          subjects={subjectList}
           enabled={allowedSubjects}
           userData={userData}
           categoryStats={categoryStats}
@@ -443,7 +444,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               isGuest={isGuest}
               cloudEnabled={cloudEnabled}
               isAdmin={isAdmin}
-              subjects={SUBJECT_IDS}
+              subjects={subjectList}
               enabled={allowedSubjects}
               subject={currentGame === 'hub' ? null : subject}
               onPickSubject={pickSubject}

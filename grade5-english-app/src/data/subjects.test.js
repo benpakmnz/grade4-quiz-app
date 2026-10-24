@@ -1,4 +1,4 @@
-import { availableSubjects, readSubject, saveSubject } from './subjects';
+import { availableSubjects, readSubject, saveSubject, subjectsByExam } from './subjects';
 
 afterEach(() => localStorage.clear());
 
@@ -35,4 +35,12 @@ test('on the test site (Vercel preview) everyone sees math; on the real site onl
   expect(load('preview').availableSubjects(false)).toEqual(['english', 'math', 'hebrew']);
   expect(load('production').availableSubjects(false)).toEqual(['english']);
   expect(load('production').availableSubjects(true)).toEqual(['english', 'math', 'hebrew']);
+});
+
+test('display order: closest exam first, passed exams last', () => {
+  const all = ['english', 'math', 'hebrew'];
+  expect(subjectsByExam(all, new Date('2026-10-18'))).toEqual(['english', 'hebrew', 'math']);
+  expect(subjectsByExam(all, new Date('2026-10-24'))).toEqual(['hebrew', 'math', 'english']);
+  expect(subjectsByExam(all, new Date('2026-11-03'))).toEqual(['math', 'hebrew', 'english']);
+  expect(subjectsByExam(all, new Date('2026-11-20'))).toEqual(['math', 'hebrew', 'english']);
 });

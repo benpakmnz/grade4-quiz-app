@@ -67,6 +67,15 @@ export const availableSubjects = (isAdmin) => SUBJECT_IDS.filter(id =>
   || (id === 'math' && (MATH_FOR_EVERYONE || isAdmin))
   || (id === 'hebrew' && (HEBREW_FOR_EVERYONE || isAdmin)));
 
+/** סדר התצוגה: המבחן הקרוב ראשון, ומבחנים שכבר עברו - בסוף */
+export const subjectsByExam = (ids = SUBJECT_IDS, now = new Date()) =>
+  [...ids].sort((a, b) => {
+    const da = getDaysUntilSubjectExam(a, now);
+    const db = getDaysUntilSubjectExam(b, now);
+    if ((da < 0) !== (db < 0)) return da < 0 ? 1 : -1;
+    return da < 0 ? db - da : da - db;
+  });
+
 const SUBJECT_KEY = 'english_subject';
 
 /** המקצוע שנבחר לאחרונה; אם עוד לא נבחר - זה שהמבחן שלו הכי קרוב (ועוד לא עבר) */
