@@ -33,7 +33,7 @@ export const cardLines = ({ team, subjectLabel, opened, filled, total, seconds }
   result: opened
     ? `פתחו את הכספת${seconds != null ? ` ב-${formatClock(seconds * 1000)} דקות` : ''}!`
     : `פתחו ${filled} מתוך ${total} מנעולים!`,
-  invite: 'רוצים לנסות גם? מתאמנים למבחני המיפוי של כיתה ה\''
+  invite: 'רוצים לנסות גם? מתאמנים יחד למבחנים'
 });
 
 export const drawTeamCard = (canvas, info) => {

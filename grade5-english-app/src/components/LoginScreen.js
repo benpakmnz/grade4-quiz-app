@@ -155,7 +155,7 @@ const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
         >
           👋 ברוכים הבאים!
         </motion.h1>
-        <p className="welcome-subtitle">{joining ? `${classLabel(joining)} · מתכוננים למבחן 📚` : 'מתכוננים למבחני המיפוי - אנגלית וחשבון 📚'}</p>
+        <p className="welcome-subtitle">{joining ? `${classLabel(joining)} · מתכוננים למבחן 📚` : 'מתכוננים למבחנים - חשבון, שפה ואנגלית 📚'}</p>
 
         {initialMode === 'signup' && !joining && (
           <p className="login-carry">✅ כל מה שכבר תרגלת במכשיר הזה יעבור לחשבון החדש</p>
