@@ -8,6 +8,7 @@ import './Game.css';
 import './EnglishGame.css';
 import UsersDashboard from './UsersDashboard';
 import UsageDashboard from './UsageDashboard';
+import EscapeDashboard from './EscapeDashboard';
 import './AdminPanel.css';
 
 const BLANK = '____';
@@ -263,9 +264,13 @@ const AdminPanel = ({ onBack }) => {
         <button className={`mode-tab ${view === 'usage' ? 'active' : ''}`} onClick={() => setView('usage')}>
           📈 שימוש
         </button>
+        <button className={`mode-tab ${view === 'escape' ? 'active' : ''}`} onClick={() => setView('escape')}>
+          🔐 אתגרים
+        </button>
       </div>
 
       {view === 'usage' && <div className="admin-card"><UsageDashboard /></div>}
+      {view === 'escape' && <div className="admin-card"><EscapeDashboard /></div>}
       {view === 'users' && <div className="admin-card"><UsersDashboard /></div>}
       {view === 'questions' && (
       <div className="admin-card">

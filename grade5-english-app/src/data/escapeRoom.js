@@ -13,6 +13,9 @@ export const ESCAPE_FOR_EVERYONE = IS_TEST_ENV || (process.env.REACT_APP_ESCAPE_
 export const escapeRoomAvailable = (isAdmin) => ESCAPE_FOR_EVERYONE || Boolean(isAdmin);
 
 // גודל האתגר: המארח/ת בוחר/ת כמה משימות לכל ילד/ה; הזמן והפרס נגזרים מזה
+// זמני: כל עוד האתגר חדש - הוא ראשון בדף הבחירה ובתפריט (false מחזיר אותו למטה)
+export const ESCAPE_FIRST = true;
+
 export const ROOM_SIZES = [
   { tasks: 5, minutes: 10, points: 200 },
   { tasks: 8, minutes: 15, points: 300 },

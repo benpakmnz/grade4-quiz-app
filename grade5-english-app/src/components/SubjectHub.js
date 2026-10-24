@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 import { TARGET_PER_CATEGORY } from '../data/categories';
+import { ESCAPE_FIRST } from '../data/escapeRoom';
 import { getGenderText } from '../utils/genderText';
 import './SubjectHub.css';
 
@@ -37,6 +38,26 @@ const examDateText = (date) => `${date.getDate()}.${date.getMonth() + 1}`;
 const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onPick, lastSubject, onEscapeRoom, escapeInvites = 0 }) => {
   const g = (t) => getGenderText(t, userData?.gender);
 
+  const escapeButton = onEscapeRoom && (
+    <motion.button
+      className="hub-escape"
+      onClick={onEscapeRoom}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: ESCAPE_FIRST ? 0.15 : 0.5 }}
+      whileHover={{ y: -3 }}
+      whileTap={{ scale: 0.97 }}
+    >
+      <span className="hub-escape-icon" aria-hidden="true">🔐</span>
+      {escapeInvites > 0 && <span className="hub-escape-invite">📩 {escapeInvites === 1 ? 'הזמנה חדשה!' : `${escapeInvites} הזמנות!`}</span>}
+      <span className="hub-escape-text">
+        <b>אתגר מפצחי הכספות</b>
+        <span>עם חברים: פותרים יחד ופותחים את הכספת</span>
+      </span>
+      <span className="hub-escape-go" aria-hidden="true">←</span>
+    </motion.button>
+  );
+
   return (
     <div className="subject-hub">
       <motion.div
@@ -68,6 +89,8 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
           <span className="hub-invite-go">הצטרפות ←</span>
         </motion.button>
       )}
+
+      {ESCAPE_FIRST && escapeButton}
 
       <div className="hub-cards">
         {subjects.map((id, i) => {
@@ -139,25 +162,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
         })}
       </div>
 
-      {onEscapeRoom && (
-        <motion.button
-          className="hub-escape"
-          onClick={onEscapeRoom}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          whileHover={{ y: -3 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <span className="hub-escape-icon" aria-hidden="true">🔐</span>
-          {escapeInvites > 0 && <span className="hub-escape-invite">📩 {escapeInvites === 1 ? 'הזמנה חדשה!' : `${escapeInvites} הזמנות!`}</span>}
-          <span className="hub-escape-text">
-            <b>אתגר מפצחי הכספות</b>
-            <span>עם חברים: פותרים יחד ופותחים את הכספת</span>
-          </span>
-          <span className="hub-escape-go" aria-hidden="true">←</span>
-        </motion.button>
-      )}
+      {!ESCAPE_FIRST && escapeButton}
     </div>
   );
 };
