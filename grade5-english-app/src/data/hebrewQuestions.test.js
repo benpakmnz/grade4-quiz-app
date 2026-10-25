@@ -1,7 +1,7 @@
 import {
   generateHebrewQuestion, HEBREW_TOPIC_IDS, ROOT_FAMILIES, NOUNS, VERBS, conjugate, PERSONS,
   CONNECTIVE_SENTENCES, CONNECTIVE_TYPES, RELATIONS, TAGGED_SENTENCES, REPLACE_ITEMS, ALL_PRONOUNS, _test,
-  WEAK_FAMILIES, LOOKALIKES, NOUN_SENTENCES, ADJECTIVES, TRICKY_NOUNS
+  WEAK_FAMILIES, LOOKALIKES, NOUN_SENTENCES, ADJECTIVES, TRICKY_NOUNS, VERB_SENTENCES, CLAUSES, draw
 } from './hebrewQuestions';
 import { hebrewCategories } from './hebrewCategories';
 import { lessons } from './lessons';
@@ -187,4 +187,54 @@ test('noun agreement goes by the real gender, not the plural ending', () => {
     const adj = ADJECTIVES.find(a => a.some(x => q.options.includes(`ה${x}`)));
     expect(q.answer).toBe(`ה${adj[(plural ? 2 : 0) + (entry[2] === 'נ' ? 1 : 0)]}`);
   }
+});
+
+test('connectives: no distractor has the same meaning as the answer (it would also be correct)', () => {
+  const norm = (w) => w.replace(/ (ש|ל)$/, '');
+  const relationOf = (w) => CONNECTIVE_TYPES.find(c => norm(c.w) === norm(w) || norm(c.w) === norm(w).replace(/^ו/, ''))?.t;
+  CONNECTIVE_SENTENCES.forEach(c => {
+    expect([c.s, relationOf(c.a)]).toEqual([c.s, c.t]);
+    c.d.forEach(d => {
+      const r = relationOf(d);
+      expect([c.s, d, Boolean(r)]).toEqual([c.s, d, true]);
+      expect([c.s, d, r === c.t]).toEqual([c.s, d, false]);
+    });
+  });
+  expect(new Set(CONNECTIVE_SENTENCES.map(c => c.s)).size).toBe(CONNECTIVE_SENTENCES.length);
+  expect(CONNECTIVE_SENTENCES.length).toBeGreaterThanOrEqual(40);
+  CLAUSES.forEach(c => {
+    expect(RELATIONS).toContain(c.t);
+    expect(c.bad).not.toContain(c.good);
+    expect(c.bad).toHaveLength(2);
+  });
+});
+
+test('no repeats: a list is used up before anything comes back, and never twice in a row', () => {
+  const list = ['a', 'b', 'c', 'd', 'e'];
+  let prev = null;
+  for (let round = 0; round < 50; round++) {
+    const seen = new Set();
+    for (let i = 0; i < list.length; i++) {
+      const x = draw('test-deck', list);
+      expect(x).not.toBe(prev);
+      seen.add(x);
+      prev = x;
+    }
+    expect(seen.size).toBe(list.length);
+  }
+});
+
+test('connectives: 20 questions in a row never repeat the same question', () => {
+  for (let round = 0; round < 20; round++) {
+    const prompts = Array.from({ length: 20 }, () => generateHebrewQuestion('hConnectives').prompt);
+    expect(new Set(prompts).size).toBe(prompts.length);
+  }
+});
+
+test('find-the-verb sentences are separate from the noun sentences', () => {
+  const nounTexts = TAGGED_SENTENCES.map(s => s.map(([w]) => w).join(' '));
+  VERB_SENTENCES.forEach(s => {
+    expect(s.filter(([, t]) => t === 'v')).toHaveLength(1);
+    expect(nounTexts).not.toContain(s.map(([w]) => w).join(' '));
+  });
 });
