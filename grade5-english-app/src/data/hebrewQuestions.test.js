@@ -1,7 +1,8 @@
 import {
   generateHebrewQuestion, HEBREW_TOPIC_IDS, ROOT_FAMILIES, NOUNS, VERBS, conjugate, PERSONS,
   CONNECTIVE_SENTENCES, CONNECTIVE_TYPES, RELATIONS, TAGGED_SENTENCES, REPLACE_ITEMS, ALL_PRONOUNS, _test,
-  WEAK_FAMILIES, LOOKALIKES, NOUN_SENTENCES, ADJECTIVES, TRICKY_NOUNS, VERB_SENTENCES, CLAUSES, draw
+  WEAK_FAMILIES, LOOKALIKES, NOUN_SENTENCES, ADJECTIVES, TRICKY_NOUNS, VERB_SENTENCES, CLAUSES, draw,
+  checkRootWords, isSameRoot, hasRootInOrder
 } from './hebrewQuestions';
 import { hebrewCategories } from './hebrewCategories';
 import { lessons } from './lessons';
@@ -15,12 +16,20 @@ describe.each(HEBREW_TOPIC_IDS)('%s', (topic) => {
     for (let i = 0; i < 1500; i++) {
       const q = generateHebrewQuestion(topic);
       const where = `${topic}: ${JSON.stringify(q)}`;
-      expect([where, q.kind]).toEqual([where, 'mc']);
+      expect([where, ['mc', 'words', 'text', 'multi'].includes(q.kind)]).toEqual([where, true]);
       expect([where, Boolean(q.prompt && q.answer && q.explanation && q.label)]).toEqual([where, true]);
-      expect([where, q.options.length >= 2]).toEqual([where, true]);
-      expect([where, q.options.includes(q.answer)]).toEqual([where, true]);
-      expect([where, new Set(q.options).size]).toEqual([where, q.options.length]);
-      [q.prompt, q.explanation, ...q.options].forEach(t => {
+      if (q.kind === 'mc') {
+        expect([where, q.options.length >= 2]).toEqual([where, true]);
+        expect([where, q.options.includes(q.answer)]).toEqual([where, true]);
+      }
+      if (q.kind === 'multi') {
+        q.answers.forEach(a => expect([where, q.options.includes(a)]).toEqual([where, true]));
+        expect([where, q.check(q.answers), q.check(q.answers.slice(1)), q.check(q.options)]).toEqual([where, true, false, false]);
+      }
+      if (q.kind === 'text') expect([where, q.check(q.answer), q.check('אבג')]).toEqual([where, true, false]);
+      if (q.kind === 'words') expect([where, q.count >= 2 && typeof q.check === 'function']).toEqual([where, true]);
+      if (q.options) expect([where, new Set(q.options).size]).toEqual([where, q.options.length]);
+      [q.prompt, q.explanation, ...(q.options || [])].forEach(t => {
         expect([where, /NaN|undefined|null|\[object/.test(String(t))]).toEqual([where, false]);
       });
     }
@@ -159,6 +168,7 @@ test('lookalikes belong to a known family and are not in it', () => {
 test('root questions: the hard distractors never equal the answer, and the wrong roots are real options', () => {
   for (let i = 0; i < 3000; i++) {
     const q = generateHebrewQuestion('hRoots');
+    if (q.kind !== 'mc') continue;
     expect(q.options.filter(o => o === q.answer)).toHaveLength(1);
     if (/^מה השורש/.test(q.prompt)) q.options.forEach(o => expect(o).toMatch(/^[א-ת]\.[א-ת]\.[א-ת]$/));
   }
@@ -237,4 +247,23 @@ test('find-the-verb sentences are separate from the noun sentences', () => {
     expect(s.filter(([, t]) => t === 'v')).toHaveLength(1);
     expect(nounTexts).not.toContain(s.map(([w]) => w).join(' '));
   });
+});
+
+test('typed root: any reasonable way of writing it is accepted', () => {
+  ['זכר', 'ז.כ.ר', 'ז כ ר', 'ז-כ-ר', ' זכר '].forEach(t => expect([t, isSameRoot(t, 'ז.כ.ר')]).toEqual([t, true]));
+  expect(isSameRoot('צלם', 'צ.ל.ם')).toBe(true);
+  expect(isSameRoot('צלמ', 'צ.ל.ם')).toBe(true);
+  ['רכז', 'זכ', 'זכרה', 'מזכרת'].forEach(t => expect([t, isSameRoot(t, 'ז.כ.ר')]).toEqual([t, false]));
+});
+
+test('written words from a root: family words, verbs and new words with the root letters are accepted', () => {
+  expect(checkRootWords('כ.ת.ב', ['מכתב', 'כתבנו', 'הכתבה'])).toEqual(['ok', 'ok', 'ok']);
+  expect(checkRootWords('כ.ת.ב', ['מכתב', 'מכתב', 'ספר'])).toEqual(['ok', 'dup', 'bad']);
+  expect(checkRootWords('כ.ת.ב', ['מכתב', '', 'בתכ'])).toEqual(['ok', 'empty', 'bad']);
+  expect(checkRootWords('ל.מ.ד', ['תלמיד', 'לימוד'], ['תלמיד'])).toEqual(['given', 'ok']);
+  expect(checkRootWords('צ.ל.ם', ['מצלמה', 'צילום', 'צלמת'])).toEqual(['ok', 'ok', 'ok']);
+  expect(checkRootWords('כ.ת.ב', ['abc', 'כת', 'כתב'])).toEqual(['bad', 'bad', 'ok']);
+  // כל מילה מוכרת מהמשפחה באמת עוברת
+  ROOT_FAMILIES.forEach(f => expect(checkRootWords(f.root, f.words).every(r => r === 'ok')).toBe(true));
+  expect(hasRootInOrder('ש.מ.ר', 'משמרת')).toBe(true);
 });

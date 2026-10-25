@@ -142,8 +142,95 @@ const rootExplanation = (fam, word) => (fam.note
   ? `השורש של "${word}" הוא ${fam.root}.\n${fam.note}.\nבודקים עם עוד מילים מהמשפחה: ${fam.words.filter(w => w !== word).slice(0, 3).join(', ')}`
   : `מורידים את התוספות (אותיות בהתחלה, בסוף, ו' וי' באמצע) ומחפשים את 3 האותיות שחוזרות בכל המשפחה.\n${fam.words.slice(0, 3).join(', ')} - בכולן השורש ${fam.root}`);
 
+// ---------- שאלות פתוחות (לא אמריקאיות) ----------
+const hebrewLetters = (w) => String(w || '').replace(/[^\u05D0-\u05EA]/g, '').split('').map(c => FINAL_TO_REGULAR[c] || c);
+const rootLetters = (root) => root.split('.').map(c => FINAL_TO_REGULAR[c] || c);
+
+/** האם אותיות השורש מופיעות במילה, לפי הסדר (כמו שבודקים במשפחת מילים) */
+export const hasRootInOrder = (root, word) => {
+  const r = rootLetters(root);
+  let i = 0;
+  hebrewLetters(word).forEach(c => { if (c === r[i]) i++; });
+  return i === r.length;
+};
+
+/**
+ * בדיקת מילים שהילד/ה כתב/ה: לכל מילה 'ok' / 'bad' / 'dup' (כבר כתבת) / 'given' (המילה מהשאלה) / 'empty'
+ * מילה מתקבלת אם היא מהמשפחה המוכרת, או אם יש בה את אותיות השורש לפי הסדר
+ */
+export const checkRootWords = (root, words, exclude = []) => {
+  const seen = new Set(exclude.map(w => hebrewLetters(w).join('')));
+  const givenSet = new Set(seen);
+  return words.map(raw => {
+    const w = String(raw || '').trim();
+    if (!w) return 'empty';
+    const key = hebrewLetters(w).join('');
+    if (!/^[\u05D0-\u05EA\u0591-\u05C7]+$/.test(w) || key.length < 3 || key.length > 12) return 'bad';
+    if (givenSet.has(key)) return 'given';
+    if (seen.has(key)) return 'dup';
+    seen.add(key);
+    return hasRootInOrder(root, w) ? 'ok' : 'bad';
+  });
+};
+
+/** השורש שהוקלד: "זכר", "ז.כ.ר", "ז כ ר" - כולם נכונים (גם עם/בלי אות סופית) */
+export const isSameRoot = (typed, root) => hebrewLetters(typed).join('') === rootLetters(root).join('');
+
+const openRootQuestion = (type) => {
+  if (type === 'writeWords') {
+    const fam = pick(ROOT_FAMILIES);
+    const fromWord = Math.random() < 0.5;
+    const given = fromWord ? pick(fam.words) : null;
+    const count = fromWord ? 2 : 3;
+    return {
+      kind: 'words',
+      label: 'כותבים מילים מהשורש',
+      prompt: fromWord
+        ? `כתבי עוד ${count} מילים מהמשפחה של "${given}"`
+        : `כתבי ${count} מילים שונות מהשורש ${fam.root}`,
+      count,
+      check: (words) => checkRootWords(fam.root, words, given ? [given] : []),
+      answer: `למשל: ${fam.words.filter(w => w !== given).slice(0, 3).join(', ')}`,
+      explanation: `בכל מילה צריכות להופיע אותיות השורש ${fam.root}, לפי הסדר.\nמילים מהמשפחה: ${fam.words.join(', ')} - וגם פעלים מאותו שורש.`
+    };
+  }
+
+  if (type === 'typeRoot') {
+    const fam = Math.random() < 0.4 ? pick(WEAK_FAMILIES) : pick(ROOT_FAMILIES);
+    const word = pick(fam.words);
+    return {
+      kind: 'text',
+      label: 'כותבים את השורש',
+      prompt: `כתבי את השורש של המילה "${word}" (3 אותיות)`,
+      check: (typed) => isSameRoot(typed, fam.root),
+      answer: fam.root,
+      explanation: rootExplanation(fam, word)
+    };
+  }
+
+  // pickAll: מסמנים את כל המילים מהמשפחה (בלי לדעת כמה יש)
+  const weak = Math.random() < 0.3;
+  const fam = weak ? pick(WEAK_FAMILIES) : pick(ROOT_FAMILIES);
+  const right = sample(fam.words, Math.min(fam.words.length, pick([2, 3, 3, 4])));
+  const look = LOOKALIKES.find(l => l.root === fam.root);
+  const pool = shuffle((weak ? WEAK_FAMILIES : ROOT_FAMILIES).filter(o => o !== fam)).map(o => pick(o.words));
+  const wrong = [look?.word, ...pool].filter(Boolean).slice(0, 8 - right.length);
+  return {
+    kind: 'multi',
+    label: 'מסמנים את כל המשפחה',
+    prompt: `סמני את כל המילים מהשורש ${fam.root}`,
+    options: shuffle([...right, ...wrong]),
+    answers: right,
+    check: (picked) => picked.length === right.length && picked.every(w => right.includes(w)),
+    answer: right.join(', '),
+    optionsHebrew: true,
+    explanation: `מהשורש ${fam.root}: ${right.join(', ')}.${fam.note ? `\n${fam.note}.` : ''}${look ? `\n"${look.word}" נראית דומה, אבל השורש שלה ${look.wordRoot}.` : ''}`
+  };
+};
+
 const rootsQuestion = () => {
-  const type = pick(['rootOf', 'rootOf', 'weakRoot', 'weakRoot', 'weakFamily', 'lookalike', 'lookalike', 'sameFamily', 'oddOne', 'fromRoot']);
+  const type = pick(['rootOf', 'rootOf', 'weakRoot', 'weakRoot', 'weakFamily', 'lookalike', 'lookalike', 'sameFamily', 'oddOne', 'fromRoot', 'writeWords', 'writeWords', 'typeRoot', 'typeRoot', 'pickAll', 'pickAll']);
+  if (['writeWords', 'typeRoot', 'pickAll'].includes(type)) return openRootQuestion(type);
   const fam = pick(ROOT_FAMILIES);
   const others = shuffle(otherFamilies(fam));
 
