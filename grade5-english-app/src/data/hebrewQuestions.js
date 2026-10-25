@@ -1,6 +1,7 @@
 // שאלות בשפה (לשון) - כיתה ה'. מבוסס על רשימת הנושאים של המורה למבחן (1.11.2026):
 // שורשים ומשפחות מילים, שמות עצם, מילות קישור, זמנים, פעלים, כינויי גוף.
-// כל התוכן כתוב ביד (בלי "חישוב" של עברית) - כדי שיהיה מדויק. בשורשים רק שורשים "שלמים" (בלי אותיות שנופלות).
+// כל התוכן כתוב ביד (בלי "חישוב" של עברית) - כדי שיהיה מדויק. בשורשים יש גם שורשים עם אות שנעלמת (WEAK_FAMILIES)
+// ומילים "דומות" מהשורש אחר (LOOKALIKES) - כדי שהרמה תתאים לכיתה ה'.
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const shuffle = (arr) => {
@@ -45,48 +46,146 @@ export const ROOT_FAMILIES = [
   { root: 'נ.ג.ן', words: ['נגן', 'נגינה', 'מנגינה', 'מנגן'] }
 ];
 
-const familyOf = (word) => ROOT_FAMILIES.find(f => f.words.includes(word));
+// שורשים "חסרים": אות שנעלמת או מתחלפת במילה (גזרות). כאן אותיות השורש לא תמיד נראות כולן במילה
+export const WEAK_FAMILIES = [
+  { root: 'י.ש.ב', words: ['מושב', 'ישיבה', 'תושב', 'יושב'], note: "י' בתחילת השורש הופכת לפעמים ל-ו' (מושב, תושב)" },
+  { root: 'י.ל.ד', words: ['ילדות', 'מולדת', 'לידה', 'הולדת'], note: "י' בתחילת השורש הופכת לפעמים ל-ו' (מולדת) או נעלמת (לידה)" },
+  { root: 'י.ד.ע', words: ['ידיעה', 'מודעה', 'מדע', 'יודע'], note: "י' בתחילת השורש הופכת ל-ו' (מודעה) או נעלמת (מדע)" },
+  { root: 'נ.פ.ל', words: ['נפילה', 'מפל', 'מפולת', 'נופל'], note: "נ' בתחילת השורש נעלמת לפעמים (מפל, מפולת)" },
+  { root: 'נ.ס.ע', words: ['נסיעה', 'מסע', 'נוסע', 'נוסעת'], note: "נ' בתחילת השורש נעלמת לפעמים (מסע)" },
+  { root: 'נ.ת.ן', words: ['מתנה', 'נתינה', 'נותן'], note: "נ' בתחילת השורש נעלמת לפעמים (מתנה)" },
+  { root: 'ק.ו.ם', words: ['מקום', 'קימה', 'תקומה', 'קומה'], note: "ו' באמצע השורש מתחלפת לפעמים ב-י' (קימה)" },
+  { root: 'ר.ו.ץ', words: ['ריצה', 'מרוץ', 'רץ', 'רצים'], note: "ו' באמצע השורש מתחלפת ב-י' (ריצה) או נעלמת (רץ)" },
+  { root: 'ט.ו.ס', words: ['מטוס', 'טיסה', 'טייס', 'טס'], note: "ו' באמצע השורש מתחלפת ב-י' (טיסה) או נעלמת (טס)" },
+  { root: 'ש.ו.ב', words: ['תשובה', 'שיבה', 'משוב'], note: "ו' באמצע השורש מתחלפת לפעמים ב-י' (שיבה)" },
+  { root: 'ש.י.ר', words: ['שיר', 'שירה', 'משורר', 'שירון'], note: "י' באמצע השורש מתחלפת לפעמים ב-ו' (משורר)" },
+  { root: 'ב.נ.ה', words: ['בניין', 'בנייה', 'מבנה', 'בונה', 'תבנית'], note: "ה' בסוף השורש נעלמת לפעמים או מתחלפת ב-י' (בנייה, תבנית)" },
+  { root: 'ק.נ.ה', words: ['קנייה', 'קונה', 'מקנה'], note: "ה' בסוף השורש מתחלפת לפעמים ב-י' (קנייה)" },
+  { root: 'ע.ש.ה', words: ['מעשה', 'עשייה', 'עושה', 'תעשייה'], note: "ה' בסוף השורש מתחלפת לפעמים ב-י' (עשייה, תעשייה)" },
+  { root: 'ר.א.ה', words: ['ראייה', 'מראה', 'רואה', 'ראיון'], note: "ה' בסוף השורש מתחלפת לפעמים ב-י' (ראייה, ראיון)" },
+  { root: 'ש.ת.ה', words: ['שתייה', 'משתה', 'שותה'], note: "ה' בסוף השורש מתחלפת לפעמים ב-י' (שתייה)" }
+];
+
+// מילים "דומות" שנראות כאילו הן מהמשפחה - אבל השורש שלהן אחר
+export const LOOKALIKES = [
+  { root: 'כ.ת.ב', word: 'כתף', wordRoot: 'כ.ת.ף' },
+  { root: 'ש.מ.ר', word: 'שמן', wordRoot: 'ש.מ.ן' },
+  { root: 'ס.פ.ר', word: 'ספל', wordRoot: 'ס.פ.ל' },
+  { root: 'ג.ד.ל', word: 'גדר', wordRoot: 'ג.ד.ר' },
+  { root: 'ש.ב.ר', word: 'שבת', wordRoot: 'ש.ב.ת' },
+  { root: 'ר.ק.ד', word: 'רקע', wordRoot: 'ר.ק.ע' },
+  { root: 'ח.ש.ב', word: 'חושך', wordRoot: 'ח.ש.ך' },
+  { root: 'פ.ת.ח', word: 'פתק', wordRoot: 'פ.ת.ק' },
+  { root: 'ע.ב.ד', word: 'עבר', wordRoot: 'ע.ב.ר' },
+  { root: 'ר.כ.ב', word: 'רכוש', wordRoot: 'ר.כ.ש' },
+  { root: 'ל.ב.ש', word: 'לבן', wordRoot: 'ל.ב.ן' },
+  { root: 'ק.ב.ל', word: 'קבוצה', wordRoot: 'ק.ב.ץ' },
+  { root: 'נ.ג.ן', word: 'נגר', wordRoot: 'נ.ג.ר' },
+  { root: 'ב.ש.ל', word: 'בשר', wordRoot: 'ב.ש.ר' },
+  { root: 'ש.ח.ק', word: 'שחור', wordRoot: 'ש.ח.ר' },
+  { root: 'ר.ש.ם', word: 'רשת', wordRoot: 'ר.ש.ת' },
+  { root: 'צ.ל.ם', word: 'צלחת', wordRoot: 'צ.ל.ח' },
+  { root: 'ת.פ.ר', word: 'תפיסה', wordRoot: 'ת.פ.ס' },
+  { root: 'ס.ג.ר', word: 'סגול', wordRoot: 'ס.ג.ל' },
+  { root: 'ז.כ.ר', word: 'זכייה', wordRoot: 'ז.כ.ה' },
+  { root: 'ש.ב.ר', word: 'שבט', wordRoot: 'ש.ב.ט' },
+  { root: 'ס.ד.ר', word: 'סדין', wordRoot: 'ס.ד.ן' }
+];
+
+const familyOf = (word) => ROOT_FAMILIES.find(f => f.words.includes(word)) || WEAK_FAMILIES.find(f => f.words.includes(word));
 const otherFamilies = (fam) => ROOT_FAMILIES.filter(f => f !== fam);
 const FINAL_TO_REGULAR = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
 const REGULAR_TO_FINAL = { 'כ': 'ך', 'מ': 'ם', 'נ': 'ן', 'פ': 'ף', 'צ': 'ץ' };
 
-/** "מלכודת": שלוש האותיות הראשונות של המילה - טעות נפוצה במציאת שורש */
-const firstLettersTrap = (word) => {
-  const letters = word.replace(/[^א-ת]/g, '').split('').slice(0, 3).map(c => FINAL_TO_REGULAR[c] || c);
-  if (letters.length < 3) return null;
-  letters[2] = REGULAR_TO_FINAL[letters[2]] || letters[2];
-  return letters.join('.');
+const asRoot = (letters) => {
+  const l = letters.map(c => FINAL_TO_REGULAR[c] || c);
+  l[2] = REGULAR_TO_FINAL[l[2]] || l[2];
+  return l.join('.');
 };
 
+/** "מלכודת": שלוש האותיות הראשונות של המילה - טעות נפוצה במציאת שורש */
+const firstLettersTrap = (word) => {
+  const letters = word.replace(/[^א-ת]/g, '').split('').slice(0, 3);
+  return letters.length < 3 ? null : asRoot(letters);
+};
+
+/**
+ * מסיחים "קשים": שלישיות אותיות מתוך המילה עצמה (ההתחלה, הסוף, בלי ו/י...)
+ * כך שאי אפשר לפסול תשובה רק כי האותיות שלה לא מופיעות במילה
+ */
+const letterTraps = (word) => {
+  const all = word.replace(/[^א-ת]/g, '').split('');
+  const noVav = all.filter((c, i) => i === 0 || !'וי'.includes(c));
+  const triples = [all.slice(0, 3), all.slice(-3), all.slice(1, 4), noVav.slice(0, 3), noVav.slice(-3), noVav.slice(1, 4)];
+  return shuffle([...new Set(triples.filter(t => t.length === 3).map(asRoot))]);
+};
+
+const rootExplanation = (fam, word) => (fam.note
+  ? `השורש של "${word}" הוא ${fam.root}.\n${fam.note}.\nבודקים עם עוד מילים מהמשפחה: ${fam.words.filter(w => w !== word).slice(0, 3).join(', ')}`
+  : `מורידים את התוספות (אותיות בהתחלה, בסוף, ו' וי' באמצע) ומחפשים את 3 האותיות שחוזרות בכל המשפחה.\n${fam.words.slice(0, 3).join(', ')} - בכולן השורש ${fam.root}`);
+
 const rootsQuestion = () => {
-  const type = pick(['rootOf', 'rootOf', 'sameFamily', 'oddOne', 'fromRoot']);
+  const type = pick(['rootOf', 'rootOf', 'weakRoot', 'weakRoot', 'weakFamily', 'lookalike', 'lookalike', 'sameFamily', 'oddOne', 'fromRoot']);
   const fam = pick(ROOT_FAMILIES);
   const others = shuffle(otherFamilies(fam));
 
-  if (type === 'rootOf') {
-    const word = pick(fam.words);
-    const trap = firstLettersTrap(word);
+  if (type === 'rootOf' || type === 'weakRoot') {
+    const f = type === 'weakRoot' ? pick(WEAK_FAMILIES) : fam;
+    const word = pick(f.words);
+    const otherRoots = shuffle([...ROOT_FAMILIES, ...WEAK_FAMILIES].filter(o => o !== f)).map(o => o.root);
     return {
       kind: 'mc',
-      label: 'מציאת שורש',
+      label: type === 'weakRoot' ? 'שורש עם אות חסרה' : 'מציאת שורש',
       prompt: `מה השורש של המילה "${word}"?`,
-      options: withDistractors(fam.root, [trap !== fam.root ? trap : null, ...others.map(f => f.root)].filter(Boolean)),
-      answer: fam.root,
+      options: withDistractors(f.root, [...letterTraps(word), ...otherRoots]),
+      answer: f.root,
       optionsHebrew: true,
-      explanation: `מורידים את התוספות (אותיות בהתחלה, בסוף, ו' וי' באמצע) ומחפשים את 3 האותיות שחוזרות בכל המשפחה.\n${fam.words.slice(0, 3).join(', ')} - בכולן השורש ${fam.root}`
+      explanation: rootExplanation(f, word)
+    };
+  }
+
+  if (type === 'weakFamily') {
+    const f = pick(WEAK_FAMILIES);
+    const [given, match] = sample(f.words, 2);
+    const wrong = shuffle(WEAK_FAMILIES.filter(o => o !== f)).map(o => pick(o.words));
+    return {
+      kind: 'mc',
+      label: 'משפחת מילים',
+      prompt: `איזו מילה שייכת למשפחת המילים של "${given}"?`,
+      options: withDistractors(match, wrong),
+      answer: match,
+      optionsHebrew: true,
+      explanation: `ל"${given}" ול"${match}" יש אותו שורש: ${f.root}.\n${f.note}.`
+    };
+  }
+
+  if (type === 'lookalike') {
+    // שלוש מילים מהמשפחה + מילה שנראית דומה אבל מהשורש אחר
+    const look = pick(LOOKALIKES);
+    const f = ROOT_FAMILIES.find(o => o.root === look.root);
+    const three = sample(f.words, 3);
+    return {
+      kind: 'mc',
+      label: 'מי לא שייך?',
+      prompt: 'איזו מילה לא שייכת למשפחת המילים של שאר המילים?',
+      options: shuffle([...three, look.word]),
+      answer: look.word,
+      optionsHebrew: true,
+      explanation: `${three.join(', ')} - מהשורש ${f.root}.\n"${look.word}" נראית דומה, אבל השורש שלה ${look.wordRoot} - ולכן היא לא שייכת.`
     };
   }
 
   if (type === 'sameFamily') {
     const [given, match] = sample(fam.words, 2);
+    const look = LOOKALIKES.find(l => l.root === fam.root);
     return {
       kind: 'mc',
       label: 'משפחת מילים',
       prompt: `איזו מילה שייכת למשפחת המילים של "${given}"?`,
-      options: withDistractors(match, others.map(f => pick(f.words))),
+      options: withDistractors(match, [look?.word, ...others.map(o => pick(o.words))].filter(Boolean)),
       answer: match,
       optionsHebrew: true,
-      explanation: `ל"${given}" ול"${match}" יש אותו שורש: ${fam.root}. מילים עם אותו שורש הן משפחה אחת.`
+      explanation: `ל"${given}" ול"${match}" יש אותו שורש: ${fam.root}. מילים עם אותו שורש הן משפחה אחת.${look ? `\n"${look.word}" נראית דומה, אבל השורש שלה ${look.wordRoot}.` : ''}`
     };
   }
 
@@ -106,21 +205,22 @@ const rootsQuestion = () => {
 
   // fromRoot
   const word = pick(fam.words);
+  const look = LOOKALIKES.find(l => l.root === fam.root);
   return {
     kind: 'mc',
     label: 'מילה מהשורש',
     prompt: `איזו מילה בנויה מהשורש ${fam.root}?`,
-    options: withDistractors(word, others.map(f => pick(f.words))),
+    options: withDistractors(word, [look?.word, ...others.map(o => pick(o.words))].filter(Boolean)),
     answer: word,
     optionsHebrew: true,
-    explanation: `במילה "${word}" יש את אותיות השורש ${fam.root.replace(/\./g, ', ')}, לפי הסדר.`
+    explanation: `במילה "${word}" יש את אותיות השורש ${fam.root.replace(/\./g, ', ')}, לפי הסדר.${look ? `\n"${look.word}" - השורש שלה ${look.wordRoot}.` : ''}`
   };
 };
 
 // ======================================================================
 // שמות עצם
 // ======================================================================
-// [יחיד, רבים, מין]. כולל "מלכודות": נקבה עם ים (ציפור, שנה) וזכר עם ות (שולחן, לילה)
+// [יחיד, רבים, מין]. כולל "מלכודות": נקבה עם ים (ציפור, שנה) וזכר עם ות (שולחן, לילה), ורבים לא רגילים (איש ← אנשים)
 export const NOUNS = [
   ['ספר', 'ספרים', 'ז'], ['מחברת', 'מחברות', 'נ'], ['ילד', 'ילדים', 'ז'], ['ילדה', 'ילדות', 'נ'],
   ['שולחן', 'שולחנות', 'ז'], ['חלון', 'חלונות', 'ז'], ['כיסא', 'כיסאות', 'ז'], ['עיפרון', 'עפרונות', 'ז'],
@@ -131,7 +231,47 @@ export const NOUNS = [
   ['חבר', 'חברים', 'ז'], ['משפחה', 'משפחות', 'נ'], ['גן', 'גנים', 'ז'], ['תמונה', 'תמונות', 'נ'],
   ['שיר', 'שירים', 'ז'], ['פרח', 'פרחים', 'ז'], ['כוכב', 'כוכבים', 'ז'], ['מכונית', 'מכוניות', 'נ'],
   ['אישה', 'נשים', 'נ'], ['איש', 'אנשים', 'ז'], ['שבוע', 'שבועות', 'ז'], ['רגל', 'רגליים', 'נ'],
-  ['יד', 'ידיים', 'נ'], ['עין', 'עיניים', 'נ'], ['כדור', 'כדורים', 'ז'], ['עוגה', 'עוגות', 'נ']
+  ['יד', 'ידיים', 'נ'], ['עין', 'עיניים', 'נ'], ['כדור', 'כדורים', 'ז'], ['עוגה', 'עוגות', 'נ'],
+  ['יום', 'ימים', 'ז'], ['בת', 'בנות', 'נ'], ['בן', 'בנים', 'ז'], ['אחות', 'אחיות', 'נ'],
+  ['רחוב', 'רחובות', 'ז'], ['חלום', 'חלומות', 'ז'], ['קול', 'קולות', 'ז'], ['אוצר', 'אוצרות', 'ז'],
+  ['ביצה', 'ביצים', 'נ'], ['נמלה', 'נמלים', 'נ'], ['יונה', 'יונים', 'נ'], ['מזלג', 'מזלגות', 'ז'],
+  ['שדה', 'שדות', 'ז'], ['כוס', 'כוסות', 'נ'], ['רוח', 'רוחות', 'נ'], ['שן', 'שיניים', 'נ'],
+  ['אוזן', 'אוזניים', 'נ'], ['נעל', 'נעליים', 'נ'], ['שעון', 'שעונים', 'ז'], ['ראש', 'ראשים', 'ז']
+];
+
+/** שמות עצם "מבלבלים": המין לא מתאים לסיומת ברבים, או שהרבים משתנה */
+const isTricky = ([sing, plural, gender]) =>
+  (gender === 'נ' && /ים$/.test(plural)) || (gender === 'ז' && /ות$/.test(plural)) || !plural.startsWith(sing.replace(/[הת]$/, '').slice(0, 2));
+export const TRICKY_NOUNS = NOUNS.filter(isTricky);
+/** בערך פעמיים מתוך שלוש - מילה "מבלבלת" */
+const pickNoun = () => (Math.random() < 0.65 ? pick(TRICKY_NOUNS) : pick(NOUNS));
+
+/** צורת "רבים" שמבלבלת (לפי הסיומת) */
+const pluralMisleads = ([, plural, gender]) => (gender === 'נ' && /ים$/.test(plural)) || (gender === 'ז' && /ות$/.test(plural));
+
+// שמות תואר: [זכר יחיד, נקבה יחיד, זכר רבים, נקבה רבים]
+export const ADJECTIVES = [
+  ['גדול', 'גדולה', 'גדולים', 'גדולות'],
+  ['קטן', 'קטנה', 'קטנים', 'קטנות'],
+  ['חדש', 'חדשה', 'חדשים', 'חדשות']
+];
+
+// משפטים ארוכים יותר - שמות העצם מסומנים כמו שהם כתובים (גם עם ה, ב, ל, מ, ו בהתחלה)
+export const NOUN_SENTENCES = [
+  { s: 'הילדים שיחקו בכדור בגן', nouns: ['הילדים', 'בכדור', 'בגן'] },
+  { s: 'אמא קנתה לחם וחלב בחנות', nouns: ['אמא', 'לחם', 'וחלב', 'בחנות'] },
+  { s: 'דני כתב מכתב ארוך לסבתא', nouns: ['דני', 'מכתב', 'לסבתא'] },
+  { s: 'הציפורים בנו קן על העץ הגבוה', nouns: ['הציפורים', 'קן', 'העץ'] },
+  { s: 'בבוקר הלכנו לים עם החברים', nouns: ['בבוקר', 'לים', 'החברים'] },
+  { s: 'המורה קראה סיפור מצחיק לתלמידים', nouns: ['המורה', 'סיפור', 'לתלמידים'] },
+  { s: 'החתול קפץ מהחלון אל הגינה', nouns: ['החתול', 'מהחלון', 'הגינה'] },
+  { s: 'אבא תיקן את האופניים במחסן', nouns: ['אבא', 'האופניים', 'במחסן'] },
+  { s: 'נועה שמה את הספרים בתיק הכחול', nouns: ['נועה', 'הספרים', 'בתיק'] },
+  { s: 'בחורף יורד גשם חזק בעיר', nouns: ['בחורף', 'גשם', 'בעיר'] },
+  { s: 'הרופאה בדקה את הילד בבוקר', nouns: ['הרופאה', 'הילד', 'בבוקר'] },
+  { s: 'סבא סיפר לנכדים על הטיול בהרים', nouns: ['סבא', 'לנכדים', 'הטיול', 'בהרים'] },
+  { s: 'השמש זרחה והציפורים שרו על הגג', nouns: ['השמש', 'והציפורים', 'הגג'] },
+  { s: 'התלמידה החרוצה ציירה תמונה יפה', nouns: ['התלמידה', 'תמונה'] }
 ];
 
 /** צורות רבים "לא נכונות" שילדים נוטים לכתוב */
@@ -168,19 +308,23 @@ const SINGLE_ADJ = ['גדול', 'חכם', 'קטנים', 'שמח', 'אדומות'
 const SINGLE_ADV = ['מהר', 'לאט', 'אתמול', 'מאוד', 'מחר', 'עכשיו'];
 
 const nounsQuestion = () => {
-  const type = pick(['gender', 'plural', 'plural', 'singular', 'findNoun', 'findNoun', 'isNoun', 'number']);
-  const [sing, plural, gender] = pick(NOUNS);
+  const type = pick(['gender', 'gender', 'plural', 'plural', 'singular', 'agree', 'agree', 'countNouns', 'notNoun', 'findNoun', 'isNoun']);
+  const [sing, plural, gender] = pickNoun();
+  const one = gender === 'ז' ? `${sing} אחד` : `${sing} אחת`;
 
   if (type === 'gender') {
+    // לפעמים שואלים על צורת הרבים - שם הסיומת "מטעה"
+    const askPlural = Math.random() < 0.4 && pluralMisleads([sing, plural, gender]);
+    const word = askPlural ? plural : sing;
     const answer = gender === 'ז' ? 'זכר' : 'נקבה';
     return {
       kind: 'mc',
       label: 'זכר או נקבה?',
-      prompt: `מה המין של שם העצם "${sing}"?`,
+      prompt: `מה המין של שם העצם "${word}"?`,
       options: ['זכר', 'נקבה'],
       answer,
       optionsHebrew: true,
-      explanation: `בודקים עם "זה" / "זאת": ${gender === 'ז' ? `"${sing} אחד, זה ה${sing}"` : `"${sing} אחת, זאת ה${sing}"`} ← ${answer}.\nשימו לב: הסיומת ברבים (ים / ות) לא תמיד מגלה את המין!`
+      explanation: `${askPlural ? `ביחיד: "${sing}". ` : ''}בודקים עם "אחד" / "אחת": "${one}" ← ${answer}.\nשימו לב: הסיומת ברבים (ים / ות) לא תמיד מגלה את המין!`
     };
   }
 
@@ -192,7 +336,7 @@ const nounsQuestion = () => {
       options: withDistractors(plural, [...shuffle(wrongPlurals(sing, plural)), ...sample(NOUNS.filter(n => n[0] !== sing), 3).map(n => n[1])]),
       answer: plural,
       optionsHebrew: true,
-      explanation: `${gender === 'ז' ? `${sing} אחד` : `${sing} אחת`} ← הרבה ${plural}.${(gender === 'נ' && plural.endsWith('ים')) || (gender === 'ז' && plural.endsWith('ות')) ? `\nשימו לב: "${sing}" היא ${gender === 'נ' ? 'נקבה' : 'זכר'}, אבל ברבים - "${plural}".` : ''}`
+      explanation: `${one} ← הרבה ${plural}.${pluralMisleads([sing, plural, gender]) ? `\nשימו לב: "${sing}" היא ${gender === 'נ' ? 'נקבה' : 'זכר'}, אבל ברבים - "${plural}".` : ''}`
     };
   }
 
@@ -201,25 +345,56 @@ const nounsQuestion = () => {
       kind: 'mc',
       label: 'רבים ← יחיד',
       prompt: `מה צורת היחיד של "${plural}"?`,
-      options: withDistractors(sing, shuffle([plural.replace(/(ים|ות)$/, ''), plural.replace(/(ים|ות)$/, 'ה'), plural.replace(/(ים|ות)$/, 'ת'), plural].filter(w => w.length > 1))),
+      options: withDistractors(sing, shuffle([plural.replace(/(ים|ות)$/, 'ה'), plural.replace(/(ים|ות)$/, 'ת'), plural, ...sample(NOUNS.filter(n => n[0] !== sing), 3).map(n => n[0])].filter(w => w.length > 1))),
       answer: sing,
       optionsHebrew: true,
-      explanation: `הרבה ${plural} ← ${gender === 'ז' ? `${sing} אחד` : `${sing} אחת`}.`
+      explanation: `הרבה ${plural} ← ${one}.`
     };
   }
 
-  if (type === 'number') {
-    const usePlural = Math.random() < 0.5;
-    const word = usePlural ? plural : sing;
-    const answer = usePlural ? 'רבים' : 'יחיד';
+  if (type === 'agree') {
+    // התאמה של שם התואר לשם העצם: צריך לדעת את המין גם כשהסיומת מטעה
+    const adj = pick(ADJECTIVES);
+    const usePlural = Math.random() < 0.6;
+    const noun = usePlural ? plural : sing;
+    const idx = (usePlural ? 2 : 0) + (gender === 'נ' ? 1 : 0);
     return {
       kind: 'mc',
-      label: 'יחיד או רבים?',
-      prompt: `שם העצם "${word}" הוא ביחיד או ברבים?`,
-      options: ['יחיד', 'רבים'],
-      answer,
+      label: 'התאמה',
+      prompt: `איזו מילה מתאימה? "ה${noun} ה____"`,
+      options: shuffle(adj.map(a => `ה${a}`)),
+      answer: `ה${adj[idx]}`,
       optionsHebrew: true,
-      explanation: usePlural ? `"${word}" - יותר מאחד (הרבה ${plural}) ← רבים. ביחיד: ${sing}.` : `"${word}" - אחד בלבד ← יחיד. ברבים: ${plural}.`
+      explanation: `"${noun}" - ${gender === 'ז' ? 'זכר' : 'נקבה'}, ${usePlural ? 'רבים' : 'יחיד'} (${one}).\nלכן: ה${noun} ה${adj[idx]}.${usePlural && pluralMisleads([sing, plural, gender]) ? '\nלא הולכים לפי הסיומת ים / ות - בודקים את היחיד!' : ''}`
+    };
+  }
+
+  if (type === 'countNouns' || type === 'notNoun') {
+    const item = pick(type === 'notNoun' ? NOUN_SENTENCES.filter(x => x.nouns.length >= 3) : NOUN_SENTENCES);
+    const words = item.s.split(' ');
+    const others = words.filter(w => !item.nouns.includes(w));
+    if (type === 'notNoun' && others.length) {
+      const odd = pick(others);
+      return {
+        kind: 'mc',
+        label: 'שמות עצם במשפט',
+        prompt: `"${item.s}"\nאיזו מילה במשפט היא לא שם עצם?`,
+        options: shuffle([odd, ...sample(item.nouns, 3)]),
+        answer: odd,
+        optionsHebrew: true,
+        long: true,
+        explanation: `שמות העצם במשפט: ${item.nouns.join(', ')} (גם עם ה, ב, ל, מ, ו בהתחלה - זה עדיין שם עצם).\n"${odd}" היא לא שם של דבר, אדם או מקום.`
+      };
+    }
+    const n = item.nouns.length;
+    return {
+      kind: 'mc',
+      label: 'כמה שמות עצם?',
+      prompt: `"${item.s}"\nכמה שמות עצם יש במשפט?`,
+      options: ['1', '2', '3', '4', '5'].filter(o => Math.abs(Number(o) - n) <= 2).slice(0, 4),
+      answer: String(n),
+      long: true,
+      explanation: `שמות העצם: ${item.nouns.join(', ')} - ${n}.\nשימו לב למילים עם ה, ב, ל, מ, ו בהתחלה - גם הן שמות עצם (בכדור = ב + כדור).`
     };
   }
 
