@@ -59,6 +59,15 @@ export const hebrewCategories = [
     section: 'חומר לשוני'
   },
   {
+    id: 'hReading',
+    title: '🕵️ בלשי המילים',
+    name: 'בלשי המילים - קטעי קריאה',
+    description: 'קוראים סיפור, מסמנים מילים בטקסט ועונים על שאלות הבנה',
+    color: 'orange.600',
+    emoji: '🕵️',
+    section: 'קריאה והבנה'
+  },
+  {
     id: 'hTest',
     title: '🎯 מבחן מסכם בשפה',
     name: 'מבחן מסכם בשפה',
