@@ -46,9 +46,9 @@ const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 // ---------- אוצר מילים ----------
 const vocabularyQuestion = () => {
-  const type = pickRandom(['enToHe', 'heToEn', 'picture', 'definition', 'wordBank', 'wordBank']);
+  const picked = pickRandom(['enToHe', 'heToEn', 'picture', 'definition', 'wordBank', 'wordBank']);
 
-  if (type === 'wordBank') {
+  if (picked === 'wordBank') {
     const item = pickUnused('fill');
     const bank = shuffle([item.answer, ...item.distractors]);
     return {
@@ -66,6 +66,9 @@ const vocabularyQuestion = () => {
   }
 
   const word = pickUnused('words');
+  // לא לכל מילה יש אימוג'י (בשאלות שהמורה מוסיפה הוא לא חובה) - אז אין לה שאלת "תמונה"
+  const type = picked === 'picture' && !word.emoji ? pickRandom(['enToHe', 'heToEn', 'definition']) : picked;
+  const pic = word.emoji ? ` ${word.emoji}` : '';
 
   if (type === 'enToHe') {
     const distractors = pickDistractors(word, 'he');
@@ -79,7 +82,7 @@ const vocabularyQuestion = () => {
       options: shuffle([word.he, ...distractors.map(d => d.he)]),
       optionsHebrew: true,
       answer: word.he,
-      explanation: `${word.en} = ${word.he} ${word.emoji}`,
+      explanation: `${word.en} = ${word.he}${pic}`,
       speak: word.en
     };
   }
@@ -93,7 +96,7 @@ const vocabularyQuestion = () => {
       prompt: `איך אומרים "${word.he}" באנגלית?`,
       options: shuffle([word.en, ...distractors.map(d => d.en)]),
       answer: word.en,
-      explanation: `${word.he} = ${word.en} ${word.emoji}`,
+      explanation: `${word.he} = ${word.en}${pic}`,
       speak: word.en
     };
   }
@@ -123,7 +126,7 @@ const vocabularyQuestion = () => {
     english: word.def,
     options: shuffle([word.en, ...distractors.map(d => d.en)]),
     answer: word.en,
-    explanation: `${word.en} = ${word.he} ${word.emoji}`,
+    explanation: `${word.en} = ${word.he}${pic}`,
     speak: word.def
   };
 };

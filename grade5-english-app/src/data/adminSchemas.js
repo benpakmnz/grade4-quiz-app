@@ -68,13 +68,13 @@ export const ADMIN_SECTIONS = [
         fields: [
           { name: 'en', label: 'המילה באנגלית', type: 'text', ltr: true, placeholder: 'giraffe' },
           { name: 'he', label: 'הפירוש בעברית', type: 'text', placeholder: 'ג\'ירפה' },
-          { name: 'emoji', label: 'אימוג\'י (לשאלות "התאמת מילה לתמונה")', type: 'text', placeholder: '🦒' },
+          { name: 'emoji', label: 'אימוג\'י - לא חובה (אם יש, המילה תופיע גם בשאלות "התאמת מילה לתמונה")', type: 'text', placeholder: '🦒' },
           { name: 'def', label: 'הגדרה פשוטה באנגלית', type: 'text', ltr: true, placeholder: 'A very tall animal with a long neck.' },
           { name: 'group', label: 'קבוצה (המסיחים נבחרים מאותה קבוצה)', type: 'select', options: WORD_GROUPS }
         ],
-        validate: (it) => (!trim(it.en) || !trim(it.he) || !trim(it.emoji) || !trim(it.def)
-          ? 'צריך למלא מילה, פירוש, אימוג\'י והגדרה' : null),
-        summary: (it) => `${it.emoji} ${it.en} = ${it.he}`
+        validate: (it) => (!trim(it.en) || !trim(it.he) || !trim(it.def)
+          ? 'צריך למלא מילה, פירוש והגדרה' : null),
+        summary: (it) => `${it.emoji ? `${it.emoji} ` : ''}${it.en} = ${it.he}`
       },
       {
         bank: 'fill',
