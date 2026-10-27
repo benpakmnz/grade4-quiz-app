@@ -30,6 +30,9 @@ const MathGame = (props) => {
   const [wrongOptions, setWrongOptions] = useState([]);
   const [firstWrong, setFirstWrong] = useState(null);
   const [input, setInput] = useState('');
+  const [words, setWords] = useState([]);   // שאלות "כתבו מילים"
+  const [marks, setMarks] = useState([]);   // ok / bad / dup / given לכל מילה
+  const [picked, setPicked] = useState([]); // שאלות "סמנו את כל..." 
   const [testResults, setTestResults] = useState([]);
   const [testDone, setTestDone] = useState(false);
   const inputRef = useRef(null);
@@ -42,6 +45,9 @@ const MathGame = (props) => {
     setWrongOptions([]);
     setFirstWrong(null);
     setInput('');
+    setWords([]);
+    setMarks([]);
+    setPicked([]);
   }, [category, generate]);
 
   useEffect(() => {
@@ -50,12 +56,13 @@ const MathGame = (props) => {
 
   // מקלדת מספרים מוכנה מיד (בלי לגלול את המסך בטלפון)
   useEffect(() => {
-    if (question?.kind === 'input' && !feedback?.done) inputRef.current?.focus({ preventScroll: true });
+    if (['input', 'text'].includes(question?.kind) && !feedback?.done) inputRef.current?.focus({ preventScroll: true });
   }, [question, feedback]);
 
   if (!question) return null;
 
   const isMc = question.kind === 'mc';
+  const isNumber = question.kind === 'input';
   // שתי אפשרויות או שלוש (כמו > < =) - ניסיון אחד; אחרת - שניים
   const maxAttempts = isMc && question.options.length <= 3 ? 1 : 2;
   const shownAnswer = /^\d+$/.test(question.answer) ? formatNumber(question.answer) : question.answer;
@@ -112,6 +119,47 @@ const MathGame = (props) => {
     }
     setWrongOptions(prev => [...prev, option]);
     wrongTry(option, g('לא נכון, נסי שוב! 💪'));
+  };
+
+  // שאלה פתוחה בעברית: מקלידים מילה (למשל שורש)
+  const checkText = (e) => {
+    e?.preventDefault();
+    if (feedback?.done || !input.trim()) return;
+    if (question.check(input)) {
+      finish(true, firstWrong);
+      return;
+    }
+    wrongTry(input.trim(), g('לא נכון, נסי שוב! 💪'));
+    setInput('');
+  };
+
+  // כמה מילים (למשל מאותו שורש): כל מילה נבדקת לבד
+  const WORD_MARK_TEXT = { bad: 'לא מהשורש', dup: 'כבר כתבת', given: 'המילה מהשאלה', empty: 'חסרה מילה' };
+  const checkWords = (e) => {
+    e?.preventDefault();
+    if (feedback?.done) return;
+    const list = Array.from({ length: question.count }, (_, i) => (words[i] || '').trim());
+    const result = question.check(list);
+    setMarks(result);
+    if (result.every(r => r === 'ok')) {
+      finish(true, firstWrong);
+      return;
+    }
+    wrongTry(list.filter(Boolean).join(', ') || '-', g('יש מילה שלא מתאימה - תקני את מה שמסומן באדום ונסי שוב 💪'));
+  };
+
+  // סימון כמה תשובות
+  const togglePick = (option) => {
+    if (feedback?.done) return;
+    setPicked(p => (p.includes(option) ? p.filter(x => x !== option) : [...p, option]));
+  };
+  const checkMulti = () => {
+    if (feedback?.done || !picked.length) return;
+    if (question.check(picked)) {
+      finish(true, firstWrong);
+      return;
+    }
+    wrongTry(picked.join(', '), g('לא בדיוק - בדקי שוב את המילים שסימנת (אולי חסרה מילה, או שיש אחת מיותרת) 💪'));
   };
 
   const checkInput = (e) => {
@@ -193,7 +241,89 @@ const MathGame = (props) => {
             </div>
           )}
 
-          {!isMc && !feedback?.done && (
+          {question.kind === 'text' && !feedback?.done && (
+            <form className="math-input-row" onSubmit={checkText}>
+              <input
+                ref={inputRef}
+                className="answer-input math-input text-answer"
+                type="text"
+                lang="he"
+                dir="rtl"
+                autoComplete="off"
+                autoCapitalize="off"
+                spellCheck={false}
+                value={input}
+                onChange={(e) => setInput(e.target.value.replace(/[^\u05D0-\u05EA.\-\s]/g, ''))}
+                placeholder="אותיות בעברית"
+                aria-label="התשובה"
+              />
+              <button type="submit" className="submit-button" disabled={!input.trim()}>✓ בדיקה</button>
+            </form>
+          )}
+
+          {question.kind === 'words' && (
+            <form className="words-answer" onSubmit={checkWords}>
+              {Array.from({ length: question.count }, (_, i) => {
+                const mark = marks[i];
+                const done = feedback?.done;
+                return (
+                  <div key={i} className={`word-field ${mark === 'ok' ? 'ok' : mark ? 'bad' : ''}`}>
+                    <span className="word-num">{i + 1}</span>
+                    <input
+                      className="answer-input word-input"
+                      type="text"
+                      lang="he"
+                      dir="rtl"
+                      autoComplete="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                      value={words[i] || ''}
+                      disabled={done || mark === 'ok'}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/[^\u05D0-\u05EA\s]/g, '');
+                        setWords(w => { const n = [...w]; n[i] = v; return n; });
+                        setMarks(m => { const n = [...m]; if (n[i] !== 'ok') n[i] = undefined; return n; });
+                      }}
+                      aria-label={`מילה ${i + 1}`}
+                    />
+                    {mark && <span className="word-mark">{mark === 'ok' ? '✓' : `✗ ${WORD_MARK_TEXT[mark]}`}</span>}
+                  </div>
+                );
+              })}
+              {!feedback?.done && (
+                <button type="submit" className="submit-button" disabled={words.filter(w => w && w.trim()).length < question.count}>✓ בדיקה</button>
+              )}
+            </form>
+          )}
+
+          {question.kind === 'multi' && (
+            <>
+              <div className="options-grid math-options multi-options">
+                {question.options.map((option) => {
+                  const on = picked.includes(option);
+                  const done = feedback?.done;
+                  const right = question.answers.includes(option);
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      className={`option-button multi-option ${on ? 'picked' : ''} ${done && right ? 'right' : ''} ${done && on && !right ? 'wrong' : ''}`}
+                      aria-pressed={on}
+                      disabled={done}
+                      onClick={() => togglePick(option)}
+                    >
+                      {on ? '☑ ' : '☐ '}{option}
+                    </button>
+                  );
+                })}
+              </div>
+              {!feedback?.done && (
+                <button type="button" className="submit-button multi-check" disabled={!picked.length} onClick={checkMulti}>✓ בדיקה</button>
+              )}
+            </>
+          )}
+
+          {isNumber && !feedback?.done && (
             <form className="math-input-row" onSubmit={checkInput}>
               <input
                 ref={inputRef}

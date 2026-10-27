@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import App from '../App';
 import LoginScreen from './LoginScreen';
-import { isCloudConfigured, onUserChanged } from '../services/firebase';
+import { isCloudConfigured, onUserChanged, signOut } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { subscribeContent, checkIsAdmin } from '../services/contentSync';
 import { resolveMyClass, readLocalClass } from '../services/classSync';
@@ -11,7 +11,7 @@ import { IS_TEST_ENV } from '../services/env';
 import { startSession, endSession } from '../services/sessions';
 import './LoginScreen.css';
 
-// בסביבת הבדיקות אין מצב אורח - נכנסים רק עם חשבון
+// בסביבת הבדיקות אין מצב אורח - והיא פתוחה רק למנהלים (גם כללי האבטחה חוסמים את כל השאר)
 const ALLOW_GUEST = !IS_TEST_ENV;
 
 const readGuest = () => {
@@ -38,7 +38,7 @@ const AuthGate = () => {
   useEffect(() => {
     if (!isCloudConfigured) return undefined;
     return onUserChanged(async (u) => {
-      trackVisit(Boolean(u));
+      if (!IS_TEST_ENV) trackVisit(Boolean(u));
       if (!u) {
         endSession();
         stopSync();
@@ -47,6 +47,15 @@ const AuthGate = () => {
         setClassId(readPendingClass());
         setState(readGuest() ? 'guest' : 'login');
         return;
+      }
+      // סביבת הבדיקות: מי שאינו מנהל לא נכנס בכלל (בלי סנכרון ובלי רישום ביקור)
+      if (IS_TEST_ENV) {
+        if (!(await checkIsAdmin(u.uid))) {
+          setUser(u);
+          setState('locked');
+          return;
+        }
+        trackVisit(true);
       }
       setState('syncing');
       try {
@@ -73,6 +82,24 @@ const AuthGate = () => {
       setState('ready');
     });
   }, []);
+
+  if (state === 'locked') {
+    return (
+      <div className="App">
+        <div className="auth-loading auth-locked">
+          <div className="spinner">🔒</div>
+          <p>סביבת הבדיקות סגורה</p>
+          <p className="auth-locked-text">
+            זו גרסת ניסוי של האפליקציה, והיא פתוחה רק למנהלים.
+            <br />
+            האפליקציה עצמה נמצאת כאן:
+          </p>
+          <a className="auth-locked-link" href="https://grade5-english-app.vercel.app">grade5-english-app.vercel.app</a>
+          <button className="auth-locked-out" onClick={() => signOut()}>התנתקות</button>
+        </div>
+      </div>
+    );
+  }
 
   if (state === 'checking' || state === 'syncing') {
     return (

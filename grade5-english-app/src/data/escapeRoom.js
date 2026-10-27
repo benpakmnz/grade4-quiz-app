@@ -325,5 +325,5 @@ export const clearRoomProgress = (code) => {
 export const shareText = ({ team, opened, filled, total, seconds, link }) => {
   const time = seconds != null ? ` ב-${formatClock(seconds * 1000)} דקות` : '';
   const result = opened ? `פתחו את הכספת${time}! 🔓` : `פתחו ${filled} מתוך ${total} מנעולים! 🔐`;
-  return `🏆 צוות "${team}" ${result}\nרוצים לנסות גם? מתאמנים למבחני המיפוי של כיתה ה' 👉 ${link}`;
+  return `🏆 צוות "${team}" ${result}\nרוצים לנסות גם? מתאמנים יחד למבחנים 👉 ${link}`;
 };

@@ -4,10 +4,10 @@
     ".write": false,
     "$app": {
       "users": {
-        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$uid": {
-          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
-          ".write": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
           "profile": {
             "name": {
               ".validate": "newData.isString() && newData.val().length <= 100"
@@ -70,19 +70,19 @@
       },
       "admins": {
         "$uid": {
-          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
           ".write": false
         }
       },
       "content": {
-        ".read": "$app === 'english' || $app === 'english-test'",
-        ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true"
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true))",
+        ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true"
       },
       "visits": {
-        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$day": {
           "$visitor": {
-            ".write": "($app === 'english' || $app === 'english-test') && newData.exists() && $day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
+            ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && newData.exists() && $day.matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
             ".validate": "newData.hasChildren(['t', 's'])",
             "t": {
               ".validate": "newData.isNumber() && newData.val() <= now"
@@ -100,9 +100,9 @@
         }
       },
       "presence": {
-        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$visitor": {
-          ".write": "($app === 'english' || $app === 'english-test') && $visitor.matches(/^[a-z0-9]{8,24}$/)",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && $visitor.matches(/^[a-z0-9]{8,24}$/)",
           ".validate": "newData.hasChildren(['t', 's'])",
           "t": {
             ".validate": "newData.isNumber() && newData.val() <= now"
@@ -116,10 +116,10 @@
         }
       },
       "classOf": {
-        ".read": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$uid": {
-          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
-          ".write": "($app === 'english' || $app === 'english-test') && auth != null && ((auth.uid === $uid && !data.exists() && newData.exists()) || root.child($app).child('admins').child(auth.uid).val() === true)",
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && ((auth.uid === $uid && !data.exists() && newData.exists()) || root.child($app).child('admins').child(auth.uid).val() === true)",
           ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9]{2,12}$/)"
         }
       },
@@ -127,8 +127,8 @@
         "$code": {
           ".validate": "$code.matches(/^[0-9]{6}$/)",
           "meta": {
-            ".read": "($app === 'english' || $app === 'english-test') && auth != null",
-            ".write": "($app === 'english' || $app === 'english-test') && auth != null && $code.matches(/^[0-9]{6}$/) && ((!data.exists() && newData.child('host').val() === auth.uid) || (data.exists() && data.child('host').val() === auth.uid && newData.exists()))",
+            ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null",
+            ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && $code.matches(/^[0-9]{6}$/) && ((!data.exists() && newData.child('host').val() === auth.uid) || (data.exists() && data.child('host').val() === auth.uid && newData.exists()))",
             ".validate": "newData.hasChildren(['host', 'team', 'subject', 'minutes', 'status', 'createdAt'])",
             "host": {
               ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())"
@@ -174,9 +174,9 @@
             }
           },
           "members": {
-            ".read": "($app === 'english' || $app === 'english-test') && auth != null",
+            ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null",
             "$uid": {
-              ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('rooms').child($code).child('meta').exists() && ((auth.uid === $uid && !newData.exists()) || (auth.uid === $uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && (newData.child('st').val() === 'pending' || root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid) && (root.child($app).child('rooms').child($code).child('meta').child('cls').val() === root.child($app).child('classOf').child(auth.uid).val() || (!root.child($app).child('classOf').child(auth.uid).exists() && root.child($app).child('rooms').child($code).child('meta').child('cls').val() === 'gi5') || (!root.child($app).child('rooms').child($code).child('meta').child('cls').exists() && root.child($app).child('classOf').child(auth.uid).val() === 'gi5') || root.child($app).child('admins').child(auth.uid).val() === true)) || (root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && data.exists() && newData.exists()))",
+              ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('rooms').child($code).child('meta').exists() && ((auth.uid === $uid && !newData.exists()) || (auth.uid === $uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && (newData.child('st').val() === 'pending' || root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid) && (root.child($app).child('rooms').child($code).child('meta').child('cls').val() === root.child($app).child('classOf').child(auth.uid).val() || (!root.child($app).child('classOf').child(auth.uid).exists() && root.child($app).child('rooms').child($code).child('meta').child('cls').val() === 'gi5') || (!root.child($app).child('rooms').child($code).child('meta').child('cls').exists() && root.child($app).child('classOf').child(auth.uid).val() === 'gi5') || root.child($app).child('admins').child(auth.uid).val() === true)) || (root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && data.exists() && newData.exists()))",
               ".validate": "newData.hasChildren(['name', 'emoji', 'st', 't'])",
               "name": {
                 ".validate": "newData.isString() && newData.val().length <= 30"
@@ -197,8 +197,8 @@
           },
           "assign": {
             "$uid": {
-              ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
-              ".write": "($app === 'english' || $app === 'english-test') && auth != null && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && root.child($app).child('rooms').child($code).child('members').child($uid).child('st').val() === 'in'",
+              ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
+              ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && root.child($app).child('rooms').child($code).child('members').child($uid).child('st').val() === 'in'",
               ".validate": "newData.hasChildren(['slot', 'digit'])",
               "slot": {
                 ".validate": "newData.isString() && newData.val().matches(/^([0-9]|1[01])$/)"
@@ -212,9 +212,9 @@
             }
           },
           "lock": {
-            ".read": "($app === 'english' || $app === 'english-test') && auth != null",
+            ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null",
             "$slot": {
-              ".write": "($app === 'english' || $app === 'english-test') && auth != null && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing' && root.child($app).child('rooms').child($code).child('meta').child('endsAt').val() + 5000 >= now && root.child($app).child('rooms').child($code).child('assign').child(auth.uid).child('slot').val() === $slot",
+              ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing' && root.child($app).child('rooms').child($code).child('meta').child('endsAt').val() + 5000 >= now && root.child($app).child('rooms').child($code).child('assign').child(auth.uid).child('slot').val() === $slot",
               ".validate": "newData.hasChildren(['d', 't'])",
               "d": {
                 ".validate": "newData.val() === root.child($app).child('rooms').child($code).child('assign').child(auth.uid).child('digit').val()"
@@ -228,14 +228,14 @@
             }
           },
           "bank": {
-            ".read": "($app === 'english' || $app === 'english-test') && auth != null",
-            ".write": "($app === 'english' || $app === 'english-test') && auth != null && ((!data.exists() && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid) || (data.exists() && root.child($app).child('rooms').child($code).child('members').child(auth.uid).child('st').val() === 'in' && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing'))",
+            ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null",
+            ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && ((!data.exists() && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid) || (data.exists() && root.child($app).child('rooms').child($code).child('members').child(auth.uid).child('st').val() === 'in' && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing'))",
             ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 500 && (!data.exists() ? newData.val() <= 5 : (newData.val() === data.val() + 1 || newData.val() === data.val() - 1))"
           },
           "cheers": {
-            ".read": "($app === 'english' || $app === 'english-test') && auth != null",
+            ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null",
             "$id": {
-              ".write": "($app === 'english' || $app === 'english-test') && auth != null && !data.exists() && root.child($app).child('rooms').child($code).child('members').child(auth.uid).child('st').val() === 'in' && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing'",
+              ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && !data.exists() && root.child($app).child('rooms').child($code).child('members').child(auth.uid).child('st').val() === 'in' && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'playing'",
               ".validate": "newData.hasChildren(['s', 't'])",
               "s": {
                 ".validate": "newData.isString() && newData.val().matches(/^(almost|stars|with|go)$/)"
@@ -258,9 +258,9 @@
       },
       "invites": {
         "$uid": {
-          ".read": "($app === 'english' || $app === 'english-test') && auth != null && auth.uid === $uid",
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
           "$code": {
-            ".write": "($app === 'english' || $app === 'english-test') && auth != null && $code.matches(/^[0-9]{6}$/) && ((auth.uid === $uid && !newData.exists()) || (newData.exists() && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child($uid).child('st').val() === 'in' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child(auth.uid).child('st').val() === 'in'))",
+            ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && $code.matches(/^[0-9]{6}$/) && ((auth.uid === $uid && !newData.exists()) || (newData.exists() && !data.exists() && root.child($app).child('rooms').child($code).child('meta').child('host').val() === auth.uid && root.child($app).child('rooms').child($code).child('meta').child('status').val() === 'lobby' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child($uid).child('st').val() === 'in' && root.child($app).child('rooms').child(root.child($app).child('rooms').child($code).child('meta').child('prev').val()).child('members').child(auth.uid).child('st').val() === 'in'))",
             ".validate": "newData.hasChildren(['team', 'name', 'emoji', 't'])",
             "team": {
               ".validate": "newData.isString() && newData.val().length <= 40"

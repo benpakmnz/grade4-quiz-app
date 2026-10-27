@@ -7,6 +7,7 @@ import QuizGame from './components/QuizGame';
 import PassageGame from './components/PassageGame';
 import WritingGame from './components/WritingGame';
 import MathGame from './components/MathGame';
+import ReadingGame from './components/ReadingGame';
 import { generateHebrewQuestion } from './data/hebrewQuestions';
 import { generateMath3Question } from './data/math3Questions';
 import { DEFAULT_CLASS, classById, readViewClass, saveViewClass } from './data/classes';
@@ -412,6 +413,9 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     }
     if (category.subject === 'math3') {
       return <MathGame {...gameProps} generate={generateMath3Question} />;
+    }
+    if (category.id === 'hReading') {
+      return <ReadingGame {...gameProps} />;
     }
     if (category.subject === 'hebrew') {
       return <MathGame {...gameProps} generate={generateHebrewQuestion} praises={HEBREW_PRAISES} />;
