@@ -3,7 +3,8 @@
 import { initializeApp } from 'firebase/app';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged,
-  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, connectAuthEmulator
+  createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, connectAuthEmulator,
+  inMemoryPersistence, setPersistence
 } from 'firebase/auth';
 import { usernameToEmail, normalizeUsername } from '../utils/username';
 import { getDatabase, connectDatabaseEmulator } from 'firebase/database';
@@ -70,6 +71,49 @@ if (isCloudConfigured) {
 }
 
 export { auth, db };
+
+// ---------- חיבור "צדדי" ליצירת חשבונות תלמידים ----------
+// כשמורה יוצרת חשבון לתלמיד/ה, Firebase מחבר מיד את החשבון החדש. כדי שהמורה לא תתנתק,
+// עושים את זה בחיבור נפרד (אפליקציה שנייה, בלי שמירה בדפדפן) - והחיבור הראשי של המורה לא משתנה.
+let side = null;
+const sideConnection = async () => {
+  if (side) return side;
+  const sideApp = initializeApp(firebaseConfig, 'roster');
+  if (recaptchaSiteKey && typeof window !== 'undefined') {
+    try {
+      initializeAppCheck(sideApp, { provider: new ReCaptchaEnterpriseProvider(recaptchaSiteKey), isTokenAutoRefreshEnabled: false });
+    } catch {
+      // ignore
+    }
+  }
+  const sideAuth = getAuth(sideApp);
+  await setPersistence(sideAuth, inMemoryPersistence);
+  const sideDb = getDatabase(sideApp);
+  if (env(process.env.REACT_APP_FIREBASE_EMULATOR) === 'true') {
+    connectAuthEmulator(sideAuth, 'http://127.0.0.1:9099', { disableWarnings: true });
+    connectDatabaseEmulator(sideDb, '127.0.0.1', 9000);
+  }
+  side = { auth: sideAuth, db: sideDb };
+  return side;
+};
+
+/**
+ * מריץ פעולה כשמחוברים בחיבור הצדדי כמשתמש/ת אחר/ת (חדש/ה או קיים/ת), ומתנתק בסוף.
+ * create=true - יוצרים חשבון חדש. fn מקבל/ת { user, db }
+ */
+export const asOtherUser = async ({ username, password, create = false, displayName = null }, fn) => {
+  const { auth: sideAuth, db: sideDb } = await sideConnection();
+  const email = usernameToEmail(username);
+  const cred = create
+    ? await createUserWithEmailAndPassword(sideAuth, email, password)
+    : await signInWithEmailAndPassword(sideAuth, email, password);
+  try {
+    if (displayName) await updateProfile(cred.user, { displayName }).catch(() => {});
+    return await fn({ user: cred.user, db: sideDb });
+  } finally {
+    await fbSignOut(sideAuth).catch(() => {});
+  }
+};
 
 export const onUserChanged = (callback) => {
   if (!auth) {

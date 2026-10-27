@@ -4,7 +4,7 @@ import { signInWithGoogle, signInWithUsername, signUpWithUsername, describeAuthE
 import { validateUsername, validatePassword, USERNAME_MAX } from '../utils/username';
 import './WelcomeScreen.css';
 import './LoginScreen.css';
-import { readPendingClass, classLabel } from '../data/classes';
+import { readPendingClass, classLabel, isBuiltinClass } from '../data/classes';
 
 const GoogleLogo = () => (
   <svg className="google-logo" viewBox="0 0 48 48" aria-hidden="true">
@@ -18,7 +18,8 @@ const GoogleLogo = () => (
 // טופס שם משתמש + סיסמה (כניסה / הרשמה)
 const UsernameForm = ({ busy, setBusy, setError, initialMode = 'signin' }) => {
   const [mode, setMode] = useState(initialMode); // signin | signup
-  const joiningClass = readPendingClass(); // מי שהגיע/ה מקישור של כיתה
+  const pendingClass = readPendingClass(); // מי שהגיע/ה מקישור של כיתה
+  const joiningClass = isBuiltinClass(pendingClass) ? pendingClass : null;
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -127,7 +128,9 @@ const LoginScreen = ({ onGuest, initialMode = null, allowGuest = true }) => {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [showUsername, setShowUsername] = useState(initialMode === 'signup');
-  const joining = readPendingClass();
+  // הרשמה דרך קישור - רק לכיתות שבקוד (לכיתה של מורה נכנסים ממסך הכיתה)
+  const pendingClass = readPendingClass();
+  const joining = isBuiltinClass(pendingClass) ? pendingClass : null;
 
   const google = async () => {
     setBusy(true);

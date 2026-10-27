@@ -11,16 +11,46 @@ export const CLASSES = {
 };
 
 export const DEFAULT_CLASS = 'gi5';
+/** הכיתות שמוגדרות בקוד (כיתות שמורה פותחת נטענות מהמסד - ראו registerClass) */
 export const CLASS_IDS = Object.keys(CLASSES);
 
-export const isClassId = (id) => Object.prototype.hasOwnProperty.call(CLASSES, id);
-export const classById = (id) => CLASSES[isClassId(id) ? id : DEFAULT_CLASS];
+// כיתה שמורה פתחה: מזהה אקראי של 8-12 אותיות ומספרים (ארוך מהכיתות שבקוד - כדי שלא יתנגשו)
+export const CUSTOM_CLASS_ID = /^[a-z0-9]{8,12}$/;
+export const SUBJECT_CHOICES = ['english', 'math', 'hebrew', 'math3'];
+
+const has = (id) => Object.prototype.hasOwnProperty.call(CLASSES, id);
+/** כיתה מהקוד */
+export const isBuiltinClass = (id) => CLASS_IDS.includes(id);
+/** מזהה תקין: כיתה מהקוד או כיתה של מורה (גם אם עוד לא נטענה) */
+export const isClassId = (id) => has(id) || (typeof id === 'string' && CUSTOM_CLASS_ID.test(id));
+export const isLoadedClass = (id) => has(id);
+
+/** כיתה של מורה, כפי שנשמרה במסד (classes/<id>) - נרשמת כדי שכל האפליקציה תכיר אותה */
+export const registerClass = (id, meta) => {
+  if (!meta || !CUSTOM_CLASS_ID.test(id)) return null;
+  const subjects = SUBJECT_CHOICES.filter(s => meta.subjects?.[s]);
+  CLASSES[id] = {
+    id,
+    name: String(meta.name || ''),
+    school: String(meta.school || ''),
+    grade: String(meta.grade || ''),
+    subjects: subjects.length ? subjects : ['english'],
+    content: id,
+    examDefaults: false,
+    teacher: meta.teacher || null,
+    roster: meta.roster || {},
+    custom: true
+  };
+  return CLASSES[id];
+};
+export const classById = (id) => CLASSES[has(id) ? id : DEFAULT_CLASS];
 /** איזה מאגר שאלות הכיתה משתמשת: null = המאגר הראשי */
 export const contentKeyOf = (id) => classById(id).content || null;
 
 /** "כיתה ה' · גיבורי ישראל" */
 export const classLabel = (id) => {
   const c = classById(id);
+  if (c.custom) return `${c.name}${c.school ? ` · ${c.school}` : ''}`;
   return `כיתה ${c.grade}'${c.school ? ` · ${c.school}` : ''}`;
 };
 

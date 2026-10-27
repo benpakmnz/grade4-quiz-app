@@ -51,6 +51,14 @@ const getEmptyCategoryStats = () =>
     return acc;
   }, {});
 
+// השם שמוצע במסך ההיכרות: תלמיד/ה שהמורה יצר/ה - השם מהרשימה; שם משתמש - השם; Google - השם הפרטי
+const welcomeName = (user) => {
+  const username = emailToUsername(user?.email);
+  const display = (user?.displayName || '').trim();
+  if (display && display !== username) return username ? display : display.split(' ')[0];
+  return username || '';
+};
+
 function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, teacherOf = null, isGuest = false, classId = DEFAULT_CLASS, onRequestSignup }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
@@ -346,7 +354,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
 
   const renderGame = () => {
     if (currentGame === 'welcome') {
-      return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={emailToUsername(authUser?.email) || (authUser?.displayName || '').split(' ')[0]} />;
+      return <WelcomeScreen onStart={handleWelcomeComplete} defaultName={welcomeName(authUser)} />;
     }
     if (currentGame === 'hub' && hasHub) {
       return (

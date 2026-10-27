@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import App from '../App';
 import LoginScreen from './LoginScreen';
+import ClassLoginScreen from './ClassLoginScreen';
 import { isCloudConfigured, onUserChanged, signOut } from '../services/firebase';
 import { startSync, stopSync, GUEST_KEY } from '../services/cloudSync';
 import { checkIsAdmin, checkTeacherOf } from '../services/contentSync';
-import { resolveMyClass, readLocalClass } from '../services/classSync';
-import { readPendingClass } from '../data/classes';
+import { resolveMyClass, readLocalClass, ensureClass, fetchClassMeta } from '../services/classSync';
+import { readPendingClass, isBuiltinClass } from '../data/classes';
 import { trackVisit } from '../services/analytics';
 import { IS_TEST_ENV } from '../services/env';
 import { startSession, endSession } from '../services/sessions';
@@ -32,6 +33,20 @@ const AuthGate = () => {
   const [teacherOf, setTeacherOf] = useState(null); // הכיתה שהמשתמש/ת מלמד/ת
   const [classId, setClassId] = useState(() => readLocalClass() || readPendingClass());
   const [loginMode, setLoginMode] = useState(null); // 'signup' - כשמגיעים מתזכורת ההרשמה
+  // קישור של כיתה שמורה פתחה (?class=...) - מסך כניסה עם שמות התלמידים
+  const [classLogin, setClassLogin] = useState(null);
+  const [classLoginLoaded, setClassLoginLoaded] = useState(() => {
+    const pending = readPendingClass();
+    return !pending || isBuiltinClass(pending);
+  });
+  useEffect(() => {
+    const pending = readPendingClass();
+    if (!pending || isBuiltinClass(pending) || !isCloudConfigured) return;
+    fetchClassMeta(pending).then(meta => {
+      if (meta) setClassLogin(meta);
+      setClassLoginLoaded(true);
+    });
+  }, []);
 
 
   useEffect(() => {
@@ -78,7 +93,9 @@ const AuthGate = () => {
       } catch {
         // ignore
       }
-      setClassId(await resolveMyClass(u.uid, isNew));
+      const myClass = await resolveMyClass(u.uid, isNew);
+      await ensureClass(myClass);
+      setClassId(myClass);
       setUser(u);
       setState('ready');
     });
@@ -102,7 +119,15 @@ const AuthGate = () => {
     );
   }
 
-  if (state === 'checking' || state === 'syncing') {
+  if (state === 'login' && classLogin && !loginMode) {
+    return (
+      <div className="App">
+        <ClassLoginScreen classMeta={classLogin} onOtherLogin={() => setLoginMode('signin')} />
+      </div>
+    );
+  }
+
+  if (state === 'checking' || state === 'syncing' || (state === 'login' && !classLoginLoaded)) {
     return (
       <div className="App">
         <div className="auth-loading">
@@ -117,7 +142,7 @@ const AuthGate = () => {
     return (
       <div className="App">
         <LoginScreen
-          initialMode={loginMode || (readPendingClass() ? 'signup' : null)}
+          initialMode={loginMode || (isBuiltinClass(readPendingClass()) ? 'signup' : null)}
           allowGuest={ALLOW_GUEST}
           onGuest={() => {
             try {

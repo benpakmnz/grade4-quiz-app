@@ -6,7 +6,7 @@
       "users": {
         ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
         "$uid": {
-          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (auth.uid === $uid || (root.child($app).child('teachers').child(auth.uid).exists() && root.child($app).child('teachers').child(auth.uid).val() === root.child($app).child('classOf').child($uid).val()))",
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (auth.uid === $uid || (root.child($app).child('teachers').child(auth.uid).exists() && root.child($app).child('teachers').child(auth.uid).val() === root.child($app).child('classOf').child($uid).val()) || (root.child($app).child('classOf').child($uid).exists() && root.child($app).child('classes').child(root.child($app).child('classOf').child($uid).val()).child('teacher').val() === auth.uid))",
           ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && auth.uid === $uid",
           "profile": {
             "name": {
@@ -134,7 +134,7 @@
       "contentBy": {
         "$cls": {
           ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true))",
-          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('teachers').child(auth.uid).val() === $cls)",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('teachers').child(auth.uid).val() === $cls || root.child($app).child('classes').child($cls).child('teacher').val() === auth.uid)",
           "custom": {},
           "hidden": {},
           "$other": {
@@ -145,7 +145,7 @@
       "classSettings": {
         "$cls": {
           ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true))",
-          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('teachers').child(auth.uid).val() === $cls)",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('teachers').child(auth.uid).val() === $cls || root.child($app).child('classes').child($cls).child('teacher').val() === auth.uid)",
           "exams": {
             "$subject": {
               ".validate": "newData.isString() && newData.val().matches(/^20[0-9][0-9]-[01][0-9]-[0-3][0-9]$/) && $subject.matches(/^[a-z0-9]{2,12}$/)"
@@ -153,6 +153,69 @@
           },
           "$other": {
             ".validate": false
+          }
+        }
+      },
+      "classes": {
+        ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && root.child($app).child('admins').child(auth.uid).val() === true",
+        "$cls": {
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true))",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && $cls.matches(/^[a-z0-9]{8,12}$/) && (root.child($app).child('admins').child(auth.uid).val() === true || (!data.exists() && newData.child('teacher').val() === auth.uid && root.child($app).child('teachers').child(auth.uid).exists()) || (data.exists() && data.child('teacher').val() === auth.uid))",
+          ".validate": "newData.hasChildren(['name', 'teacher', 'createdAt']) && (!data.exists() || newData.child('teacher').val() === data.child('teacher').val() || root.child($app).child('admins').child(auth.uid).val() === true)",
+          "name": {
+            ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+          },
+          "school": {
+            ".validate": "newData.isString() && newData.val().length <= 40"
+          },
+          "grade": {
+            ".validate": "newData.isString() && newData.val().length <= 10"
+          },
+          "teacher": {
+            ".validate": "newData.isString()"
+          },
+          "createdAt": {
+            ".validate": "newData.isNumber() && newData.val() <= now"
+          },
+          "subjects": {
+            "$subject": {
+              ".validate": "newData.isBoolean() && $subject.matches(/^(english|math|hebrew|math3)$/)"
+            }
+          },
+          "roster": {
+            "$uid": {
+              ".validate": "newData.hasChildren(['name', 'username'])",
+              "name": {
+                ".validate": "newData.isString() && newData.val().length >= 1 && newData.val().length <= 30"
+              },
+              "username": {
+                ".validate": "newData.isString() && newData.val().length <= 20"
+              },
+              "$other": {
+                ".validate": false
+              }
+            }
+          },
+          "$other": {
+            ".validate": false
+          }
+        }
+      },
+      "teacherClasses": {
+        "$uid": {
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (auth.uid === $uid || root.child($app).child('admins').child(auth.uid).val() === true)",
+          "$cls": {
+            ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && ((auth.uid === $uid && root.child($app).child('teachers').child(auth.uid).exists()) || root.child($app).child('admins').child(auth.uid).val() === true)",
+            ".validate": "newData.val() === true"
+          }
+        }
+      },
+      "classSecrets": {
+        "$cls": {
+          ".read": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('classes').child($cls).child('teacher').val() === auth.uid)",
+          ".write": "($app === 'english' || ($app === 'english-test' && auth != null && root.child('english-test').child('admins').child(auth.uid).val() === true)) && auth != null && (root.child($app).child('admins').child(auth.uid).val() === true || root.child($app).child('classes').child($cls).child('teacher').val() === auth.uid)",
+          "$uid": {
+            ".validate": "newData.isString() && newData.val().matches(/^[0-9]{6}$/)"
           }
         }
       },
