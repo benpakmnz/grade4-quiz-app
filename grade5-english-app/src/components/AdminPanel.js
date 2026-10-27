@@ -186,9 +186,9 @@ const AddForm = ({ bankDef, onDone }) => {
   );
 };
 
-// ---------- עורך השאלות (משמש גם בממשק המורה) ----------
-// עובד על מאגר השאלות שנטען כרגע - של הכיתה שמוצגת. note - הערה בראש העורך (למשל: "השינויים רק לכיתה X")
-export const QuestionsEditor = ({ note = null }) => {
+// ---------- המסך הראשי ----------
+const AdminPanel = ({ onBack }) => {
+  const [view, setView] = useState('questions'); // questions | users
   const [subject, setSubject] = useState('english');
   const sections = (subject === 'math' ? MATH_ADMIN_SECTIONS : ADMIN_SECTIONS)
     .map(s => ({ ...s, category: categories.find(c => c.id === s.id) }));
@@ -248,8 +248,31 @@ export const QuestionsEditor = ({ note = null }) => {
   const onRestore = (entry) => run(() => setBuiltinHidden(bankDef.bank, entry.id, false), '↩️ השאלה הוחזרה');
 
   return (
-    <>
-      {note && <div className="admin-scope-note">{note}</div>}
+    <div className="math-game english-game admin-panel">
+      <div className="game-header">
+        <button className="back-button" onClick={onBack}>← חזרה</button>
+        <h2 className="game-title">⚙️ ניהול</h2>
+      </div>
+
+      <div className="mode-tabs">
+        <button className={`mode-tab ${view === 'questions' ? 'active' : ''}`} onClick={() => setView('questions')}>
+          📝 שאלות
+        </button>
+        <button className={`mode-tab ${view === 'users' ? 'active' : ''}`} onClick={() => setView('users')}>
+          📊 משתמשים
+        </button>
+        <button className={`mode-tab ${view === 'usage' ? 'active' : ''}`} onClick={() => setView('usage')}>
+          📈 שימוש
+        </button>
+        <button className={`mode-tab ${view === 'escape' ? 'active' : ''}`} onClick={() => setView('escape')}>
+          🔐 אתגרים
+        </button>
+      </div>
+
+      {view === 'usage' && <div className="admin-card"><UsageDashboard /></div>}
+      {view === 'escape' && <div className="admin-card"><EscapeDashboard /></div>}
+      {view === 'users' && <div className="admin-card"><UsersDashboard /></div>}
+      {view === 'questions' && (
       <div className="admin-card">
         <div className="report-subjects" role="tablist" aria-label="מקצוע">
           {[['english', '🔤 אנגלית'], ['math', '🔢 חשבון']].map(([id, label]) => (
@@ -342,40 +365,7 @@ export const QuestionsEditor = ({ note = null }) => {
           )}
         </ul>
       </div>
-    </>
-  );
-};
-
-// ---------- המסך הראשי ----------
-const AdminPanel = ({ onBack, contentNote = null }) => {
-  const [view, setView] = useState('questions'); // questions | users | usage | escape
-
-  return (
-    <div className="math-game english-game admin-panel">
-      <div className="game-header">
-        <button className="back-button" onClick={onBack}>← חזרה</button>
-        <h2 className="game-title">⚙️ ניהול</h2>
-      </div>
-
-      <div className="mode-tabs">
-        <button className={`mode-tab ${view === 'questions' ? 'active' : ''}`} onClick={() => setView('questions')}>
-          📝 שאלות
-        </button>
-        <button className={`mode-tab ${view === 'users' ? 'active' : ''}`} onClick={() => setView('users')}>
-          📊 משתמשים
-        </button>
-        <button className={`mode-tab ${view === 'usage' ? 'active' : ''}`} onClick={() => setView('usage')}>
-          📈 שימוש
-        </button>
-        <button className={`mode-tab ${view === 'escape' ? 'active' : ''}`} onClick={() => setView('escape')}>
-          🔐 אתגרים
-        </button>
-      </div>
-
-      {view === 'usage' && <div className="admin-card"><UsageDashboard /></div>}
-      {view === 'escape' && <div className="admin-card"><EscapeDashboard /></div>}
-      {view === 'users' && <div className="admin-card"><UsersDashboard /></div>}
-      {view === 'questions' && <QuestionsEditor note={contentNote} />}
+      )}
     </div>
   );
 };

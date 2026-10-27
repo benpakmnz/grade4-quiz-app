@@ -10,10 +10,7 @@ import MathGame from './components/MathGame';
 import ReadingGame from './components/ReadingGame';
 import { generateHebrewQuestion } from './data/hebrewQuestions';
 import { generateMath3Question } from './data/math3Questions';
-import { DEFAULT_CLASS, classById, classLabel, contentKeyOf, readViewClass, saveViewClass } from './data/classes';
-import { subscribeContent, subscribeClassSettings } from './services/contentSync';
-import { isCloudConfigured } from './services/firebase';
-import TeacherPanel from './components/TeacherPanel';
+import { DEFAULT_CLASS, classById, readViewClass, saveViewClass } from './data/classes';
 import SubjectHub from './components/SubjectHub';
 import HamburgerMenu from './components/HamburgerMenu';
 import AdminPanel from './components/AdminPanel';
@@ -31,7 +28,7 @@ import { watchInvites } from './services/rooms';
 import { getGenderText } from './utils/genderText';
 import { TARGET_PER_CATEGORY } from './data/categories';
 import {
-  SUBJECTS, SUBJECT_IDS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects, subjectsByExam, setExamPlan
+  SUBJECTS, SUBJECT_IDS, allCategories, findCategory, readSubject, saveSubject, getDaysUntilSubjectExam, examCountdownText, availableSubjects, subjectsByExam
 } from './data/subjects';
 import { notifyLocalChange } from './services/cloudSync';
 import { emailToUsername } from './utils/username';
@@ -51,7 +48,7 @@ const getEmptyCategoryStats = () =>
     return acc;
   }, {});
 
-function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, teacherOf = null, isGuest = false, classId = DEFAULT_CLASS, onRequestSignup }) {
+function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin = false, isGuest = false, classId = DEFAULT_CLASS, onRequestSignup }) {
   const [currentGame, setCurrentGame] = useState('welcome');
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -70,26 +67,13 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
   const [categoryStats, setCategoryStats] = useState(getEmptyCategoryStats);
   // הכיתה: כל ילד רואה רק את המקצועות של הכיתה שלו. מנהל/ת יכול/ה "לראות כמו" כיתה אחרת (רק בתצוגה)
   const [viewClass, setViewClass] = useState(() => (isAdmin ? readViewClass() : null));
-  // מורה רואה תמיד את הכיתה שהיא מלמדת (גם המאגר ומועדי המבחנים)
-  const myClass = (isAdmin && viewClass) || teacherOf || classId;
+  const myClass = (isAdmin && viewClass) || classId;
   const changeViewClass = (id) => {
     const next = id === classId ? null : id;
     saveViewClass(next);
     setViewClass(next);
     setCurrentGame('hub');
   };
-  // מאגר השאלות ומועדי המבחנים - של הכיתה שמוצגת (לכל בית ספר מאגר משלו)
-  const contentKey = contentKeyOf(myClass);
-  useEffect(() => (isCloudConfigured ? subscribeContent(contentKey) : undefined), [contentKey]);
-  const [classSettings, setClassSettings] = useState({});
-  useEffect(() => {
-    setClassSettings({});
-    return isCloudConfigured ? subscribeClassSettings(myClass, setClassSettings) : undefined;
-  }, [myClass]);
-  setExamPlan({ useDefaults: classById(myClass).examDefaults, dates: classSettings.exams });
-  // מורה: ממשק המורה של הכיתה שלה. מנהל/ת: של הכיתה שמוצגת
-  const teacherClass = teacherOf || (isAdmin ? myClass : null);
-
   // המקצוע שנבחר בדף הבית
   const allowedSubjects = subjectsByExam(availableSubjects(isAdmin, myClass));
   const subjectList = subjectsByExam(classById(myClass).subjects);
@@ -401,10 +385,7 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
     }
 
     if (currentGame === 'admin' && isAdmin) {
-      return <AdminPanel onBack={() => setCurrentGame('home')} contentNote={contentKey ? `עורכים את מאגר השאלות של ${classLabel(myClass)} בלבד` : 'עורכים את המאגר הראשי (כל הכיתות שאין להן מאגר משלהן)'} />;
-    }
-    if (currentGame === 'teacher' && teacherClass) {
-      return <TeacherPanel classId={teacherClass} authUser={authUser} isAdmin={isAdmin} examDates={classSettings.exams || {}} onBack={() => setCurrentGame(homePage)} />;
+      return <AdminPanel onBack={() => setCurrentGame('home')} />;
     }
 
     const category = findCategory(currentGame);
@@ -493,7 +474,6 @@ function App({ authUser = null, cloudEnabled = false, syncError = null, isAdmin 
               onProgress={() => openAchievements('progress')}
               onEditProfile={openProfileEdit}
               onAdmin={() => setCurrentGame('admin')}
-              onTeacher={teacherClass ? () => setCurrentGame('teacher') : null}
               onEscapeRoom={escapeOn ? openEscape : null}
               onSignUp={onRequestSignup}
             />

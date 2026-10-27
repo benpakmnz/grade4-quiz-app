@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText, examDateOf } from '../data/subjects';
+import { SUBJECTS, getDaysUntilSubjectExam, examCountdownText } from '../data/subjects';
 import { TARGET_PER_CATEGORY } from '../data/categories';
 import { ESCAPE_FIRST } from '../data/escapeRoom';
 import { getGenderText } from '../utils/genderText';
@@ -147,7 +147,7 @@ const SubjectHub = ({ subjects, enabled = subjects, userData, categoryStats, onP
               ) : (
                 <>
                   <span className="hub-meta">
-                    {days >= 0 && <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(examDateOf(id))}: <b>{examCountdownText(days)}</b></span>}
+                    {days >= 0 && <span className="hub-pill" title={s.examName}>⏰ מבחן ב-{examDateText(s.examDate)}: <b>{examCountdownText(days)}</b></span>}
                     <span className="hub-pill">📚 {topics} נושאים</span>
                   </span>
 

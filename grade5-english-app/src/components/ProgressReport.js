@@ -85,7 +85,7 @@ export const PARENT_TIPS = {
 
 /**
  * דוח התקדמות של משתמש אחד.
- * mode='admin' - מתוך ממשק הניהול; mode='teacher' - ממשק המורה (בלי מייל); mode='self' - התלמיד/ההורה רואים את הדוח של עצמם
+ * mode='admin' - מתוך ממשק הניהול; mode='self' - התלמיד/ההורה רואים את הדוח של עצמם
  */
 const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpenLesson, onPractice, subjects = SUBJECT_IDS, defaultSubject, fixedSubject }) => {
   const [mistakeFilter, setMistakeFilter] = useState('all');
@@ -122,8 +122,7 @@ const ProgressReport = ({ user, mode = 'admin', onBack, backLabel, gender, onOpe
         <div>
           <h3>{self ? `ההתקדמות של ${user.name}` : user.name}</h3>
           <div className="dash-sub">
-            {/* מורה לא רואה את המייל של ההורים - רק את שם המשתמש */}
-            {!self && <>{(mode === 'teacher' ? '' : user.email) || `👤 ${user.username || user.name}`} · </>}
+            {!self && <>{user.email || `👤 ${user.username}`} · </>}
             תרגול אחרון: {formatWhen(user.lastPractice || user.lastSeen)}
           </div>
         </div>

@@ -2,12 +2,9 @@
 // משתמש בלי כיתה (כל מי שנרשם לפני שהיו כיתות) שייך לכיתת ברירת המחדל.
 // ילד חדש מצטרף לכיתה דרך קישור: <כתובת האתר>/?class=<id>
 
-// content - מאגר שאלות נפרד לכיתה (<DB_ROOT>/contentBy/<content>). בלי content - המאגר הראשי (<DB_ROOT>/content)
-// examDefaults - להשתמש במועדי המבחנים שבקוד; אחרת המועדים נקבעים בממשק המורה (classSettings)
 export const CLASSES = {
-  gi5: { id: 'gi5', school: 'גיבורי ישראל', grade: 'ה', subjects: ['english', 'math', 'hebrew'], examDefaults: true },
-  g3: { id: 'g3', school: '', grade: 'ג', subjects: ['math3'], examDefaults: true },
-  th5: { id: 'th5', school: 'תל חי', grade: 'ה', subjects: ['english', 'math', 'hebrew'], content: 'th5', examDefaults: false }
+  gi5: { id: 'gi5', school: 'גיבורי ישראל', grade: 'ה', subjects: ['english', 'math', 'hebrew'] },
+  g3: { id: 'g3', school: '', grade: 'ג', subjects: ['math3'] }
 };
 
 export const DEFAULT_CLASS = 'gi5';
@@ -15,8 +12,6 @@ export const CLASS_IDS = Object.keys(CLASSES);
 
 export const isClassId = (id) => Object.prototype.hasOwnProperty.call(CLASSES, id);
 export const classById = (id) => CLASSES[isClassId(id) ? id : DEFAULT_CLASS];
-/** איזה מאגר שאלות הכיתה משתמשת: null = המאגר הראשי */
-export const contentKeyOf = (id) => classById(id).content || null;
 
 /** "כיתה ה' · גיבורי ישראל" */
 export const classLabel = (id) => {
