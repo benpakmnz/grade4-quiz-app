@@ -32,7 +32,7 @@ const Item = ({ icon, label, hint, onClick, active, danger, disabled, highlight,
 const HamburgerMenu = ({
   userData, authUser, isGuest, cloudEnabled, isAdmin, classId, onViewClass,
   subjects, enabled = subjects, subject, onPickSubject, onOpenHub,
-  onAchievements, onProgress, onEditProfile, onAdmin, onSignUp, onEscapeRoom
+  onAchievements, onProgress, onEditProfile, onAdmin, onTeacher, onSignUp, onEscapeRoom
 }) => {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -134,6 +134,7 @@ const HamburgerMenu = ({
               <div className="hm-section">
                 <div className="hm-title">החשבון שלי</div>
                 <Item icon="✏️" label="עריכת פרופיל" hint="שם, דמות וצבע" onClick={run(onEditProfile)} />
+                {onTeacher && <Item icon="👩‍🏫" label="ממשק מורה" hint="סיכום הכיתה, תלמידים, שאלות ומבחנים" onClick={run(onTeacher)} />}
                 {isAdmin && <Item icon="⚙️" label="ניהול" hint="שאלות, משתמשים ושימוש" onClick={run(onAdmin)} />}
               </div>
 

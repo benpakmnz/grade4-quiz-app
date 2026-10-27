@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { fetchAllUsers } from '../services/contentSync';
+import { fetchAllUsers, fetchTeachers, setTeacherOf } from '../services/contentSync';
 import { parseAllUsers, rateColor, formatWhen } from '../data/userStats';
 import ProgressReport from './ProgressReport';
 import { DEVICE_ICONS } from '../utils/device';
@@ -37,6 +37,7 @@ const UsersDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const [classes, setClasses] = useState({});
+  const [teachers, setTeachers] = useState({});
   const [filter, setFilter] = useState('all');
   const [moving, setMoving] = useState(false);
   const classOf = (uid) => classes[uid] || DEFAULT_CLASS;
@@ -45,9 +46,10 @@ const UsersDashboard = () => {
     setLoading(true);
     setError(null);
     try {
-      const [all, cls] = await Promise.all([fetchAllUsers(), fetchAllClasses().catch(() => ({}))]);
+      const [all, cls, tch] = await Promise.all([fetchAllUsers(), fetchAllClasses().catch(() => ({})), fetchTeachers().catch(() => ({}))]);
       setUsers(parseAllUsers(all));
       setClasses(cls);
+      setTeachers(tch);
     } catch (err) {
       setError(/permission/i.test(err?.message || '')
         ? 'אין הרשאה לקרוא את נתוני המשתמשים - צריך לפרסם את כללי האבטחה המעודכנים (database.rules.json)'
@@ -71,6 +73,27 @@ const UsersDashboard = () => {
     setMoving(false);
   };
 
+  // מורה: מקבל/ת גישה לנתוני התלמידים ולמאגר השאלות של הכיתה, ועובר/ת לכיתה הזו
+  const makeTeacher = async (uid, id) => {
+    if (id && !window.confirm(`להגדיר את המשתמש/ת כמורה של ${classLabel(id)}?\nהמורה תראה את נתוני כל התלמידים בכיתה ותוכל לערוך את מאגר השאלות שלה.`)) return;
+    setMoving(true);
+    try {
+      await setTeacherOf(uid, id || null);
+      if (id) {
+        await setUserClass(uid, id);
+        setClasses(c => ({ ...c, [uid]: id }));
+      }
+      setTeachers(t => {
+        const n = { ...t };
+        if (id) n[uid] = id; else delete n[uid];
+        return n;
+      });
+    } catch (err) {
+      setError(`השמירה נכשלה: ${err?.message || err}`);
+    }
+    setMoving(false);
+  };
+
   const user = selected && users?.find(u => u.uid === selected);
   if (user) {
     return (
@@ -78,6 +101,11 @@ const UsersDashboard = () => {
         <div className="admin-row dash-class-row">
           <span>🏫 כיתה:</span>
           <select className="admin-input narrow" value={classOf(user.uid)} disabled={moving} onChange={e => moveTo(user.uid, e.target.value)}>
+            {CLASS_IDS.map(id => <option key={id} value={id}>{classLabel(id)}</option>)}
+          </select>
+          <span>👩‍🏫 מורה של:</span>
+          <select className="admin-input narrow" value={teachers[user.uid] || ''} disabled={moving} onChange={e => makeTeacher(user.uid, e.target.value)}>
+            <option value="">לא מורה</option>
             {CLASS_IDS.map(id => <option key={id} value={id}>{classLabel(id)}</option>)}
           </select>
           {moving && <span className="admin-hint">שומרים...</span>}
@@ -134,7 +162,7 @@ const UsersDashboard = () => {
                 <span className="dash-avatar small">{u.character}</span>
                 <span className="dash-user-main">
                   <b>{u.name}</b>
-                  <span className="dash-sub">{u.email || `👤 ${u.username}`}{filter === 'all' && CLASS_IDS.length > 1 && <> · 🏫 {classById(classOf(u.uid)).grade}'</>}</span>
+                  <span className="dash-sub">{teachers[u.uid] && <>👩‍🏫 מורה · </>}{u.email || `👤 ${u.username}`}{filter === 'all' && CLASS_IDS.length > 1 && <> · 🏫 {classById(classOf(u.uid)).grade}'</>}</span>
                 </span>
                 <span className="dash-user-stats">
                   <span>⭐ {u.score}</span>

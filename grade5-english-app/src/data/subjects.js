@@ -66,8 +66,22 @@ export const daysUntil = (date, now = new Date()) => {
   return Math.round((exam - today) / (1000 * 60 * 60 * 24));
 };
 
-export const getDaysUntilSubjectExam = (subjectId, now) =>
-  daysUntil((SUBJECTS[subjectId] || SUBJECTS.english).examDate, now);
+// מועדי המבחנים לפי הכיתה: מועדים שהמורה קבעה (classSettings), ואם אין - המועדים שבקוד (רק בכיתות שמשתמשות בהם).
+// בלי מועד - אין ספירה לאחור (הפונקציה מחזירה NaN, וכל ההשוואות ">= 0" יוצאות שקר)
+let examPlan = { useDefaults: true, dates: {} };
+export const setExamPlan = (plan) => {
+  examPlan = { useDefaults: plan?.useDefaults !== false, dates: plan?.dates || {} };
+};
+export const examDateOf = (subjectId) => {
+  const d = examPlan.dates[subjectId];
+  if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T08:00:00`);
+  return examPlan.useDefaults ? SUBJECTS[subjectId]?.examDate || null : null;
+};
+
+export const getDaysUntilSubjectExam = (subjectId, now) => {
+  const date = examDateOf(subjectId);
+  return date ? daysUntil(date, now) : NaN;
+};
 
 // חשבון עדיין בבדיקה:
 // - בסביבת הבדיקות (staging) - לכל המשתמשים
@@ -87,10 +101,14 @@ export const availableSubjects = (isAdmin, classId) => classById(classId).subjec
 /** סדר התצוגה: המבחן הקרוב ראשון, ומבחנים שכבר עברו - בסוף */
 export const subjectsByExam = (ids = SUBJECT_IDS, now = new Date()) =>
   [...ids].sort((a, b) => {
-    const da = getDaysUntilSubjectExam(a, now);
-    const db = getDaysUntilSubjectExam(b, now);
-    if ((da < 0) !== (db < 0)) return da < 0 ? 1 : -1;
-    return da < 0 ? db - da : da - db;
+    // קודם מבחנים קרובים, אחר כך מקצועות בלי מועד, ובסוף מבחנים שעברו (האחרון שעבר - ראשון)
+    const key = (id) => {
+      const d = getDaysUntilSubjectExam(id, now);
+      return Number.isNaN(d) ? [1, 0] : d >= 0 ? [0, d] : [2, -d];
+    };
+    const [ga, va] = key(a);
+    const [gb, vb] = key(b);
+    return ga - gb || va - vb;
   });
 
 const SUBJECT_KEY = 'english_subject';
